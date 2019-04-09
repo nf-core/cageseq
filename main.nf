@@ -94,6 +94,7 @@ if( params.gtf ){
     exit 1, "No GTF annotation specified!"
 }
 
+
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
 custom_runName = params.name
@@ -111,6 +112,7 @@ if( workflow.profile == 'awsbatch') {
   if (!workflow.workDir.startsWith('s3:') || !params.outdir.startsWith('s3:')) exit 1, "Workdir or Outdir not on S3 - specify S3 Buckets for each to run on AWSBatch!"
 }
 
+
 // Stage config files
 ch_multiqc_config = Channel.fromPath(params.multiqc_config)
 ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
@@ -118,11 +120,11 @@ ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
 /*
  * Create a channel for input read files
  */
+params.pairedEnd = false
 Channel
-    .from(params.readPaths)
-    .map { row > [ row[0], [file(row[1][0])]] }
-    .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-    .into { read_files_fastqc, read_files_trimming}
+    .fromFilePairs( params.reads, size: params.pairedEnd ? 2 : 1 )
+    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\nIf this is single-end data, please specify --singleEnd on the command line." }
+    .into { read_files_fastqc; read_files_trimming }
 
 
 
@@ -133,6 +135,7 @@ summary['Run Name']         = custom_runName ?: workflow.runName
 summary['Reads']            = params.reads
 summary['Fasta Ref']        = params.fasta
 summary['GTF Ref']          = params.gtf
+summary['Trimming']         = params.trimming
 summary['CutEcoP']          = params.cutEcop
 summary['CutLinker']        = params.cutLinker
 summary['CutG']             = params.cutG
@@ -231,7 +234,8 @@ process fastqc {
 /*
  * STEP 2  - Build STAR index
  */
-if(!params.star_index && fasta){
+if(!params.star_index){
+
     process makeSTARindex {
         tag fasta
         publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
@@ -345,7 +349,7 @@ if(params.trimming){
 }
 
 
-
+//TODO figure out why this is not working
 /**
  * STEP 4 - Remove added G from 5-end
  */
@@ -380,7 +384,7 @@ process star {
                 else  filename }
 
     input:
-    file reads from processed_reads
+    file reads from trimmed_star_reads
     file index from star_index.collect()
     file gtf from gtf_star.collect()
 
