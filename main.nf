@@ -61,27 +61,38 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
 
 // TODO nf-core: Add any reference files that are needed
 // Configurable reference genomes
+// Reference index path configuration
+// Define these here - after the profiles are loaded with the iGenomes paths
+params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
+params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
+params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
-if ( params.fasta ){
-    fasta = file(params.fasta)
-    if( !fasta.exists() ) exit 1, "Fasta file not found: ${params.fasta}"
-}
 
-// Load GTF file
-if( params.gtf ){
-    Channel
-            .fromPath(params.gtf)
-            .ifEmpty { exit 1, "GTF annotation file not found: ${params.gtf}" }
-            .into { gtf_makeSTARindex; gtf_star; gtf_bowtie; gtf_buildBowtieIndex}
-}
 
-// Load STAR index if available
-if ( params.star_index ){
+// Validate inputs
+if( params.star_index ){
     star_index = Channel
         .fromPath(params.star_index)
         .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
 }
+else if ( params.fasta ){
+    Channel.fromPath(params.fasta)
+           .ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
+           .into { ch_fasta_for_star_index; ch_fasta_for_hisat_index}
+}
+else {
+    exit 1, "No reference genome specified!"
+}
 
+if( params.gtf ){
+    Channel
+        .fromPath(params.gtf)
+        .ifEmpty { exit 1, "GTF annotation file not found: ${params.gtf}" }
+        .into { gtf_makeSTARindex; gtf_makeHisatSplicesites; gtf_makeHISATindex; gtf_makeBED12;
+              gtf_star; gtf_dupradar; gtf_featureCounts; gtf_stringtieFPKM }
+} else {
+    exit 1, "No GTF annotation specified!"
+}
 
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
@@ -107,24 +118,27 @@ ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
 /*
  * Create a channel for input read files
  */
- // TODO: delete unnessecary if-clause
-if(params.readPaths){
-    Channel
-        .from(params.readPaths)
-        .map { row > [ row[0], [file(row[1][0])]] }
-        .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-        .into { read_files_fastqc, read_files_trimming}
-}
+Channel
+    .from(params.readPaths)
+    .map { row > [ row[0], [file(row[1][0])]] }
+    .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
+    .into { read_files_fastqc, read_files_trimming}
+
 
 
 // Header log info
 log.info nfcoreHeader()
 def summary = [:]
 summary['Run Name']         = custom_runName ?: workflow.runName
-// TODO nf-core: Report custom parameters here
 summary['Reads']            = params.reads
 summary['Fasta Ref']        = params.fasta
-summary['Data Type']        = params.singleEnd ? 'Single-End' : 'Paired-End'
+summary['GTF Ref']          = params.gtf
+summary['CutEcoP']          = params.cutEcop
+summary['CutLinker']        = params.cutLinker
+summary['CutG']             = params.cutG
+summary['EcoSite']          = params.ecoSite
+summary['LinkerSeq']        = params.linkerSeq
+summary['Save Reference']   = params.saveReference
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if(workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
 summary['Output dir']       = params.outdir
