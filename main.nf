@@ -185,6 +185,8 @@ process get_software_versions {
     multiqc --version > v_multiqc.txt
     STAR --version > v_star.txt
     cutadapt --version > v_cutadapt.txt
+    samtools --version > v_samtools.txt
+    bedtools --version > v_bedtools.txt
     scrape_software_versions.py > software_versions_mqc.yaml
     """
 }
@@ -263,54 +265,50 @@ if(params.trimming){
 
         script:
         prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
-        if(!params.pairedEnd){
-            if (params.cutEcop && params.cutLinker){
-                """
-                cutadapt -a ${params.ecoSite}...${params.linkerSeq} \\
-                --match-read-wildcards \\
-                -m 15 -M 45  \\
-                -o ${reads.baseName}.trimmed.fastq.gz \\
-                $reads \\
-                > ${reads.baseName}.trimming.output.txt
-                """
-            }
-            else if (params.cutEcop && !params.cutLinker){
-                """
-                mkdir trimmed
-                cutadapt -g ^${params.ecoSite} \\
-                -e 0 \\
-                --match-read-wildcards \\
-                --discard-untrimmed \\
-                -o ${reads.baseName}.trimmed.fastq.gz \\
-                $reads \\
-                > ${reads.baseName}.trimming.output.txt
-                """
-            }
-            else if (!params.cutEcop && params.cutLinker){
-                """
-                mkdir trimmed
-                cutadapt -a ${params.linkerSeq}\$ \\
-                -e 0 \\
-                --match-read-wildcards \\
-                -m 15 -M 45 \\
-                -o ${reads.baseName}.trimmed.fastq.gz \\
-                $reads \\
-                > ${reads.baseName}.trimming.output.txt
-                """
-            }
-
-        } else {
-            // CURRENTLY NOT SUPPORTED
+        // Cut Both EcoP and Linker
+        if (params.cutEcop && params.cutLinker){
             """
-            mkdir trimmed
-            cutadapt reads
-            cutadapt -g %(sample)s=^%(barc)s -e 0 --no-indels %(fq_file)s -o
+            cutadapt -a ${params.ecoSite}...${params.linkerSeq} \\
+            --match-read-wildcards \\
+            -m 15 -M 45  \\
+            -o ${reads.baseName}.trimmed.fastq.gz \\
+            $reads \\
+            > ${reads.baseName}.trimming.output.txt
             """
         }
 
+        // Cut only EcoP site
+        else if (params.cutEcop && !params.cutLinker){
+            """
+            mkdir trimmed
+            cutadapt -g ^${params.ecoSite} \\
+            -e 0 \\
+            --match-read-wildcards \\
+            --discard-untrimmed \\
+            -o ${reads.baseName}.trimmed.fastq.gz \\
+            $reads \\
+            > ${reads.baseName}.trimming.output.txt
+            """
+        }
+
+        // Cut only Linker
+        else if (!params.cutEcop && params.cutLinker){
+            """
+            mkdir trimmed
+            cutadapt -a ${params.linkerSeq}\$ \\
+            -e 0 \\
+            --match-read-wildcards \\
+            -m 15 -M 45 \\
+            -o ${reads.baseName}.trimmed.fastq.gz \\
+            $reads \\
+            > ${reads.baseName}.trimming.output.txt
+            """
+        }
+
+
     }
     // Make channels for all downstream programs
-    trimmed_reads.into{ trimmed_fastqc_reads; trimmed_star_reads; trimmed_reads_bowtie; trimmed_reads_cutG }
+    trimmed_reads.into{ trimmed_fastqc_reads; trimmed_star_reads; trimmed_reads_cutG }
 
 
     // Post trimming QC
@@ -334,10 +332,89 @@ if(params.trimming){
 
 
 
-/*
- * STEP 4
+/**
+ * STEP 4 - Remove added G from 5-end
+ */
+if (params.cutG){
+
+    input:
+    file reads from trimmed_reads_cutG
+
+    output:
+    file "*.fastq.gz" into processed_reads
+
+    script:
+    """
+    cutadapt -g ^G \\
+    -e 0 --match-read-wildcards \\
+    -o ${reads.baseName}.processed.fastq.gz \\
+    $reads
+    """
+
+}
+
+
+/**
+ * STEP 5 - STAR alignment
  */
 
+process star {
+    tag "$prefix"
+    publishDir "${params.outdir}/STAR", mode: 'copy',
+            saveAs: {filename ->
+                if (filename.indexOf(".bam") == -1) "logs/$filename"
+                else  filename }
+
+    input:
+    file reads from processed_reads
+    file index from star_index.collect()
+    file gtf from gtf_star.collect()
+
+    output:
+    file '*.bam' into star_aligned
+    file "*.out" into alignment_logs
+    file "*SJ.out.tab"
+    file "*Log.out" into star_log
+
+    script:
+    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
+    """
+    STAR --genomeDir $index \\
+        --sjdbGTFfile $gtf \\
+        --readFilesIn $reads  \\
+        --runThreadN ${task.cpus} \\
+        --outSAMtype BAM SortedByCoordinate \\
+        --readFilesCommand zcat \\
+        --runDirPerm All_RWX \\
+        --outFileNamePrefix $prefix \\
+        --outFilterMatchNmin ${params.min_aln_length}
+    """
+}
+// Split Star results
+star_aligned.into { bam_count; bam_rseqc }
+
+
+/**
+ * STEP 6 - Get CTSS files
+ */
+process get_ctss {
+    tag "${bam_count.baseName}"
+    publishDir "${params.outdir}/ctss", mode: 'copy'
+
+    input:
+    file bam_count
+
+    output:
+    file "*.ctss" into ctss_counts
+    file "*.bed" into bed_aln
+
+    script:
+    """
+    samtools view  -F 4 -q 10 -b $bam_count > ${bam_count.baseName}.unique.bam
+    bedtools bamtobed -i ${bam_count.baseName}.unique.bam > ${bam_count.baseName}.bed
+    get_ctss.py ${bam_count.baseName}.bed ${bam_count.baseName}.ctss
+    """
+}
 
 /*
  * STEP 2 - MultiQC
