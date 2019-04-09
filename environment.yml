@@ -6,6 +6,44 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  # TODO nf-core: Add required software dependencies here
-  - fastqc=0.11.8
-  - multiqc=1.6
+- bedtools=2.27.1=he860b03_3
+- cutadapt=2.1=py37h14c3975_0
+- dnaio=0.3=py37h14c3975_1
+- fastqc=0.11.8=1
+- libdeflate=1.0=h14c3975_1
+- samtools=1.9=h8571acd_11
+- star=2.5.4a=0
+- xopen=0.5.0=py_0
+- bz2file=0.98=py37_1
+- bzip2=1.0.6=h14c3975_5
+- ca-certificates=2019.1.23=0
+- certifi=2019.3.9=py37_0
+- curl=7.64.0=hbc83047_2
+- font-ttf-dejavu-sans-mono=2.37=h6964260_0
+- fontconfig=2.13.0=h9420a91_0
+- freetype=2.9.1=h8a8886c_1
+- icu=58.2=h9c2bf20_1
+- krb5=1.16.1=h173b8e3_7
+- libcurl=7.64.0=h20c2e04_2
+- libedit=3.1.20181209=hc058e9b_0
+- libffi=3.2.1=hd88cf55_4
+- libgcc-ng=8.2.0=hdf63c60_1
+- libpng=1.6.36=hbc83047_0
+- libssh2=1.8.0=h1ba5d50_4
+- libstdcxx-ng=8.2.0=hdf63c60_1
+- libuuid=1.0.3=h1bed415_2
+- libxml2=2.9.9=he19cac6_0
+- ncurses=6.1=he6710b0_1
+- openjdk=8.0.152=h46b5887_1
+- openssl=1.1.1b=h7b6447c_1
+- perl=5.26.2=h14c3975_0
+- pigz=2.4=h84994c4_0
+- pip=19.0.3=py37_0
+- python=3.7.3=h0371630_0
+- readline=7.0=h7b6447c_5
+- setuptools=40.8.0=py37_0
+- sqlite=3.27.2=h7b6447c_0
+- tk=8.6.8=hbc83047_0
+- wheel=0.33.1=py37_0
+- xz=5.2.4=h14c3975_4
+- zlib=1.2.11=h7b6447c_3
