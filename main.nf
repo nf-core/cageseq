@@ -78,7 +78,7 @@ if( params.star_index ){
 else if ( params.fasta ){
     Channel.fromPath(params.fasta)
            .ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
-           .into { ch_fasta_for_star_index; ch_fasta_for_hisat_index}
+           .into { ch_fasta_for_star_index }
 }
 else {
     exit 1, "No reference genome specified!"
@@ -237,12 +237,12 @@ process fastqc {
 if(!params.star_index){
 
     process makeSTARindex {
-        tag fasta
+        tag ch_fasta_for_star_index
         publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
                 saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
         input:
-        file fasta from fasta
+        file fasta from ch_fasta_for_star_index
         file gtf from gtf_makeSTARindex
 
         output:
@@ -410,6 +410,7 @@ process star {
 }
 // Split Star results
 star_aligned.into { bam_count; bam_rseqc }
+
 
 
 /**
