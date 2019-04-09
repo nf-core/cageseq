@@ -28,7 +28,6 @@ def helpMessage() {
 
     Options:
       --genome                      Name of iGenomes reference
-      --singleEnd                   Specifies that the input is single end reads
 
     References                      If not specified in the configuration file or you wish to overwrite any of the references.
       --fasta                       Path to Fasta reference
@@ -67,12 +66,21 @@ if ( params.fasta ){
     fasta = file(params.fasta)
     if( !fasta.exists() ) exit 1, "Fasta file not found: ${params.fasta}"
 }
-//
-// NOTE - THIS IS NOT USED IN THIS PIPELINE, EXAMPLE ONLY
-// If you want to use the above in a process, define the following:
-//   input:
-//   file fasta from fasta
-//
+
+// Load GTF file
+if( params.gtf ){
+    Channel
+            .fromPath(params.gtf)
+            .ifEmpty { exit 1, "GTF annotation file not found: ${params.gtf}" }
+            .into { gtf_makeSTARindex; gtf_star; gtf_bowtie; gtf_buildBowtieIndex}
+}
+
+// Load STAR index if available
+if ( params.star_index ){
+    star_index = Channel
+        .fromPath(params.star_index)
+        .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
+}
 
 
 // Has the run name been specified by the user?
@@ -99,25 +107,13 @@ ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
 /*
  * Create a channel for input read files
  */
+ // TODO: delete unnessecary if-clause
 if(params.readPaths){
-    if(params.singleEnd){
-        Channel
-            .from(params.readPaths)
-            .map { row -> [ row[0], [file(row[1][0])]] }
-            .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-            .into { read_files_fastqc; read_files_trimming }
-    } else {
-        Channel
-            .from(params.readPaths)
-            .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
-            .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-            .into { read_files_fastqc; read_files_trimming }
-    }
-} else {
     Channel
-        .fromFilePairs( params.reads, size: params.singleEnd ? 1 : 2 )
-        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --singleEnd on the command line." }
-        .into { read_files_fastqc; read_files_trimming }
+        .from(params.readPaths)
+        .map { row > [ row[0], [file(row[1][0])]] }
+        .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
+        .into { read_files_fastqc, read_files_trimming}
 }
 
 
@@ -187,6 +183,8 @@ process get_software_versions {
     echo $workflow.nextflow.version > v_nextflow.txt
     fastqc --version > v_fastqc.txt
     multiqc --version > v_multiqc.txt
+    STAR --version > v_star.txt
+    cutadapt --version > v_cutadapt.txt
     scrape_software_versions.py > software_versions_mqc.yaml
     """
 }
@@ -213,6 +211,132 @@ process fastqc {
     """
 }
 
+
+/*
+ * STEP 2  - Build STAR index
+ */
+if(!params.star_index && fasta){
+    process makeSTARindex {
+        tag fasta
+        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+                saveAs: { params.saveReference ? it : null }, mode: 'copy'
+
+        input:
+        file fasta from fasta
+        file gtf from gtf_makeSTARindex
+
+        output:
+        file "star" into star_index
+
+        script:
+        """
+        mkdir star
+        STAR \\
+            --runMode genomeGenerate \\
+            --runThreadN ${task.cpus} \\
+            --sjdbGTFfile $gtf \\
+            --sjdbOverhang 50 \\
+            --genomeDir star/ \\
+            --genomeFastaFiles $fasta
+        """
+    }
+}
+
+
+/*
+ * STEP 3 - Cut Enzyme binding site at 5' and linker at 3'
+ */
+if(params.trimming){
+    process trimming {
+        tag "$prefix"
+        publishDir "${params.outdir}/trimmed", mode: 'copy',
+                saveAs: {filename ->
+                    if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
+                    else "$filename" }
+
+        input:
+        set val(name), file(reads) from read_files_trimming
+
+        output:
+        file "*.fastq.gz" into trimmed_reads
+        file "*.output.txt" into cutadapt_results
+
+        script:
+        prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
+        if(!params.pairedEnd){
+            if (params.cutEcop && params.cutLinker){
+                """
+                cutadapt -a ${params.ecoSite}...${params.linkerSeq} \\
+                --match-read-wildcards \\
+                -m 15 -M 45  \\
+                -o ${reads.baseName}.trimmed.fastq.gz \\
+                $reads \\
+                > ${reads.baseName}.trimming.output.txt
+                """
+            }
+            else if (params.cutEcop && !params.cutLinker){
+                """
+                mkdir trimmed
+                cutadapt -g ^${params.ecoSite} \\
+                -e 0 \\
+                --match-read-wildcards \\
+                --discard-untrimmed \\
+                -o ${reads.baseName}.trimmed.fastq.gz \\
+                $reads \\
+                > ${reads.baseName}.trimming.output.txt
+                """
+            }
+            else if (!params.cutEcop && params.cutLinker){
+                """
+                mkdir trimmed
+                cutadapt -a ${params.linkerSeq}\$ \\
+                -e 0 \\
+                --match-read-wildcards \\
+                -m 15 -M 45 \\
+                -o ${reads.baseName}.trimmed.fastq.gz \\
+                $reads \\
+                > ${reads.baseName}.trimming.output.txt
+                """
+            }
+
+        } else {
+            // CURRENTLY NOT SUPPORTED
+            """
+            mkdir trimmed
+            cutadapt reads
+            cutadapt -g %(sample)s=^%(barc)s -e 0 --no-indels %(fq_file)s -o
+            """
+        }
+
+    }
+    // Make channels for all downstream programs
+    trimmed_reads.into{ trimmed_fastqc_reads; trimmed_star_reads; trimmed_reads_bowtie; trimmed_reads_cutG }
+
+
+    // Post trimming QC
+    process trimmed_fastqc {
+        tag "${reads.baseName}"
+        publishDir "${params.outdir}/trimmed/fastqc", mode: 'copy',
+                saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
+
+        input:
+        file reads from trimmed_fastqc_reads
+
+        output:
+        file "*_fastqc.{zip,html}" into trimmed_fastqc_results
+
+        script:
+        """
+        fastqc -q $reads
+        """
+    }
+}
+
+
+
+/*
+ * STEP 4
+ */
 
 
 /*
