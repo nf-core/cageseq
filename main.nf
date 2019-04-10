@@ -194,7 +194,6 @@ process get_software_versions {
     file 'software_versions_mqc.yaml' into software_versions_yaml
 
     script:
-    // TODO nf-core: Get all tools to print their version number here
     """
     echo $workflow.manifest.version > v_pipeline.txt
     echo $workflow.nextflow.version > v_nextflow.txt
@@ -441,15 +440,16 @@ process get_ctss {
 /*
  * STEP 2 - MultiQC
  */
-// TODO debug multiqic
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
     input:
     file multiqc_config from ch_multiqc_config
-    // TODO nf-core: Add in log files from your new processes for MultiQC to find!
     file ('fastqc/*') from fastqc_results.collect().ifEmpty([])
     file ('software_versions/*') from software_versions_yaml
+    file ('trimmed/*') from cutadapt_results.collect()
+    file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])
+    file ('alignment/*') from alignment_logs.collect()
     file workflow_summary from create_workflow_summary(summary)
 
     output:
@@ -459,9 +459,10 @@ process multiqc {
     script:
     rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
     rfilename = custom_runName ? "--filename " + custom_runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
-    // TODO nf-core: Specify which MultiQC modules to use with -m for a faster run time
+    // TODO nf-core: get custom_content module working
     """
-    multiqc -f $rtitle $rfilename --config $multiqc_config .
+    multiqc . -f $rtitle $rfilename --config $multiqc_config \\
+            -m star -m cutadapt -m fastqc -m custom_content
     """
 }
 
