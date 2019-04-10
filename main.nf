@@ -349,26 +349,29 @@ if(params.trimming){
 }
 
 
-//TODO figure out why this is not working
 /**
  * STEP 4 - Remove added G from 5-end
  */
 if (params.cutG){
+    process cut_5G{
 
-    input:
-    file reads from trimmed_reads_cutG
+        input:
+        file reads from trimmed_reads_cutG
 
-    output:
-    file "*.fastq.gz" into processed_reads
+        output:
+        file "*.fastq.gz" into processed_reads
 
-    script:
-    """
-    cutadapt -g ^G \\
-    -e 0 --match-read-wildcards \\
-    -o ${reads.baseName}.processed.fastq.gz \\
-    $reads
-    """
-
+        script:
+        """
+        cutadapt -g ^G \\
+        -e 0 --match-read-wildcards \\
+        -o ${reads.baseName}.processed.fastq.gz \\
+        $reads
+        """
+    }
+}
+else {
+    trimmed_reads_cutG.into{ processed_reads }
 }
 
 
@@ -384,7 +387,7 @@ process star {
                 else  filename }
 
     input:
-    file reads from trimmed_star_reads
+    file reads from processed_reads
     file index from star_index.collect()
     file gtf from gtf_star.collect()
 
@@ -438,6 +441,7 @@ process get_ctss {
 /*
  * STEP 2 - MultiQC
  */
+// TODO debug multiqic
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
