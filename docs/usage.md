@@ -55,7 +55,7 @@ NXF_OPTS='-Xms1g -Xmx4g'
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/cageseq --reads '*_R{1,2}.fastq.gz' -profile docker
+nextflow run nf-core/cageseq --reads '*.fastq.gz' -profile docker --fasta /path/to/genome.fasta --gtf /path/to/genome.gtf
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -112,25 +112,13 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
 Use this to specify the location of your input FastQ files. For example:
 
 ```bash
---reads 'path/to/data/sample_*_{1,2}.fastq'
+--reads 'path/to/data/sample_*.fastq'
 ```
 
 Please note the following requirements:
 
 1. The path must be enclosed in quotes
 2. The path must have at least one `*` wildcard character
-3. When using the pipeline with paired end data, the path must use `{1,2}` notation to specify read pairs.
-
-If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
-
-### `--singleEnd`
-By default, the pipeline expects paired-end data. If you have single-end data, you need to specify `--singleEnd` on the command line when you launch the pipeline. A normal glob pattern, enclosed in quotation marks, can then be used for `--reads`. For example:
-
-```bash
---singleEnd --reads '*.fastq'
-```
-
-It is not possible to run a mixture of single-end and paired-end files in one run.
 
 
 ## Reference genomes
