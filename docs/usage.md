@@ -106,7 +106,6 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
   * A profile with a complete configuration for automated testing
   * Includes links to test data so needs no other parameters
 
-<!-- TODO nf-core: Document required command line parameters -->
 
 ### `--reads`
 Use this to specify the location of your input FastQ files. For example:
@@ -145,26 +144,37 @@ Note that you can use the same configuration setup to save sets of reference fil
 
 The syntax for this reference configuration is as follows:
 
-<!-- TODO nf-core: Update reference genome example according to what is needed -->
 
 ```nextflow
 params {
   genomes {
     'GRCh37' {
+      star    = '<path to the STAR index folder>'
       fasta   = '<path to the genome fasta file>' // Used if no star index given
+      gtf     = '<path to the genome gtf file>'
     }
     // Any number of additional genomes, key is used with --genome
   }
 }
 ```
 
-<!-- TODO nf-core: Describe reference path flags -->
 ### `--fasta`
 If you prefer, you can specify the full path to your reference genome when you run the pipeline:
 
 ```bash
---fasta '[path to Fasta reference]'
+--fasta '[path to Fasta reference]' \
+--gtf '[path to GTF file]' \
+--star '[path to STAR index]'
 ```
+
+The minimum requirements for running the pipeline are the Fasta and GTF files. If a STAR index is not given, it will be automatically
+build.
+
+### `--saveReference`
+All generated reference files will be saved to the results folder if this flag is set.
+
+## Adapter clipping and trimming
+<!--TODO fill out this sections -->
 
 ### `--igenomesIgnore`
 Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.
