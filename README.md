@@ -9,6 +9,18 @@
 [![Docker](https://img.shields.io/docker/automated/nfcore/cageseq.svg)](https://hub.docker.com/r/nfcore/cageseq)
 
 ## Introduction
+**UNDER DEVELOPMENT**
+
+This pipeline is currenlty under development. The workflow is not yet finished.
+
+
+**nf-core/cageseq** is a pipeline built for the analysis of CAGE-sequencing data.
+
+
+Analysis steps consist of adapter and artefact trimming ([cuatadapt](https://cutadapt.readthedocs.io/en/stable/guide.html)), alignment to a reference ([STAR](https://github.com/alexdobin/STAR)) and CAGE tag counting.
+Additionally, several quality control steps ([FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [MultiQC](https://multiqc.info/)) are included to allow for easy verification of results after a run.
+
+
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker / singularity containers making installation trivial and results highly reproducible.
 
 
