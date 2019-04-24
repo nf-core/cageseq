@@ -455,7 +455,7 @@ process pre_paraclu {
 
      script:
      """
-     head(ctss_counts1)
+     head($ctsss1)
      process_ctss.py $ctsss2
      """
 }
