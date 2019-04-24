@@ -454,7 +454,7 @@ process paraclu {
     script:
     """
     process_ctss.py $ctss
-    paraclu params.min_cluster "${ctss.baseName}.bed_processed" > "${ctss.baseName}_clustered"
+    paraclu $params.min_cluster "${ctss.baseName}.bed_processed" > "${ctss.baseName}_clustered"
     paraclu-cut.sh "${ctss.baseName}_clustered" > "${ctss.baseName}_clustered_simplified"
     """
 }
