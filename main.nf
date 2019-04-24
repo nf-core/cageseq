@@ -427,9 +427,8 @@ process get_ctss {
 
     output:
     file "*.ctss.bed" into ctss_counts
-    file "*.bed" into bed_aln
 
-    script:   
+    script:
     """
     bash make_ctss.sh $bam_count
     """
@@ -449,7 +448,7 @@ process paraclu {
     file "*" into ctss_clusters
 
 
-    script:   
+    script:
     """
     python process_ctss.py $ctsss
     paraclu 1000 processed_ctss.bed > clusters.output
