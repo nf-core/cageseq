@@ -435,8 +435,30 @@ process get_ctss {
     """
 }
 
+/**
+ * STEP 7 - Cluster CTSS files
+ */
+process paraclu {
+    tag "${bam_count.baseName}"
+    publishDir "${params.outdir}/ctss", mode: 'copy'
+
+    input:
+    file ctsss from ctss_counts
+
+    output:
+    file "*" into ctss_clusters
+
+
+    script:   
+    """
+    python process_ctss.py $ctsss
+    paraclu 1000 processed_ctss.bed > clusters.output
+    paraclu-cut.sh clusters.output > clusters_simplified.output
+    """
+}
+
 /*
- * STEP 2 - MultiQC
+ * STEP 8 - MultiQC
  */
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
