@@ -454,9 +454,8 @@ process pre_paraclu {
 
 
      script:
-     //process_ctss.py $ctsss
      """
-     head(ctsss)
+     process_ctss.py $ctsss
      """
 
 }
