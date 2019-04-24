@@ -450,7 +450,7 @@ process paraclu {
 
     script:
     """
-    python process_ctss.py $ctsss
+    process_ctss.py $ctsss
     paraclu 1000 processed_ctss.bed > clusters.output
     paraclu-cut.sh clusters.output > clusters_simplified.output
     """
