@@ -429,12 +429,9 @@ process get_ctss {
     file "*.ctss" into ctss_counts
     file "*.bed" into bed_aln
 
-    script:
+    script:   
     """
     bash make_ctss.sh $bam_count
-    //samtools view  -F 4 -q 10 -b $bam_count > ${bam_count.baseName}.unique.bam
-    //bedtools bamtobed -i ${bam_count.baseName}.unique.bam > ${bam_count.baseName}.bed
-    //get_ctss.py ${bam_count.baseName}.bed ${bam_count.baseName}.ctss
     """
 }
 
