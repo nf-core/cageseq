@@ -21,5 +21,5 @@ for row in content:
     row[1], row[3] = row[3], row[1]
     row[2], row[3] = row[3], row[2]
 
-with open('processed_ctss.bed', 'w') as f:
+with open('processed'+ctssfile+'_processed', 'w') as f:
     w = csv.writer(f, dialect = 'excel-tab')
