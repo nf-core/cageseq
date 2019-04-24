@@ -441,6 +441,7 @@ process get_ctss {
 process pre_paraclu {
      tag "${ctsss.baseName}"
      publishDir "${params.outdir}/ctss", mode: 'copy'
+     ctss_counts.println()
 
      input:
      file ctsss from ctss_counts
@@ -451,6 +452,7 @@ process pre_paraclu {
 
      script:
      """
+     head($ctsss)
      process_ctss.py $ctsss
      """
 }
