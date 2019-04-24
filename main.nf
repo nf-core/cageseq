@@ -453,7 +453,7 @@ process paraclu {
     script:
     """
     process_ctss.py $ctsss
-    paraclu 1000 "${ctsss.baseName}_processed" > "${ctsss.baseName}_clustered"
+    paraclu 1000 "${ctsss.baseName}.bed_processed" > "${ctsss.baseName}_clustered"
     paraclu-cut.sh "${ctsss.baseName}_clustered" > "${ctsss.baseName}_clustered_simplified"
     """
 }
