@@ -434,6 +434,8 @@ process get_ctss {
     """
 }
 
+ctss_counts.into(ctss_counts1; ctss_counts2)
+
 /**
  * STEP 7 - Cluster CTSS files
  */
@@ -444,7 +446,8 @@ process pre_paraclu {
      ctss_counts.println()
 
      input:
-     file ctsss from ctss_counts
+     file ctsss1 from ctss_counts1
+     file ctsss2 from ctss_counts2
 
      output:
      file "*" into ctss_clusters
@@ -452,8 +455,8 @@ process pre_paraclu {
 
      script:
      """
-     head($ctsss)
-     process_ctss.py $ctsss
+     head(ctss_counts1)
+     process_ctss.py $ctsss2
      """
 }
 
