@@ -426,7 +426,7 @@ process get_ctss {
     file bam_count
 
     output:
-    file "*.ctss" into ctss_counts
+    file "*.ctss.bed" into ctss_counts
     file "*.bed" into bed_aln
 
     script:   
