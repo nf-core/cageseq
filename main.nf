@@ -439,7 +439,7 @@ process get_ctss {
  * STEP 7 - Cluster CTSS files
  */
 process paraclu {
-    tag "${bam_count.baseName}"
+    tag "${ctsss.baseName}"
     publishDir "${params.outdir}/ctss", mode: 'copy'
 
     input:
