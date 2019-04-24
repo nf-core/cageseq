@@ -434,20 +434,20 @@ process get_ctss {
     """
 }
 
-ctss_counts.into{ctss_counts1; ctss_counts2}
+ctss_counts.into{ctss_counts1; ctss_counts2; ctss_counts3}
 
 /**
  * STEP 7 - Cluster CTSS files
  */
 
 process pre_paraclu {
-     tag "${ctsss.baseName}"
+     tag "${ctsss1.baseName}"
      publishDir "${params.outdir}/ctss", mode: 'copy'
-     ctss_counts.println()
+     ctss_counts1.println()
 
      input:
-     file ctsss1 from ctss_counts1
-     file ctsss2 from ctss_counts2
+     file ctsss1 from ctss_counts2
+     file ctsss2 from ctss_counts3
 
      output:
      file "*" into ctss_clusters
