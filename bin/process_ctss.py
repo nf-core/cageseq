@@ -21,7 +21,7 @@ for row in content:
     row[1], row[3] = row[3], row[1]
     row[2], row[3] = row[3], row[2]
 
-print(head(content))
 
 with open(ctssfile+'_processed', 'w') as f:
     w = csv.writer(f, dialect = 'excel-tab')
+    w.writerows(content)
