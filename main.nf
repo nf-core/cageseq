@@ -67,7 +67,7 @@ params.star_index = params.genome ? params.genomes[ params.genome ].star ?: fals
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
-
+params.min_cluster = 100
 
 // Validate inputs
 if( params.star_index ){
@@ -141,6 +141,7 @@ summary['CutLinker']        = params.cutLinker
 summary['CutG']             = params.cutG
 summary['EcoSite']          = params.ecoSite
 summary['LinkerSeq']        = params.linkerSeq
+summary['Min. amount of reads to build a cluster']        = params.min_cluster
 summary['Save Reference']   = params.saveReference
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if(workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
@@ -453,7 +454,7 @@ process paraclu {
     script:
     """
     process_ctss.py $ctss
-    paraclu 100 "${ctss.baseName}.bed_processed" > "${ctss.baseName}_clustered"
+    paraclu $min_cluster "${ctss.baseName}.bed_processed" > "${ctss.baseName}_clustered"
     paraclu-cut.sh "${ctss.baseName}_clustered" > "${ctss.baseName}_clustered_simplified"
     """
 }
