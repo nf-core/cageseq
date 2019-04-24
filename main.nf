@@ -434,7 +434,7 @@ process get_ctss {
     """
 }
 
-ctss_counts.into(ctss_counts1; ctss_counts2)
+ctss_counts.into{ctss_counts1; ctss_counts2}
 
 /**
  * STEP 7 - Cluster CTSS files
