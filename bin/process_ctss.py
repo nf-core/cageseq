@@ -17,7 +17,7 @@ with open(ctssfile)as f:
 for row in content:
     del row[2:4]  # 0 for column 1, 1 for column 2, etc.
 
-for row in content_exp:
+for row in content:
     row[1], row[3] = row[3], row[1]
     row[2], row[3] = row[3], row[2]
 
