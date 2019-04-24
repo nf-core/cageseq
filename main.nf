@@ -441,25 +441,25 @@ ctss_counts.println()
  * STEP 7 - Cluster CTSS files
  */
 
-/*process pre_paraclu {
+process pre_paraclu {
      tag "${ctsss1.baseName}"
      publishDir "${params.outdir}/ctss", mode: 'copy'
 
      input:
-     file ctsss1 from ctss_counts2
-     file ctsss2 from ctss_counts3
+     file ctsss from ctss_counts
+
 
      output:
      file "*" into ctss_clusters
 
 
      script:
+     //process_ctss.py $ctsss
      """
-     head($ctsss1)
-     process_ctss.py $ctsss2
+     head(ctsss)
      """
 
-}*/
+}
 
 /*process paraclu {
     tag "${ctsss.baseName}"
