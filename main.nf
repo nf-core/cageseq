@@ -434,15 +434,13 @@ process get_ctss {
     """
 }
 
-ctss_counts.println()
-
 
 /**
  * STEP 7 - Cluster CTSS files
  */
 
 process pre_paraclu {
-     tag "${ctsss1.baseName}"
+     tag "${ctsss.baseName}"
      publishDir "${params.outdir}/ctss", mode: 'copy'
 
      input:
