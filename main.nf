@@ -437,7 +437,25 @@ process get_ctss {
 /**
  * STEP 7 - Cluster CTSS files
  */
-process paraclu {
+
+process pre_paraclu {
+     tag "${ctsss.baseName}"
+     publishDir "${params.outdir}/ctss", mode: 'copy'
+
+     input:
+     file ctsss from ctss_counts
+
+     output:
+     file "*" into ctss_clusters
+
+
+     script:
+     """
+     process_ctss.py $ctsss
+     """
+}
+
+/*process paraclu {
     tag "${ctsss.baseName}"
     publishDir "${params.outdir}/ctss", mode: 'copy'
 
@@ -454,7 +472,7 @@ process paraclu {
     paraclu 1000 processed_ctss.bed > clusters.output
     paraclu-cut.sh clusters.output > clusters_simplified.output
     """
-}
+}*/
 
 /*
  * STEP 8 - MultiQC
