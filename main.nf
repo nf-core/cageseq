@@ -440,11 +440,11 @@ process get_ctss {
  */
 
 process paraclu {
-    tag "${ctsss.baseName}"
+    tag "${ctss.baseName}"
     publishDir "${params.outdir}/ctss", mode: 'copy'
 
     input:
-    file ctsss from ctss_counts
+    file ctss from ctss_counts
 
     output:
     file "*" into ctss_clusters
@@ -452,9 +452,9 @@ process paraclu {
 
     script:
     """
-    process_ctss.py $ctsss
-    paraclu 1000 "${ctsss.baseName}.bed_processed" > "${ctsss.baseName}_clustered"
-    paraclu-cut.sh "${ctsss.baseName}_clustered" > "${ctsss.baseName}_clustered_simplified"
+    process_ctss.py $ctss
+    paraclu 100 "${ctss.baseName}.bed_processed" > "${ctss.baseName}_clustered"
+    paraclu-cut.sh "${ctss.baseName}_clustered" > "${ctss.baseName}_clustered_simplified"
     """
 }
 
