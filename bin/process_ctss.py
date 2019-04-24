@@ -23,4 +23,3 @@ for row in content:
 
 with open('processed_ctss.bed', 'w') as f:
     w = csv.writer(f, dialect = 'excel-tab')
-    w.writerows(content_exp)
