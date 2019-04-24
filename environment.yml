@@ -15,5 +15,6 @@ dependencies:
 - samtools=1.9
 - star=2.7.0f
 - multiqc=1.7
+- unzip=6.0
 
 

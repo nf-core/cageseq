@@ -67,7 +67,7 @@ params.star_index = params.genome ? params.genomes[ params.genome ].star ?: fals
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
-
+params.min_cluster = 100
 
 // Validate inputs
 if( params.star_index ){
@@ -141,6 +141,7 @@ summary['CutLinker']        = params.cutLinker
 summary['CutG']             = params.cutG
 summary['EcoSite']          = params.ecoSite
 summary['LinkerSeq']        = params.linkerSeq
+summary['Min. amount of reads to build a cluster']        = params.min_cluster
 summary['Save Reference']   = params.saveReference
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if(workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
@@ -426,19 +427,40 @@ process get_ctss {
     file bam_count
 
     output:
-    file "*.ctss" into ctss_counts
-    file "*.bed" into bed_aln
+    file "*.ctss.bed" into ctss_counts
 
     script:
     """
-    samtools view  -F 4 -q 10 -b $bam_count > ${bam_count.baseName}.unique.bam
-    bedtools bamtobed -i ${bam_count.baseName}.unique.bam > ${bam_count.baseName}.bed
-    get_ctss.py ${bam_count.baseName}.bed ${bam_count.baseName}.ctss
+    bash make_ctss.sh $bam_count
+    """
+}
+
+
+/**
+ * STEP 7 - Cluster CTSS files
+ */
+
+process paraclu {
+    tag "${ctss.baseName}"
+    publishDir "${params.outdir}/ctss", mode: 'copy'
+
+    input:
+    file ctss from ctss_counts
+
+    output:
+    file "*" into ctss_clusters
+
+
+    script:
+    """
+    process_ctss.py $ctss
+    paraclu $params.min_cluster "${ctss.baseName}.bed_processed" > "${ctss.baseName}_clustered"
+    paraclu-cut.sh "${ctss.baseName}_clustered" > "${ctss.baseName}_clustered_simplified"
     """
 }
 
 /*
- * STEP 2 - MultiQC
+ * STEP 8 - MultiQC
  */
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
