@@ -94,7 +94,7 @@ if( params.gtf ){
     exit 1, "No GTF annotation specified!"
 }
 
-if( params.artifact5end ){
+if( params.artifacts5end ){
     Channel
         .fromPath(params.artifacts5end)
         .ifEmpty { exit 1, "5end artifacts file not found: ${params.artifacts5end}" }
