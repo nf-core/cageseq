@@ -399,16 +399,16 @@ process cut_artifacts {
 
                 input:
                 file reads from processed_reads
-                file 5end_artifacts from ch_5end_artifacts
-                file 3end_artifacts from ch_3end_artifacts
+                file artifacts5end from ch_5end_artifacts
+                file artifacts3end from ch_3end_artifacts
 
                 output:
                 file  "*.fastq.gz" into further_processed_reads
 
                 script:
                 """
-                cutadapt -a file:$3end_artifacts.fasta \\
-                -g file:$5end_artifacts.fasta -e 0 --discard-trimmed \\
+                cutadapt -a file:$artifacts3end.fasta \\
+                -g file:$artifacts5end.fasta -e 0 --discard-trimmed \\
                 --match-read-wildcards -m 15 -O 21 \\
                 -o ${reads.baseName}.further_processed.fastq.gz \\
                 $reads
