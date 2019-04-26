@@ -398,7 +398,10 @@ else {
 process cut_artifacts {
 
   tag "${reads.baseName}"
-  publishDir "${params.outdir}/trimmed", mode: 'copy'
+  publishDir "${params.outdir}/artifact_trimmed", mode: 'copy',
+            saveAs: {filename ->
+                if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
+                else "$filename" }
 
                 input:
                 file reads from processed_reads
