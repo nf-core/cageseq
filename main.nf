@@ -94,6 +94,26 @@ if( params.gtf ){
     exit 1, "No GTF annotation specified!"
 }
 
+if( params.5end_artifacts ){
+    Channel
+        .fromPath(params.5end_artifacts)
+        .ifEmpty { exit 1, "5end artifacts file not found: ${params.5end_artifacts}" }
+        .into { ch_5end_artifacts}
+}
+else {
+    exit 1, "No 5end artifact file specified!"
+}
+
+if( params.3end_artifacts ){
+    Channel
+        .fromPath(params.3end_artifacts)
+        .ifEmpty { exit 1, "3end artifacts file not found: ${params.3end_artifacts}" }
+        .into { ch_3end_artifacts}
+}
+else {
+    exit 1, "No 3end artifact file specified!"
+}
+
 
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
@@ -374,24 +394,27 @@ else {
     trimmed_reads_cutG.into{ processed_reads }
 }
 
+
 process cut_artifacts {
 
-        input:
-        file reads from processed_reads
+                input:
+                file reads from processed_reads
+                file 5end_artifacts from ch_5end_artifacts
+                file 3end_artifacts from ch_3end_artifacts
 
-        output:
-        file  "*.fastq.gz" into further_processed_reads
+                output:
+                file  "*.fastq.gz" into further_processed_reads
 
-        script:
-        """
-        cutadapt -a file:$baseDir/assets/artifacts_3end.fasta \\
-        -g file:$baseDir/assets/artifacts_5end.fasta -e 0 --discard-trimmed \\
-        --match-read-wildcards -m 15 -O 21 \\
-        -o ${reads.baseName}.further_processed.fastq.gz \\
-        $reads
-        """
-
+                script:
+                """
+                cutadapt -a file:$3end_artifacts.fasta \\
+                -g file:$5end_artifacts.fasta -e 0 --discard-trimmed \\
+                --match-read-wildcards -m 15 -O 21 \\
+                -o ${reads.baseName}.further_processed.fastq.gz \\
+                $reads
+                """
 }
+
 
 /*process cut_artifacts {
 
