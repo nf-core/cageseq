@@ -374,7 +374,7 @@ else {
     trimmed_reads_cutG.into{ processed_reads }
 }
 
-process cut_artifacts {
+/*process cut_artifacts {
 
         input:
         file reads from processed_reads
@@ -386,6 +386,36 @@ process cut_artifacts {
         """
         cutadapt -a file:$baseDir/assets/artifacts_3end.fasta \\
         -g file:$baseDir/assets/artifacts_5end.fasta -e 0 --discard-trimmed \\
+        --match-read-wildcards -m 15 -O 21 \\
+        -o ${reads.baseName}.further_processed.fastq.gz \\
+        $reads
+        """
+
+}*/
+
+process cut_artifacts {
+
+        input:
+        file reads from processed_reads
+
+        output:
+        file  "*.fastq.gz" into further_processed_reads
+
+        script:
+        """
+        cutadapt -a CCACCGACAGGTTCAGAGTTCTACAGGACCAGCAG \\
+        -a TCGTATGCCGTCTTCTGCTTG\\
+        -a AGCATACGGCAGAAGACGAAC \\
+        -g CCACCGACAGGTTCAGAGTTCTACAGGATCAGCAG \\
+        -g CCACCGACAGGTTCAGAGTTCTACAGGCCCAGCAG \\
+        -g CCACCGACAGGTTCAGAGTTCTACAGGTACAGCAG \\
+        -g CCACCGACAGGTTCAGAGTTCTACAGTAGCAGCAG\\
+        -g CCACCGACAGGTTCAGAGTTCTACAGTGGCAGCAG\\
+        -g GGTGGCTGTCCAAGTCTCAAGATGTCTGTGTCGTC\\
+        -g GGTGGCTGTCCAAGTCTCAAGATGTCTGCGTCGTC\\
+        -g GGTGGCTGTCCAAGTCTCAAGATGTCTGAGTCGTC\\
+        -g GGTGGCTGTCCAAGTCTCAAGATGTCTCTGTCGTC\\
+        -e 0 --discard-trimmed \\
         --match-read-wildcards -m 15 -O 21 \\
         -o ${reads.baseName}.further_processed.fastq.gz \\
         $reads
