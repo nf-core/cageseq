@@ -374,6 +374,27 @@ else {
     trimmed_reads_cutG.into{ processed_reads }
 }
 
+process cut_artifacts {
+
+        input:
+        file reads from processed_reads
+
+        output:
+        file  "*.fastq.gz" into further_processed_reads
+
+        script:
+        """
+        cutadapt -a file:assets/artifacte_3end.fasta \\
+        -g file:assets/artifacts_5end.fasta -e 0.0 --discard-trimmed \\
+        --match-read-wildcards -m 15 -M 45 \\
+        -o ${reads.baseName}.further_processed.fastq.gz\\
+        $reads \\
+        > ${reads.baseName}.artifact_trimming.output.txt
+        """
+
+
+}
+
 
 /**
  * STEP 5 - STAR alignment
@@ -387,7 +408,7 @@ process star {
                 else  filename }
 
     input:
-    file reads from processed_reads
+    file reads from further_processed_reads
     file index from star_index.collect()
     file gtf from gtf_star.collect()
 
