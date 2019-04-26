@@ -410,6 +410,7 @@ process cut_artifacts {
 
                 output:
                 file  "*.fastq.gz" into further_processed_reads
+                file "*.output.txt" into cutadapt_results
 
                 script:
                 """
