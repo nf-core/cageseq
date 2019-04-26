@@ -385,7 +385,7 @@ process cut_artifacts {
         script:
         """
         cutadapt -a file:$baseDir/assets/artifacts_3end.fasta \\
-        -g file:$baseDir/assets/artifacts_5end.fasta -e 0.0 --discard-trimmed \\
+        -g file:$baseDir/assets/artifacts_5end.fasta -e 0 --discard-trimmed \\
         --match-read-wildcards -m 15 -O 21 \\
         -o ${reads.baseName}.further_processed.fastq.gz \\
         $reads
