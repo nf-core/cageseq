@@ -411,7 +411,8 @@ process cut_artifacts {
                 -g file:$artifacts5end -e 0 --discard-trimmed \\
                 --match-read-wildcards -m 15 -O 21 \\
                 -o ${reads.baseName}.further_processed.fastq.gz \\
-                $reads
+                $reads \\
+                > ${reads.baseName}.artifact_trimming.output.txt
                 """
 }
 
