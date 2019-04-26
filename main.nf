@@ -389,7 +389,6 @@ process cut_artifacts {
         --match-read-wildcards -m 15 -O 21 \\
         -o ${reads.baseName}.further_processed.fastq.gz \\
         $reads \\
-        > ${reads.baseName}.artifact_trimming.output.txt
         """
 
 }
