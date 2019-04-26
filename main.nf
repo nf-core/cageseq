@@ -397,6 +397,9 @@ else {
 
 process cut_artifacts {
 
+  tag "${reads.baseName}"
+  publishDir "${params.outdir}/trimmed/artifact_trimming", mode: 'copy',
+
                 input:
                 file reads from processed_reads
                 file artifacts5end from ch_5end_artifacts
