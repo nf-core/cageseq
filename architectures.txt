@@ -1,1 +1,0 @@
-./tagdust -1 S:CAGCAG -2 R:N -3 S:TCGTATGCCGTCTTC
