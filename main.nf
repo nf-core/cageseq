@@ -469,7 +469,7 @@ process star {
         --outSAMtype BAM SortedByCoordinate \\
         --readFilesCommand zcat \\
         --runDirPerm All_RWX \\
-        --outFileNamePrefix $prefix \\
+        --outFileNamePrefix ${reads.baseName}\\
         --outFilterMatchNmin ${params.min_aln_length}
     """
 }
