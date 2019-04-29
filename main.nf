@@ -387,8 +387,9 @@ if (params.cutG){
     }
 }
 else {
-    trimmed_reads_cutG.into{ processed_reads; processed_reads_printing }
+    trimmed_reads_cutG.into{ processed_reads}
 }
+processed_reads.into {processed_reads; processed_reads_printing}
 
 processed_reads_printing.println()
 
