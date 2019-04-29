@@ -415,7 +415,7 @@ process cut_artifacts {
                 $reads \\
                 > ${reads.baseName}.artifact_trimming.output.txt
                 """
-} further_processed_reads.into{further_processe_reads_star; further_processed_reads_fastqc}
+} further_processed_reads.into{ further_processed_reads_star; further_processed_reads_fastqc }
 
 
 // Post trimming QC
