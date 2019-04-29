@@ -28,6 +28,9 @@ def helpMessage() {
 
     Options:
       --genome                      Name of iGenomes reference
+      --artifacts5end               Path to 5 end artifact file
+      --artifacts3end               Path to 3 end artifact file
+      --min_cluster                 Minimum amount of reads to build a cluster with paraclu
 
     References                      If not specified in the configuration file or you wish to overwrite any of the references.
       --fasta                       Path to Fasta reference
@@ -153,28 +156,30 @@ Channel
 // Header log info
 log.info nfcoreHeader()
 def summary = [:]
-summary['Run Name']         = custom_runName ?: workflow.runName
-summary['Reads']            = params.reads
-summary['Fasta Ref']        = params.fasta
-summary['GTF Ref']          = params.gtf
-summary['Trimming']         = params.trimming
-summary['CutEcoP']          = params.cutEcop
-summary['CutLinker']        = params.cutLinker
-summary['CutG']             = params.cutG
-summary['EcoSite']          = params.ecoSite
-summary['LinkerSeq']        = params.linkerSeq
-summary['Min. amount of reads to build a cluster']        = params.min_cluster
-summary['Save Reference']   = params.saveReference
-summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
+summary['Run Name']                     = custom_runName ?: workflow.runName
+summary['Reads']                        = params.reads
+summary['Fasta Ref']                    = params.fasta
+summary['GTF Ref']                      = params.gtf
+summary['5 end artifact Ref']           = params.artifacts5end
+summary['3 end artifact Ref']           = params.artifacts3end
+summary['Trimming']                     = params.trimming
+summary['CutEcoP']                      = params.cutEcop
+summary['CutLinker']                    = params.cutLinker
+summary['CutG']                         = params.cutG
+summary['EcoSite']                      = params.ecoSite
+summary['LinkerSeq']                    = params.linkerSeq
+summary['Min.reads for cluster']        = params.min_cluster
+summary['Save Reference']               = params.saveReference
+summary['Max Resources']                = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if(workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
-summary['Output dir']       = params.outdir
-summary['Launch dir']       = workflow.launchDir
-summary['Working dir']      = workflow.workDir
-summary['Script dir']       = workflow.projectDir
-summary['User']             = workflow.userName
+summary['Output dir']                   = params.outdir
+summary['Launch dir']                   = workflow.launchDir
+summary['Working dir']                  = workflow.workDir
+summary['Script dir']                   = workflow.projectDir
+summary['User']                         = workflow.userName
 if(workflow.profile == 'awsbatch'){
-   summary['AWS Region']    = params.awsregion
-   summary['AWS Queue']     = params.awsqueue
+   summary['AWS Region']                  = params.awsregion
+   summary['AWS Queue']                   = params.awsqueue
 }
 summary['Config Profile'] = workflow.profile
 if(params.config_profile_description) summary['Config Description'] = params.config_profile_description
