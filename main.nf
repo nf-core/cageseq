@@ -369,6 +369,7 @@ if(params.trimming){
  */
 if (params.cutG){
     process cut_5G{
+      tag "${reads.baseName}"
 
         input:
         file reads from trimmed_reads_cutG
@@ -388,6 +389,8 @@ if (params.cutG){
 else {
     trimmed_reads_cutG.into{ processed_reads }
 }
+
+println(processed_reads)
 
 
 process cut_artifacts {
