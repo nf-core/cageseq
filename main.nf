@@ -106,7 +106,6 @@ else {
     Channel
         .fromPath("$baseDir/assets/artifacts5end")
         .into { ch_5end_artifacts}
-        params.artifacts5end = 'default'
 }
 
 if( params.artifacts3end ){
@@ -118,7 +117,6 @@ else {
     Channel
         .fromPath("$baseDir/assets/artifacts3end")
         .into { ch_3end_artifacts}
-        params.artifacts5end = 'default'
 }
 
 
@@ -163,8 +161,8 @@ summary['Run Name']                     = custom_runName ?: workflow.runName
 summary['Reads']                        = params.reads
 summary['Fasta Ref']                    = params.fasta
 summary['GTF Ref']                      = params.gtf
-summary['5 end artifact Ref']           = params.artifacts5end
-summary['3 end artifact Ref']           = params.artifacts3end
+if(params.artifacts5end){ summary['5 end artifact Ref']           = params.artifacts5end}
+if(params.artifacts3end){ summary['3 end artifact Ref']           = params.artifacts3end}
 summary['Trimming']                     = params.trimming
 summary['CutEcoP']                      = params.cutEcop
 summary['CutLinker']                    = params.cutLinker
