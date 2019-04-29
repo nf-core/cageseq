@@ -309,7 +309,7 @@ if(params.trimming){
         set val(name), file(reads) from read_files_trimming
 
         output:
-        file "*.fastq.gz" into trimmed_reads
+        file "*.fastq.gz" into trimmed_reads_cutG
         file "*.output.txt" into cutadapt_results
 
         script:
@@ -356,9 +356,6 @@ if(params.trimming){
 
 
     }
-    // Make channels for all downstream programs
-    trimmed_reads.into{ trimmed_reads_cutG }
-
 
 }
 
@@ -389,10 +386,6 @@ if (params.cutG){
 else {
     trimmed_reads_cutG.into{ processed_reads}
 }
-processed_reads.into{ processed_reads; processed_reads_println }
-
-processed_reads_println.println()
-
 
 process cut_artifacts {
 
@@ -452,7 +445,8 @@ process star {
                 else  filename }
 
     input:
-    file reads from further_processed_reads_star
+    set val(name), file(reads) from further_processed_reads_star
+    //file reads from further_processed_reads_star
     file index from star_index.collect()
     file gtf from gtf_star.collect()
 
@@ -467,7 +461,7 @@ process star {
     """
     STAR --genomeDir $index \\
         --sjdbGTFfile $gtf \\
-        --readFilesIn $reads  \\
+        --readFilesIn ${sreads[0]} ${sreads[1]}  \\
         --runThreadN ${task.cpus} \\
         --outSAMtype BAM SortedByCoordinate \\
         --readFilesCommand zcat \\
