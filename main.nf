@@ -104,7 +104,7 @@ if( params.artifacts5end ){
 }
 else {
     Channel
-        .fromPath("$baseDir/assets/artifacts_5end.fasta")
+        .fromPath("$baseDir/assets/email_template.txt")
         .into { ch_5end_artifacts}
 }
 
@@ -115,7 +115,7 @@ if( params.artifacts3end ){
 }
 else {
     Channel
-        .fromPath("$baseDir/assets/artifacts_3end.fasta")
+        .fromPath("$baseDir/docs/output.md")
         .into { ch_3end_artifacts}
 }
 
