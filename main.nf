@@ -462,7 +462,7 @@ process star {
     """
     STAR --genomeDir $index \\
         --sjdbGTFfile $gtf \\
-        --readFilesIn ${reads[0]} ${reads[1]}  \\
+        --readFilesIn $reads \\
         --runThreadN ${task.cpus} \\
         --outSAMtype BAM SortedByCoordinate \\
         --readFilesCommand zcat \\
