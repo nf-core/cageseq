@@ -152,9 +152,11 @@ ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
 //params.pairedEnd = false
 Channel
     .fromPath( params.reads)
+    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}" }
     //.fromFilePairs( params.reads, size: params.pairedEnd ? 2 : 1 )
-    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\nIf this is single-end data, please specify --singleEnd on the command line." }
+    //.ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\nIf this is single-end data, please specify --singleEnd on the command line." }
     .into { read_files_fastqc; read_files_trimming }
+
 
 
 
@@ -307,7 +309,7 @@ if(params.trimming){
                     else "$filename" }
 
         input:
-        set val(name), file(reads) from read_files_trimming
+        file reads from read_files_trimming
 
         output:
         file "*.fastq.gz" into trimmed_reads_cutG
