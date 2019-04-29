@@ -371,7 +371,7 @@ if (params.cutG){
     process cut_5G{
 
         input:
-        file reads from trimmed_reads_cutG
+        set val(name), file reads from trimmed_reads_cutG
 
         output:
         file "*.fastq.gz" into processed_reads
@@ -399,7 +399,7 @@ process cut_artifacts {
                 else "$filename" }
 
                 input:
-                file reads from processed_reads
+                set val(name), file reads from processed_reads
                 file artifacts5end from ch_5end_artifacts
                 file artifacts3end from ch_3end_artifacts
 
@@ -416,7 +416,7 @@ process cut_artifacts {
                 $reads \\
                 > ${reads.baseName}.artifact_trimming.output.txt
                 """
-} 
+}
 further_processed_reads.into { further_processed_reads_star; further_processed_reads_fastqc }
 
 
@@ -427,7 +427,7 @@ process trimmed_fastqc {
             saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
 
     input:
-    file reads from further_processed_reads_fastqc
+    set val(name), file reads from further_processed_reads_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into trimmed_fastqc_results
