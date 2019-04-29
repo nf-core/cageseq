@@ -357,10 +357,10 @@ if(params.trimming){
 
     }
     // Make channels for all downstream programs
-    trimmed_reads.into{ trimmed_fastqc_reads; trimmed_reads_cutG }
+    trimmed_reads.into{ trimmed_reads_cutG }
 
 
-
+}
 
 
 /**
@@ -435,7 +435,7 @@ process trimmed_fastqc {
     fastqc -q $reads
     """
 }
-}
+
 
 /**
  * STEP 5 - STAR alignment
