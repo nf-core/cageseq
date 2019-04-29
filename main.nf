@@ -371,7 +371,7 @@ if (params.cutG){
     process cut_5G{
 
         input:
-        set val(name), file (reads) from trimmed_reads_cutG
+        file reads from trimmed_reads_cutG
 
         output:
         file "*.fastq.gz" into processed_reads
@@ -399,7 +399,7 @@ process cut_artifacts {
                 else "$filename" }
 
                 input:
-                set val(name), file (reads) from processed_reads
+                file reads from processed_reads
                 file artifacts5end from ch_5end_artifacts
                 file artifacts3end from ch_3end_artifacts
 
