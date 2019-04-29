@@ -437,8 +437,6 @@ process trimmed_fastqc {
  * STEP 5 - STAR alignment
  */
 
-further_processed_reads_star.into { further_processed_reads_star; further_processed_reads_star_println}
-further_processed_reads_star_println.println()
 
 process star {
     tag "$prefix"
@@ -460,7 +458,7 @@ process star {
     file "*Log.out" into star_log
 
     script:
-    //prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
+    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
     """
     STAR --genomeDir $index \\
         --sjdbGTFfile $gtf \\
@@ -469,7 +467,7 @@ process star {
         --outSAMtype BAM SortedByCoordinate \\
         --readFilesCommand zcat \\
         --runDirPerm All_RWX \\
-        --outFileNamePrefix ${reads.baseName}\\
+        --outFileNamePrefix $prefix \\
         --outFilterMatchNmin ${params.min_aln_length}
     """
 }
