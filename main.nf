@@ -387,10 +387,10 @@ if (params.cutG){
     }
 }
 else {
-    trimmed_reads_cutG.into{ processed_reads }
+    trimmed_reads_cutG.into{ processed_reads; processed_reads_printing }
 }
 
-processed_reads.println()
+processed_reads_printing.println()
 
 
 process cut_artifacts {
