@@ -437,6 +437,9 @@ process trimmed_fastqc {
  * STEP 5 - STAR alignment
  */
 
+further_processed_reads_star.into { further_processed_reads_star; further_processed_reads_star_println}
+further_processed_reads_star_println.println()
+
 process star {
     tag "$prefix"
     publishDir "${params.outdir}/STAR", mode: 'copy',
