@@ -97,7 +97,6 @@ if( params.gtf ){
 if( params.artifacts5end ){
     Channel
         .fromPath(params.artifacts5end)
-        //.ifEmpty { exit 1, "5end artifacts file not found: ${params.artifacts5end}" }
         .into { ch_5end_artifacts}
 }
 else {
@@ -109,7 +108,6 @@ else {
 if( params.artifacts3end ){
     Channel
         .fromPath(params.artifacts3end)
-        //.ifEmpty { exit 1, "3end artifacts file not found: ${params.artifacts3end}" }
         .into { ch_3end_artifacts}
 }
 else {
