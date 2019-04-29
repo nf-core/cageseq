@@ -118,7 +118,7 @@ if( params.artifacts3end ){
 }
 else {
     Channel
-        .fromPath("$baseDir/assets/artifacts_3*")
+        .fromPath("$baseDir/assets/artifacts_3*a")
         .into { ch_3end_artifacts}
 }
 
@@ -149,7 +149,7 @@ ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
 /*
  * Create a channel for input read files
  */
-params.pairedEnd = false
+//params.pairedEnd = false
 Channel
     .fromFilePairs( params.reads, size: params.pairedEnd ? 2 : 1 )
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\nIf this is single-end data, please specify --singleEnd on the command line." }
@@ -428,7 +428,7 @@ process trimmed_fastqc {
             saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
 
     input:
-    set val(name), file (reads) from further_processed_reads_fastqc
+    file reads from further_processed_reads_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into trimmed_fastqc_results
