@@ -448,7 +448,7 @@ process star {
                 else  filename }
 
     input:
-    set val(name), file(reads) from further_processed_reads_star
+    file reads from further_processed_reads_star
     //file reads from further_processed_reads_star
     file index from star_index.collect()
     file gtf from gtf_star.collect()
@@ -460,7 +460,7 @@ process star {
     file "*Log.out" into star_log
 
     script:
-    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
+    //prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
     """
     STAR --genomeDir $index \\
         --sjdbGTFfile $gtf \\
