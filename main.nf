@@ -390,7 +390,7 @@ else {
     trimmed_reads_cutG.into{ processed_reads }
 }
 
-println(processed_reads)
+processed_reads.println()
 
 
 process cut_artifacts {
