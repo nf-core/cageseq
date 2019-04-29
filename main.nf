@@ -389,6 +389,9 @@ if (params.cutG){
 else {
     trimmed_reads_cutG.into{ processed_reads}
 }
+processed_reads.into{ processed_reads; processed_reads_println }
+
+processed_reads_println.println()
 
 
 process cut_artifacts {
