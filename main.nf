@@ -97,21 +97,25 @@ if( params.gtf ){
 if( params.artifacts5end ){
     Channel
         .fromPath(params.artifacts5end)
-        .ifEmpty { exit 1, "5end artifacts file not found: ${params.artifacts5end}" }
+        //.ifEmpty { exit 1, "5end artifacts file not found: ${params.artifacts5end}" }
         .into { ch_5end_artifacts}
 }
 else {
-    exit 1, "No 5end artifact file specified!"
+    Channel
+        .fromPath("$baseDir/assets/artifacts_5end.fasta")
+        .into { ch_5end_artifacts}
 }
 
 if( params.artifacts3end ){
     Channel
         .fromPath(params.artifacts3end)
-        .ifEmpty { exit 1, "3end artifacts file not found: ${params.artifacts3end}" }
+        //.ifEmpty { exit 1, "3end artifacts file not found: ${params.artifacts3end}" }
         .into { ch_3end_artifacts}
 }
 else {
-    exit 1, "No 3end artifact file specified!"
+    Channel
+        .fromPath("$baseDir/assets/artifacts_3end.fasta")
+        .into { ch_3end_artifacts}
 }
 
 
@@ -416,43 +420,12 @@ process cut_artifacts {
                 """
                 cutadapt -a file:$artifacts3end \\
                 -g file:$artifacts5end -e 0 --discard-trimmed \\
-                --match-read-wildcards -m 15 -O 21 \\
+                --match-read-wildcards -m 15 -O 19 \\
                 -o ${reads.baseName}.further_processed.fastq.gz \\
                 $reads \\
                 > ${reads.baseName}.artifact_trimming.output.txt
                 """
 }
-
-
-/*process cut_artifacts {
-
-        input:
-        file reads from processed_reads
-
-        output:
-        file  "*.fastq.gz" into further_processed_reads
-
-        script:
-        """
-        cutadapt -a CCACCGACAGGTTCAGAGTTCTACAGGACCAGCAG \\
-        -a TCGTATGCCGTCTTCTGCTTG \\
-        -a AGCATACGGCAGAAGACGAAC \\
-        -g CCACCGACAGGTTCAGAGTTCTACAGGATCAGCAG \\
-        -g CCACCGACAGGTTCAGAGTTCTACAGGCCCAGCAG \\
-        -g CCACCGACAGGTTCAGAGTTCTACAGGTACAGCAG \\
-        -g CCACCGACAGGTTCAGAGTTCTACAGTAGCAGCAG \\
-        -g CCACCGACAGGTTCAGAGTTCTACAGTGGCAGCAG \\
-        -g GGTGGCTGTCCAAGTCTCAAGATGTCTGTGTCGTC \\
-        -g GGTGGCTGTCCAAGTCTCAAGATGTCTGCGTCGTC \\
-        -g GGTGGCTGTCCAAGTCTCAAGATGTCTGAGTCGTC \\
-        -g GGTGGCTGTCCAAGTCTCAAGATGTCTCTGTCGTC \\
-        -e 0 --discard-trimmed \\
-        --match-read-wildcards -m 15 -O 21 \\
-        -o ${reads.baseName}.further_processed.fastq.gz \\
-        $reads
-        """
-
-}*/
 
 
 /**
