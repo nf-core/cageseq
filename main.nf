@@ -401,8 +401,8 @@ process cut_artifacts {
 
                 input:
                 file reads from processed_reads
-                set val(name), file (artifacts5end) from ch_5end_artifacts
-                set val(name), file (artifacts3end) from ch_3end_artifacts
+                file artifacts5end from ch_5end_artifacts
+                file artifacts3end from ch_3end_artifacts
 
                 output:
                 file  "*.fastq.gz" into further_processed_reads
