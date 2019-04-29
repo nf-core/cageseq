@@ -104,8 +104,9 @@ if( params.artifacts5end ){
 }
 else {
     Channel
-        .fromPath("$baseDir/assets/email_template.txt")
+        .fromPath("$baseDir/assets/artifacts5end")
         .into { ch_5end_artifacts}
+        params.artifacts5end = 'default'
 }
 
 if( params.artifacts3end ){
@@ -115,9 +116,11 @@ if( params.artifacts3end ){
 }
 else {
     Channel
-        .fromPath("$baseDir/docs/output.md")
+        .fromPath("$baseDir/assets/artifacts3end")
         .into { ch_3end_artifacts}
+        params.artifacts5end = 'default'
 }
+
 
 
 // Has the run name been specified by the user?
