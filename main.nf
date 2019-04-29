@@ -107,7 +107,7 @@ if( params.artifacts5end ){
 }
 else {
     Channel
-        .fromPath("$baseDir/assets/artifacts_5end.fasta")
+        .fromPath("$baseDir/assets/artifacts_5*")
         .into { ch_5end_artifacts}
 }
 
@@ -118,7 +118,7 @@ if( params.artifacts3end ){
 }
 else {
     Channel
-        .fromPath("$baseDir/assets/artifacts_3end.fasta")
+        .fromPath("$baseDir/assets/artifacts_3*")
         .into { ch_3end_artifacts}
 }
 
