@@ -474,8 +474,6 @@ process star {
         --outFilterMatchNmin ${params.min_aln_length}
     """
 }
-// Split Star results
-star_aligned.into { bam_count; bam_rseqc }
 
 
 
@@ -487,7 +485,7 @@ process get_ctss {
     publishDir "${params.outdir}/ctss", mode: 'copy'
 
     input:
-    file bam_count
+    file bam_count from star_aligned
 
     output:
     file "*.ctss.bed" into ctss_counts
