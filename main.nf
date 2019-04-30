@@ -28,14 +28,19 @@ def helpMessage() {
                                     Available: conda, docker, singularity, awsbatch, test and more.
 
     Options:
-      --genome                      Name of iGenomes reference
+      --trimming                    Set to false to skip the file Trimming
+      --cutEcoP                     Set to false to not cut the EcoP
+      --cutLinker                   Set to false to not cut the linker
+      --cutG                        Set to false to not cut the additonal G at the 5' end
       --artifacts5end               Path to 5 end artifact file, if not given the pipeline will use a default file with all possible artifacts
       --artifacts3end               Path to 3 end artifact file, if not given the pipeline will use a default file with all possible artifacts
-      --star_index                  Path to the star index, if not given the pipeline will automatically try to build one with the given fasta and gtf file
       --min_cluster                 Minimum amount of reads to build a cluster with paraclu
 
     References
       --fasta                       Path to Fasta reference
+      --star_index                  Path to the star index, if not given the pipeline will automatically try to build one with the given fasta and gtf file
+      --genome                      Name of iGenomes reference
+
 
     Other options:
       --outdir                      The output directory where the results will be saved
@@ -352,87 +357,94 @@ if(params.trimming){
 
     }
 
-}
+
+  }
+  else{
+    read_files_trimming.into{ trimmed_reads_cutG }
+  }
 
 
+  /**
+   * STEP 4 - Remove added G from 5-end
+   */
+  if (params.cutG){
+      process cut_5G{
+        tag "${reads.baseName}"
 
-/**
- * STEP 4 - Remove added G from 5-end
- */
-if (params.cutG){
-    process cut_5G{
-      tag "${reads.baseName}"
+          input:
+          file reads from trimmed_reads_cutG
 
-        input:
-        file reads from trimmed_reads_cutG
+          output:
+          file "*.fastq.gz" into processed_reads
 
-        output:
-        file "*.fastq.gz" into processed_reads
+          script:
+          prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?$/
+          """
+          cutadapt -g ^G \\
+          -e 0 --match-read-wildcards \\
+          -o "$prefix".G_trimmed.fastq.gz \\
+          $reads
+          """
+      }
+  }
+  else {
+      trimmed_reads_cutG.into{ processed_reads}
+  }
 
-        script:
-        prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?$/
-        """
-        cutadapt -g ^G \\
-        -e 0 --match-read-wildcards \\
-        -o "$prefix".G_trimmed.fastq.gz \\
-        $reads
-        """
-    }
-}
-else {
-    trimmed_reads_cutG.into{ processed_reads}
-}
-
-/**
- * STEP 5 - Remove artifacts
- */
-process cut_artifacts {
-  tag "${reads.baseName}"
-  publishDir "${params.outdir}/trimmed/artifacst_trimmed", mode: 'copy',
-    saveAs: {filename ->
-        if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
-        else "$filename" }
-
-                input:
-                file reads from processed_reads
-                file artifacts5end from ch_5end_artifacts
-                file artifacts3end from ch_3end_artifacts
-
-                output:
-                file  "*.fastq.gz" into further_processed_reads
-                file  "*.output.txt" into artifact_cutting_results
-
-                script:
-                prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?(\.processed)?$/
-                """
-                cutadapt -a file:$artifacts3end \\
-                -g file:$artifacts5end -e 0.1 --discard-trimmed \\
-                --match-read-wildcards -m 15 -O 19 \\
-                -o "$prefix".artifact_trimmed.fastq.gz \\
-                $reads \\
-                > ${reads.baseName}.artifact_trimming.output.txt
-                """
-}
-further_processed_reads.into { further_processed_reads_star; further_processed_reads_fastqc }
-
-
-// Post trimming QC
-process trimmed_fastqc {
+  /**
+   * STEP 5 - Remove artifacts
+   */
+if (params.cutArtifacts){
+  process cut_artifacts {
     tag "${reads.baseName}"
-    publishDir "${params.outdir}/trimmed/fastqc", mode: 'copy',
-            saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
+    publishDir "${params.outdir}/trimmed/artifacst_trimmed", mode: 'copy',
+      saveAs: {filename ->
+          if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
+          else "$filename" }
 
-    input:
-    file reads from further_processed_reads_fastqc
+                  input:
+                  file reads from processed_reads
+                  file artifacts5end from ch_5end_artifacts
+                  file artifacts3end from ch_3end_artifacts
 
-    output:
-    file "*_fastqc.{zip,html}" into trimmed_fastqc_results
+                  output:
+                  file  "*.fastq.gz" into further_processed_reads
+                  file  "*.output.txt" into artifact_cutting_results
 
-    script:
-    """
-    fastqc -q $reads
-    """
+                  script:
+                  prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?(\.processed)?$/
+                  """
+                  cutadapt -a file:$artifacts3end \\
+                  -g file:$artifacts5end -e 0.1 --discard-trimmed \\
+                  --match-read-wildcards -m 15 -O 19 \\
+                  -o "$prefix".artifact_trimmed.fastq.gz \\
+                  $reads \\
+                  > ${reads.baseName}.artifact_trimming.output.txt
+                  """
+  }
+  further_processed_reads.into { further_processed_reads_star; further_processed_reads_fastqc }
 }
+else{
+  processed_reads.into{further_processed_reads_star; further_processed_reads_fastqc}
+}
+
+  // Post trimming QC
+  process trimmed_fastqc {
+      tag "${reads.baseName}"
+      publishDir "${params.outdir}/trimmed/fastqc", mode: 'copy',
+              saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
+
+      input:
+      file reads from further_processed_reads_fastqc
+
+      output:
+      file "*_fastqc.{zip,html}" into trimmed_fastqc_results
+
+      script:
+      """
+      fastqc -q $reads
+      """
+  }
 
 
 /**
