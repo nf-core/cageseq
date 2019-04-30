@@ -318,9 +318,9 @@ if(params.trimming){
             cutadapt -a ${params.ecoSite}...${params.linkerSeq} \\
             --match-read-wildcards \\
             -m 15 -M 45  \\
-            -o ${reads.baseName}.trimmed.fastq.gz \\
+            -o "$prefix"_trimmed.fastq.gz \\
             $reads \\
-            > ${reads.baseName}.trimming.output.txt
+            > "$prefix"_adapter_trimming.output.txt
             """
         }
 
@@ -332,9 +332,9 @@ if(params.trimming){
             -e 0 \\
             --match-read-wildcards \\
             --discard-untrimmed \\
-            -o ${reads.baseName}.trimmed.fastq.gz \\
+            -o "$prefix"_trimmed.fastq.gz \\
             $reads \\
-            > ${reads.baseName}.trimming.output.txt
+            > "$prefix"_adapter_trimming.output.txt
             """
         }
 
@@ -346,9 +346,9 @@ if(params.trimming){
             -e 0 \\
             --match-read-wildcards \\
             -m 15 -M 45 \\
-            -o ${reads.baseName}.trimmed.fastq.gz \\
+            -o "$prefix"_trimmed.fastq.gz \\
             $reads \\
-            > ${reads.baseName}.trimming.output.txt
+            > "$prefix"_adapter_trimming.output.txt
             """
         }
 
@@ -373,6 +373,7 @@ if (params.cutG){
         file "*.fastq.gz" into processed_reads
 
         script:
+        prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
         """
         cutadapt -g ^G \\
         -e 0 --match-read-wildcards \\
@@ -462,10 +463,7 @@ process star {
 
     script:
     prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.further_processed)?(\.processed)?$/
-    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.further_processed)?(\.processed)?$/
-    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.further_processed)?(\.processed)?$/
-    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.further_processed)?(\.processed)?$/
-    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.further_processed)?(\.processed)?$/
+
 
     """
     STAR --genomeDir $index \\
