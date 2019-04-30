@@ -544,9 +544,9 @@ process multiqc {
     file multiqc_config from ch_multiqc_config
     file ('fastqc/*') from fastqc_results.collect().ifEmpty([])
     file ('software_versions/*') from software_versions_yaml
-    if(params.trimmed){file ('trimmed/*') from cutadapt_results.collect()}
+    if(params.trimming){file ('trimmed/*') from cutadapt_results.collect()}
     if(params.cutArtifacts){file ('artifacts_trimmed/*') from  artifact_cutting_results.collect()}
-    if(params.trimming || params.cutG || params.cutArtifacts){  file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])}
+    if(params.trimming || params.cutG || params.cutArtifacts){file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])}
     file ('alignment/*') from alignment_logs.collect()
     file workflow_summary from create_workflow_summary(summary)
 
