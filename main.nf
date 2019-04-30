@@ -430,7 +430,7 @@ else{
 }
 
   // Post trimming QC
-  if(params.trimming || params.cutG || params.cutArtifacts){
+if(params.trimming || params.cutG || params.cutArtifacts){
   process trimmed_fastqc {
       tag "${reads.baseName}"
       publishDir "${params.outdir}/trimmed/fastqc", mode: 'copy',
@@ -463,7 +463,6 @@ process star {
 
     input:
     file reads from further_processed_reads_star
-    //file reads from further_processed_reads_star
     file index from star_index.collect()
     file gtf from gtf_star.collect()
 
@@ -545,9 +544,9 @@ process multiqc {
     file multiqc_config from ch_multiqc_config
     file ('fastqc/*') from fastqc_results.collect().ifEmpty([])
     file ('software_versions/*') from software_versions_yaml
-    file ('trimmed/*') from cutadapt_results.collect()
-    file ('artifacts_trimmed/*') from  artifact_cutting_results.collect()
-    file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])
+    if(params.trimmed){file ('trimmed/*') from cutadapt_results.collect()}
+    if(params.cutArtifacts){file ('artifacts_trimmed/*') from  artifact_cutting_results.collect()}
+    if(params.trimming || params.cutG || params.cutArtifacts){  file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])}
     file ('alignment/*') from alignment_logs.collect()
     file workflow_summary from create_workflow_summary(summary)
 
