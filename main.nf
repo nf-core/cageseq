@@ -74,8 +74,8 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
 params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
-params.artifacts5end = params.artifacts5end ? params.artifacts5end[ params.artifacts5end ].fasta ?: false : false
-params.artifacts3end = params.artifacts3end ? params.artifacts3end[ params.artifacts3end ].fasta ?: false : false
+//params.artifacts5end = params.artifacts5end ? params.artifacts5end[ params.artifacts5end ].fasta ?: false : false
+//params.artifacts3end = params.artifacts3end ? params.artifacts3end[ params.artifacts3end ].fasta ?: false : false
 params.min_cluster = 100
 
 // Validate inputs
