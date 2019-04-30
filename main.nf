@@ -110,7 +110,7 @@ if( params.artifacts5end ){
 }
 else {
     Channel
-        .fromPath("$baseDir/assets/artifacts_5*")
+        .fromPath("$baseDir/assets/artifacts_5.fasta")
         .into { ch_5end_artifacts}
 }
 
@@ -121,7 +121,7 @@ if( params.artifacts3end ){
 }
 else {
     Channel
-        .fromPath("$baseDir/assets/artifacts_3*a")
+        .fromPath("$baseDir/assets/artifacts_3.fasta")
         .into { ch_3end_artifacts}
 }
 
@@ -544,9 +544,9 @@ process multiqc {
     file multiqc_config from ch_multiqc_config
     file ('fastqc/*') from fastqc_results.collect().ifEmpty([])
     file ('software_versions/*') from software_versions_yaml
-    if(params.trimming){file ('trimmed/*') from cutadapt_results.collect()}
-    if(params.cutArtifacts){file ('artifacts_trimmed/*') from  artifact_cutting_results.collect()}
-    if(params.trimming || params.cutG || params.cutArtifacts){file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])}
+    //if(params.trimming){file ('trimmed/*') from cutadapt_results.collect()}
+    //if(params.cutArtifacts){file ('artifacts_trimmed/*') from  artifact_cutting_results.collect()}
+    //if(params.trimming || params.cutG || params.cutArtifacts){file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])}
     file ('alignment/*') from alignment_logs.collect()
     file workflow_summary from create_workflow_summary(summary)
 
