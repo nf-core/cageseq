@@ -19,7 +19,7 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run nf-core/cageseq --reads '*_R{1,2}.fastq.gz' -profile docker
+    nextflow run nf-core/cageseq --reads /path/to/data.fastq.gz --star_index /path/to/index -profile docker
 
     Mandatory arguments:
       --reads                       Path to input data (must be surrounded with quotes)
@@ -29,12 +29,12 @@ def helpMessage() {
 
     Options:
       --genome                      Name of iGenomes reference
-      --artifacts5end               Path to 5 end artifact file
-      --artifacts3end               Path to 3 end artifact file
+      --artifacts5end               Path to 5 end artifact file, if not given the pipeline will use a default file with all possible artifacts
+      --artifacts3end               Path to 3 end artifact file, if not given the pipeline will use a default file with all possible artifacts
       --star_index                  Path to the star index, if not given the pipeline will automatically try to build one with the given fasta and gtf file
       --min_cluster                 Minimum amount of reads to build a cluster with paraclu
 
-    References                      If not specified in the configuration file or you wish to overwrite any of the references.
+    References
       --fasta                       Path to Fasta reference
 
     Other options:
@@ -149,15 +149,10 @@ ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
 /*
  * Create a channel for input read files
  */
-//params.pairedEnd = false
 Channel
     .fromPath( params.reads)
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}" }
-    //.fromFilePairs( params.reads, size: params.pairedEnd ? 2 : 1 )
-    //.ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\nIf this is single-end data, please specify --singleEnd on the command line." }
     .into { read_files_fastqc; read_files_trimming }
-
-
 
 
 // Header log info
@@ -248,12 +243,12 @@ process get_software_versions {
  * STEP 1 - FastQC
  */
 process fastqc {
-    tag "$name"
+    tag "${reads.baseName}"
     publishDir "${params.outdir}/fastqc", mode: 'copy',
         saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
 
     input:
-    set val(name), file(reads) from read_files_fastqc
+    file reads from read_files_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results
@@ -271,7 +266,7 @@ process fastqc {
 if(!params.star_index){
 
     process makeSTARindex {
-        tag ch_fasta_for_star_index
+        tag "${fasta.baseName}"
         publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
                 saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
@@ -303,7 +298,7 @@ if(!params.star_index){
 if(params.trimming){
     process trimming {
         tag "$prefix"
-        publishDir "${params.outdir}/trimmed", mode: 'copy',
+        publishDir "${params.outdir}/trimmed/adapter_trimmed", mode: 'copy',
                 saveAs: {filename ->
                     if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
                     else "$filename" }
@@ -390,10 +385,15 @@ else {
     trimmed_reads_cutG.into{ processed_reads}
 }
 
+/**
+ * STEP 5 - Remove artifacts
+ */
 process cut_artifacts {
-
   tag "${reads.baseName}"
-  publishDir "${params.outdir}/artifacst_trimmed", mode: 'copy'
+  publishDir "${params.outdir}/trimmed/artifacst_trimmed", mode: 'copy',
+    saveAs: {filename ->
+        if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
+        else "$filename" }
 
                 input:
                 file reads from processed_reads
@@ -407,7 +407,7 @@ process cut_artifacts {
                 script:
                 """
                 cutadapt -a file:$artifacts3end \\
-                -g file:$artifacts5end -e 0 --discard-trimmed \\
+                -g file:$artifacts5end -e 0.1 --discard-trimmed \\
                 --match-read-wildcards -m 15 -O 19 \\
                 -o ${reads.baseName}.further_processed.fastq.gz \\
                 $reads \\
@@ -437,7 +437,7 @@ process trimmed_fastqc {
 
 
 /**
- * STEP 5 - STAR alignment
+ * STEP 7 - STAR alignment
  */
 
 
@@ -480,7 +480,7 @@ star_aligned.into { bam_count; bam_rseqc }
 
 
 /**
- * STEP 6 - Get CTSS files
+ * STEP 8 - Get CTSS files
  */
 process get_ctss {
     tag "${bam_count.baseName}"
@@ -500,12 +500,12 @@ process get_ctss {
 
 
 /**
- * STEP 7 - Cluster CTSS files
+ * STEP 9 - Cluster CTSS files
  */
 
 process paraclu {
     tag "${ctss.baseName}"
-    publishDir "${params.outdir}/ctss", mode: 'copy'
+    publishDir "${params.outdir}/ctss/clusters", mode: 'copy'
 
     input:
     file ctss from ctss_counts
@@ -523,7 +523,7 @@ process paraclu {
 }
 
 /*
- * STEP 8 - MultiQC
+ * STEP 10 - MultiQC
  */
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
@@ -555,7 +555,7 @@ process multiqc {
 
 
 /*
- * STEP 3 - Output Description HTML
+ * STEP 11 - Output Description HTML
  */
 process output_documentation {
     publishDir "${params.outdir}/pipeline_info", mode: 'copy'

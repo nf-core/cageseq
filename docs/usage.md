@@ -108,17 +108,11 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
 
 
 ### `--reads`
-Use this to specify the location of your input FastQ files. For example:
+Use this to specify the location of your input FastQ file. For example:
 
 ```bash
---reads 'path/to/data/sample_*.fastq'
+--reads path/to/data/sample.fastq
 ```
-
-Please note the following requirements:
-
-1. The path must be enclosed in quotes
-2. The path must have at least one `*` wildcard character
-
 
 ## Reference genomes
 
