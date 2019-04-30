@@ -65,14 +65,11 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
     exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
 }
 
-// TODO nf-core: Add any reference files that are needed
-// Configurable reference genomes
-// Reference index path configuration
-// Define these here - after the profiles are loaded with the iGenomes paths
 params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
-fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
+params.artifacts5end = params.artifacts5end ? params.artifacts5end[ params.artifacts5end ].fasta ?: false : false
+params.artifacts3end = params.artifacts3end ? params.artifacts3end[ params.artifacts3end ].fasta ?: false : false
 params.min_cluster = 100
 
 // Validate inputs
@@ -377,7 +374,7 @@ if (params.cutG){
         """
         cutadapt -g ^G \\
         -e 0 --match-read-wildcards \\
-        -o "$prefix".processed.fastq.gz \\
+        -o "$prefix".fastq.gz \\
         $reads
         """
     }
@@ -411,7 +408,7 @@ process cut_artifacts {
                 cutadapt -a file:$artifacts3end \\
                 -g file:$artifacts5end -e 0.1 --discard-trimmed \\
                 --match-read-wildcards -m 15 -O 19 \\
-                -o "$prefix".further_processed.fastq.gz \\
+                -o "$prefix".artifact_trimmed.fastq.gz \\
                 $reads \\
                 > ${reads.baseName}.artifact_trimming.output.txt
                 """
@@ -547,7 +544,6 @@ process multiqc {
     script:
     rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
     rfilename = custom_runName ? "--filename " + custom_runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
-    // TODO nf-core: get custom_content module working
     """
     multiqc . -f $rtitle $rfilename --config $multiqc_config \\
             -m star -m cutadapt -m fastqc -m custom_content
@@ -610,8 +606,6 @@ workflow.onComplete {
     email_fields['summary']['Nextflow Build'] = workflow.nextflow.build
     email_fields['summary']['Nextflow Compile Timestamp'] = workflow.nextflow.timestamp
 
-    // TODO nf-core: If not using MultiQC, strip out this code (including params.maxMultiqcEmailFileSize)
-    // On success try attach the multiqc report
     def mqc_report = null
     try {
         if (workflow.success) {
