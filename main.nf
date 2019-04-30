@@ -418,7 +418,7 @@ further_processed_reads.into { further_processed_reads_star; further_processed_r
 
 
 // Post trimming QC
-process trimmed_fastqc {
+process trimmed_fastqc { conda install -c bioconda samtools
     tag "${reads.baseName}"
     publishDir "${params.outdir}/trimmed/fastqc", mode: 'copy',
             saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
@@ -461,7 +461,12 @@ process star {
     file "*Log.out" into star_log
 
     script:
-    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
+    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.further_processed)?(\.processed)?$/
+    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.further_processed)?(\.processed)?$/
+    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.further_processed)?(\.processed)?$/
+    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.further_processed)?(\.processed)?$/
+    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.further_processed)?(\.processed)?$/
+
     """
     STAR --genomeDir $index \\
         --sjdbGTFfile $gtf \\
