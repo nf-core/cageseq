@@ -32,6 +32,7 @@ def helpMessage() {
       --cutEcoP                     Set to false to not cut the EcoP
       --cutLinker                   Set to false to not cut the linker
       --cutG                        Set to false to not cut the additonal G at the 5' end
+      --cutArtifacts                Set to false to not cut artifacts
       --artifacts5end               Path to 5 end artifact file, if not given the pipeline will use a default file with all possible artifacts
       --artifacts3end               Path to 3 end artifact file, if not given the pipeline will use a default file with all possible artifacts
       --min_cluster                 Minimum amount of reads to build a cluster with paraclu
@@ -429,6 +430,7 @@ else{
 }
 
   // Post trimming QC
+  if(params.trimming || params.cutG || params.cutArtifacts){
   process trimmed_fastqc {
       tag "${reads.baseName}"
       publishDir "${params.outdir}/trimmed/fastqc", mode: 'copy',
@@ -445,7 +447,7 @@ else{
       fastqc -q $reads
       """
   }
-
+}
 
 /**
  * STEP 7 - STAR alignment
