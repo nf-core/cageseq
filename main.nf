@@ -318,7 +318,7 @@ if(params.trimming){
             cutadapt -a ${params.ecoSite}...${params.linkerSeq} \\
             --match-read-wildcards \\
             -m 15 -M 45  \\
-            -o "$prefix"_trimmed.fastq.gz \\
+            -o "$prefix".trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
             """
@@ -332,7 +332,7 @@ if(params.trimming){
             -e 0 \\
             --match-read-wildcards \\
             --discard-untrimmed \\
-            -o "$prefix"_trimmed.fastq.gz \\
+            -o "$prefix".trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
             """
@@ -346,7 +346,7 @@ if(params.trimming){
             -e 0 \\
             --match-read-wildcards \\
             -m 15 -M 45 \\
-            -o "$prefix"_trimmed.fastq.gz \\
+            -o "$prefix".trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
             """
@@ -373,11 +373,11 @@ if (params.cutG){
         file "*.fastq.gz" into processed_reads
 
         script:
-        prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
+        prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?$/
         """
         cutadapt -g ^G \\
         -e 0 --match-read-wildcards \\
-        -o ${reads.baseName}.processed.fastq.gz \\
+        -o "$prefix".processed.fastq.gz \\
         $reads
         """
     }
@@ -406,11 +406,12 @@ process cut_artifacts {
                 file  "*.output.txt" into artifact_cutting_results
 
                 script:
+                prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?(\.processed)?$/
                 """
                 cutadapt -a file:$artifacts3end \\
                 -g file:$artifacts5end -e 0.1 --discard-trimmed \\
                 --match-read-wildcards -m 15 -O 19 \\
-                -o ${reads.baseName}.further_processed.fastq.gz \\
+                -o "$prefix".further_processed.fastq.gz \\
                 $reads \\
                 > ${reads.baseName}.artifact_trimming.output.txt
                 """
@@ -462,7 +463,7 @@ process star {
     file "*Log.out" into star_log
 
     script:
-    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.further_processed)?(\.processed)?$/
+    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.processed)?(\.further_processed)?$/
 
 
     """
