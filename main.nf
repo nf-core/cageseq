@@ -345,7 +345,7 @@ if(params.trimming){
             -m 15 -M 45 \\
             -o "$prefix".trimmed.fastq.gz \\
             $reads \\
-            > "$prefix"_adapter_trimming.output.txt
+            > "$prefix"adapter_trimming.output.txt
             """
         }
 
@@ -374,7 +374,7 @@ if (params.cutG){
         """
         cutadapt -g ^G \\
         -e 0 --match-read-wildcards \\
-        -o "$prefix".fastq.gz \\
+        -o "$prefix".G_trimmed.fastq.gz \\
         $reads
         """
     }
