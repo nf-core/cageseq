@@ -159,6 +159,9 @@ params {
 }
 ```
 
+### `--igenomesIgnore`
+Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.
+
 ### `--fasta` `--gtf` `--star_index`
 If you prefer, you can specify the full path to your reference genome when you run the pipeline:
 
@@ -183,7 +186,7 @@ The first process is regulated by the flag `--trimming`. Here the enzyme binding
 
 ### `--cutG`
 
-The removing of the added G at the 5' end can be deactivated with this flag. 
+The removing of the added G at the 5' end can be deactivated with this flag.
 
 ### `--cutArtifacts`
 
@@ -197,11 +200,15 @@ Specifying a file containing artifacts at the 5' end. By default a file with all
 
 Specifying a file containing artifacts at the 3' end. By default a file with all possible artifacts is used.
 
+## Adapter clipping and trimming
 
-<!--TODO fill out this sections -->
+### `--min_cluster`
 
-### `--igenomesIgnore`
-Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.
+Sets the minimum amount of reads for paraclu to build a cluster. Default: 100.
+
+
+
+
 
 ## Job resources
 ### Automatic resubmission
@@ -224,8 +231,6 @@ The AWS region to run your job in. Default is set to `eu-west-1` but can be adju
 Please make sure to also set the `-w/--work-dir` and `--outdir` parameters to a S3 storage bucket of your choice - you'll get an error message notifying you if you didn't.
 
 ## Other command line parameters
-
-<!-- TODO nf-core: Describe any other command line flags here -->
 
 ### `--outdir`
 The output directory where the results will be saved.

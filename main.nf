@@ -429,7 +429,7 @@ else{
   processed_reads.into{further_processed_reads_star; further_processed_reads_fastqc}
 }
 
-  // Post trimming QC
+// Post trimming QC, only needed if some trimming has been done
 if(params.trimming || params.cutG || params.cutArtifacts){
   process trimmed_fastqc {
       tag "${reads.baseName}"
