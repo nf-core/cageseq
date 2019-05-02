@@ -14,9 +14,9 @@
   * [`--reads`](#--reads)
   * [`--artifacts5end`](#--artifacts5end)
   * [`--artifacts3end`](#--artifacts3end)
-  * [`--Trimming`](#--trimming)
-  * [`--CutEcoP`](#--cutEcop)
-  * [`--CutLinker`](#--cutLinker)
+  * [`--trimming`](#--trimming)
+  * [`--cutEcoP`](#--cutEcop)
+  * [`--cutLinker`](#--cutLinker)
   * [`--CutG`](#--cutG)
   * [`--min_cluster`](#--min_cluster)
 * [Reference genomes](#reference-genomes)
@@ -58,13 +58,11 @@ It is recommended to limit the Nextflow Java virtual machines memory. We recomme
 NXF_OPTS='-Xms1g -Xmx4g'
 ```
 
-<!-- TODO nf-core: Document required command line parameters to run the pipeline-->
-
 ## Running the pipeline
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/cageseq --reads '*.fastq.gz' -profile docker --fasta /path/to/genome.fasta --gtf /path/to/genome.gtf
+nextflow run nf-core/cageseq --reads /path/to/reads.fastq.gz -profile docker --fasta /path/to/genome.fasta --gtf /path/to/genome.gtf
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -161,7 +159,7 @@ params {
 }
 ```
 
-### `--fasta`
+### `--fasta` `--gtf` `--star_index`
 If you prefer, you can specify the full path to your reference genome when you run the pipeline:
 
 ```bash
@@ -170,13 +168,36 @@ If you prefer, you can specify the full path to your reference genome when you r
 --star '[path to STAR index]'
 ```
 
-The minimum requirements for running the pipeline are the Fasta and GTF files. If a STAR index is not given, it will be automatically
-build.
+The minimum requirements for running the pipeline are the Fasta and GTF files. If a STAR index is not given, it will be automatically build.
 
 ### `--saveReference`
 All generated reference files will be saved to the results folder if this flag is set.
 
 ## Adapter clipping and trimming
+
+Input fastq files are trimmed in three different steps, which are by default all executed and can be individually deactivated.  
+
+### `--trimming`
+
+The first process is regulated by the flag `--trimming`. Here the enzyme binding site at the 5' and linker at the 3' end are cut
+
+### `--cutG`
+
+The removing of the added G at the 5' end can be deactivated with this flag. 
+
+### `--cutArtifacts`
+
+Artifacts, generated in the sequencing process, are cut if this flag is not set to false. It is possible to specify fasta files containing the belonging adapters with the following arguments. If `--cutArtifacts` is set to falase, `--artifacts5end` and `--artifacts3end` is ignored.
+
+### `--artifacts5end`
+
+Specifying a file containing artifacts at the 5' end. By default a file with all possible artifacts is used.
+
+### `--artifacts3end`
+
+Specifying a file containing artifacts at the 3' end. By default a file with all possible artifacts is used.
+
+
 <!--TODO fill out this sections -->
 
 ### `--igenomesIgnore`

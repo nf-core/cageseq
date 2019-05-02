@@ -22,8 +22,7 @@ Additionally, several quality control steps ([FastQC](https://www.bioinformatics
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker / singularity containers making installation trivial and results highly reproducible.
 
-Currently, this pipeline only supports CAGE-seq data generated with the old protocol as desribed in [CAGE-seq](https://www.ncbi.nlm.nih.gov/pubmed/22362160). The recently developed new CAGE-seq protocol
-will however be implemented in future releases.
+Currently, this pipeline only supports CAGE-seq data generated with the old protocol as desribed in [CAGE-seq](https://www.ncbi.nlm.nih.gov/pubmed/22362160). The recently developed new CAGE-seq protocol will however be implemented in future releases.
 
 
 ## Documentation
@@ -41,4 +40,4 @@ The nf-core/cageseq pipeline comes with documentation about the pipeline, found 
 <!-- TODO nf-core: Add a brief overview of what the pipeline does and how it works -->
 
 ## Credits
-nf-core/cageseq was originally written by Kevin Menden.
+nf-core/cageseq was originally written by Kevin Menden and Tristan Kast.
