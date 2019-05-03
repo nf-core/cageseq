@@ -84,8 +84,7 @@ if( params.star_index ){
         .fromPath(params.star_index)
         .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
 }
-else if ( params.fasta ){        .into { ch_3end_artifacts}
-
+else if ( params.fasta ){
     ch_fasta_for_star_index = Channel.fromPath(params.fasta)
         .ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
 }
@@ -97,8 +96,7 @@ if( params.gtf ){
     Channel
         .fromPath(params.gtf)
         .ifEmpty { exit 1, "GTF annotation file not found: ${params.gtf}" }
-        .into { gtf_makeSTARindex; gtf_makeHisatSplicesites; gtf_makeHISATindex; gtf_makeBED12;
-              gtf_star; gtf_dupradar; gtf_featureCounts; gtf_stringtieFPKM }
+        .into { gtf_makeSTARindex; gtf_star}
 } else {
     exit 1, "No GTF annotation specified!"
 }
