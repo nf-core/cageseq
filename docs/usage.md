@@ -12,10 +12,18 @@
 * [Main arguments](#main-arguments)
   * [`-profile`](#-profile)
   * [`--reads`](#--reads)
-  * [`--singleEnd`](#--singleend)
+  * [`--artifacts5end`](#--artifacts5end)
+  * [`--artifacts3end`](#--artifacts3end)
+  * [`--trimming`](#--trimming)
+  * [`--cutEcoP`](#--cutEcop)
+  * [`--cutLinker`](#--cutLinker)
+  * [`--CutG`](#--cutG)
+  * [`--min_cluster`](#--min_cluster)
 * [Reference genomes](#reference-genomes)
   * [`--genome` (using iGenomes)](#--genome-using-igenomes)
   * [`--fasta`](#--fasta)
+  * [`--gtf`](#--gtf)
+  * [`--star_index`](#--star_index)
   * [`--igenomesIgnore`](#--igenomesignore)
 * [Job resources](#job-resources)
   * [Automatic resubmission](#automatic-resubmission)
@@ -24,6 +32,7 @@
   * [`--awsqueue`](#--awsqueue)
   * [`--awsregion`](#--awsregion)
 * [Other command line parameters](#other-command-line-parameters)
+  * [`--saveReference`](#--saveReference)
   * [`--outdir`](#--outdir)
   * [`--email`](#--email)
   * [`-name`](#-name)
@@ -49,13 +58,11 @@ It is recommended to limit the Nextflow Java virtual machines memory. We recomme
 NXF_OPTS='-Xms1g -Xmx4g'
 ```
 
-<!-- TODO nf-core: Document required command line parameters to run the pipeline-->
-
 ## Running the pipeline
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/cageseq --reads '*.fastq.gz' -profile docker --fasta /path/to/genome.fasta --gtf /path/to/genome.gtf
+nextflow run nf-core/cageseq --reads /path/to/reads.fastq.gz -profile docker --fasta /path/to/genome.fasta --gtf /path/to/genome.gtf
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -108,17 +115,11 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
 
 
 ### `--reads`
-Use this to specify the location of your input FastQ files. For example:
+Use this to specify the location of your input FastQ file. For example:
 
 ```bash
---reads 'path/to/data/sample_*.fastq'
+--reads path/to/data/sample.fastq
 ```
-
-Please note the following requirements:
-
-1. The path must be enclosed in quotes
-2. The path must have at least one `*` wildcard character
-
 
 ## Reference genomes
 
@@ -158,7 +159,10 @@ params {
 }
 ```
 
-### `--fasta`
+### `--igenomesIgnore`
+Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.
+
+### `--fasta` `--gtf` `--star_index`
 If you prefer, you can specify the full path to your reference genome when you run the pipeline:
 
 ```bash
@@ -167,17 +171,44 @@ If you prefer, you can specify the full path to your reference genome when you r
 --star '[path to STAR index]'
 ```
 
-The minimum requirements for running the pipeline are the Fasta and GTF files. If a STAR index is not given, it will be automatically
-build.
+The minimum requirements for running the pipeline are the Fasta and GTF files. If a STAR index is not given, it will be automatically build.
 
 ### `--saveReference`
 All generated reference files will be saved to the results folder if this flag is set.
 
 ## Adapter clipping and trimming
-<!--TODO fill out this sections -->
 
-### `--igenomesIgnore`
-Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.
+Input fastq files are trimmed in three different steps, which are by default all executed and can be individually deactivated.  
+
+### `--trimming`
+
+The first process is regulated by the flag `--trimming`. Here the enzyme binding site at the 5' and linker at the 3' end are cut
+
+### `--cutG`
+
+The removing of the added G at the 5' end can be deactivated with this flag.
+
+### `--cutArtifacts`
+
+Artifacts, generated in the sequencing process, are cut if this flag is not set to false. It is possible to specify fasta files containing the belonging adapters with the following arguments. If `--cutArtifacts` is set to falase, `--artifacts5end` and `--artifacts3end` is ignored.
+
+### `--artifacts5end`
+
+Specifying a file containing artifacts at the 5' end. By default a file with all possible artifacts is used.
+
+### `--artifacts3end`
+
+Specifying a file containing artifacts at the 3' end. By default a file with all possible artifacts is used.
+
+## Adapter clipping and trimming
+
+### `--min_cluster`
+
+Sets the minimum amount of reads for paraclu to build a cluster. Default: 100.
+
+
+
+
 
 ## Job resources
 ### Automatic resubmission
@@ -200,8 +231,6 @@ The AWS region to run your job in. Default is set to `eu-west-1` but can be adju
 Please make sure to also set the `-w/--work-dir` and `--outdir` parameters to a S3 storage bucket of your choice - you'll get an error message notifying you if you didn't.
 
 ## Other command line parameters
-
-<!-- TODO nf-core: Describe any other command line flags here -->
 
 ### `--outdir`
 The output directory where the results will be saved.
