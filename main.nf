@@ -84,7 +84,8 @@ if( params.star_index ){
         .fromPath(params.star_index)
         .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
 }
-else if ( params.fasta ){
+else if ( params.fasta ){        .into { ch_3end_artifacts}
+
     ch_fasta_for_star_index = Channel.fromPath(params.fasta)
         .ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
 }
@@ -166,6 +167,7 @@ summary['Trimming']                     = params.trimming
 summary['CutEcoP']                      = params.cutEcop
 summary['CutLinker']                    = params.cutLinker
 summary['CutG']                         = params.cutG
+summary['CutArtifacts']                 = params.cutArtifacts
 summary['EcoSite']                      = params.ecoSite
 summary['LinkerSeq']                    = params.linkerSeq
 summary['Min.reads for cluster']        = params.min_cluster
