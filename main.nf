@@ -85,9 +85,8 @@ if( params.star_index ){
         .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
 }
 else if ( params.fasta ){
-    Channel.fromPath(params.fasta)
-           .ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
-           .into { ch_fasta_for_star_index }
+    ch_fasta_for_star_index = Channel.fromPath(params.fasta)
+        .ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
 }
 else {
     exit 1, "No reference genome specified!"
@@ -104,25 +103,21 @@ if( params.gtf ){
 }
 
 if( params.artifacts5end ){
-    Channel
+    ch_5end_artifacts = Channel
         .fromPath(params.artifacts5end)
-        .into { ch_5end_artifacts}
 }
 else {
-    Channel
+    ch_5end_artifacts = Channel
         .fromPath("$baseDir/assets/artifacts_5end.fasta")
-        .into { ch_5end_artifacts}
 }
 
 if( params.artifacts3end ){
-    Channel
+     ch_3end_artifacts = Channel
         .fromPath(params.artifacts3end)
-        .into { ch_3end_artifacts}
 }
 else {
-    Channel
+    ch_3end_artifacts = Channel
         .fromPath("$baseDir/assets/artifacts_3end.fasta")
-        .into { ch_3end_artifacts}
 }
 
 
