@@ -227,6 +227,7 @@ process get_software_versions {
     echo $workflow.nextflow.version > v_nextflow.txt
     fastqc --version > v_fastqc.txt
     multiqc --version > v_multiqc.txt
+    bowtie2 --version > v_bowtie2.txt
     STAR --version > v_star.txt
     cutadapt --version > v_cutadapt.txt
     samtools --version > v_samtools.txt
