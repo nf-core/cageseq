@@ -24,7 +24,7 @@
   * [`--fasta`](#--fasta)
   * [`--gtf`](#--gtf)
   * [`--star_index`](#--star_index)
-  * [`--igenomesIgnore`](#--igenomesignore)
+  * [`--igenomes_ignore`](#--igenomes_ignore)
 * [Job resources](#job-resources)
   * [Automatic resubmission](#automatic-resubmission)
   * [Custom resource requests](#custom-resource-requests)
@@ -159,7 +159,7 @@ params {
 }
 ```
 
-### `--igenomesIgnore`
+### `--igenomes_ignore`
 Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.
 
 ### `--fasta` `--gtf` `--star_index`
