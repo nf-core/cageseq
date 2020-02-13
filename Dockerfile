@@ -1,4 +1,4 @@
-FROM nfcore/base
+FROM nfcore/base:1.7
 LABEL authors="Kevin Menden; Tristan Kast" \
       description="Docker image containing all requirements for nf-core/cageseq pipeline"
 
