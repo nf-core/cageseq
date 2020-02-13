@@ -178,7 +178,7 @@ All generated reference files will be saved to the results folder if this flag i
 
 ## Adapter clipping and trimming
 
-Input fastq files are trimmed in three different steps, which are by default all executed and can be individually deactivated.  
+Input fastq files are trimmed in three different steps, which are by default all executed and can be individually deactivated.
 
 ### `--trimming`
 
@@ -199,8 +199,6 @@ Specifying a file containing artifacts at the 5' end. By default a file with all
 ### `--artifacts3end`
 
 Specifying a file containing artifacts at the 3' end. By default a file with all possible artifacts is used.
-
-## Adapter clipping and trimming
 
 ### `--min_cluster`
 
