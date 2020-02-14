@@ -13,8 +13,7 @@ dependencies:
 - pandas=0.24.2
 - r-markdown=0.9
 - samtools=1.9
-- star=2.7.0f
+- star=2.6.1d             # Don't upgrade me - 2.7X indices incompatible with iGenomes.
 - multiqc=1.7
 - unzip=6.0
-
-
+- bowtie2=2.3.5

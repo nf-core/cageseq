@@ -227,6 +227,7 @@ process get_software_versions {
     echo $workflow.nextflow.version > v_nextflow.txt
     fastqc --version > v_fastqc.txt
     multiqc --version > v_multiqc.txt
+    bowtie2 --version > v_bowtie2.txt
     STAR --version > v_star.txt
     cutadapt --version > v_cutadapt.txt
     samtools --version > v_samtools.txt
@@ -505,29 +506,6 @@ process get_ctss {
     """
 }
 
-
-/**
- * STEP 9 - Cluster CTSS files
- */
-
-process paraclu {
-    tag "${ctss.baseName}"
-    publishDir "${params.outdir}/ctss/clusters", mode: 'copy'
-
-    input:
-    file ctss from ctss_counts
-
-    output:
-    file "*" into ctss_clusters
-
-
-    script:
-    """
-    process_ctss.py $ctss
-    paraclu $params.min_cluster "${ctss.baseName}.bed_processed" > "${ctss.baseName}_clustered"
-    paraclu-cut.sh "${ctss.baseName}_clustered" > "${ctss.baseName}_clustered_simplified"
-    """
-}
 
 /*
  * STEP 10 - MultiQC

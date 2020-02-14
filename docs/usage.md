@@ -24,7 +24,7 @@
   * [`--fasta`](#--fasta)
   * [`--gtf`](#--gtf)
   * [`--star_index`](#--star_index)
-  * [`--igenomesIgnore`](#--igenomesignore)
+  * [`--igenomes_ignore`](#--igenomes_ignore)
 * [Job resources](#job-resources)
   * [Automatic resubmission](#automatic-resubmission)
   * [Custom resource requests](#custom-resource-requests)
@@ -159,7 +159,7 @@ params {
 }
 ```
 
-### `--igenomesIgnore`
+### `--igenomes_ignore`
 Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.
 
 ### `--fasta` `--gtf` `--star_index`
@@ -178,7 +178,7 @@ All generated reference files will be saved to the results folder if this flag i
 
 ## Adapter clipping and trimming
 
-Input fastq files are trimmed in three different steps, which are by default all executed and can be individually deactivated.  
+Input fastq files are trimmed in three different steps, which are by default all executed and can be individually deactivated.
 
 ### `--trimming`
 
@@ -199,8 +199,6 @@ Specifying a file containing artifacts at the 5' end. By default a file with all
 ### `--artifacts3end`
 
 Specifying a file containing artifacts at the 3' end. By default a file with all possible artifacts is used.
-
-## Adapter clipping and trimming
 
 ### `--min_cluster`
 

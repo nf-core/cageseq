@@ -1,9 +1,10 @@
-FROM nfcore/base
+FROM nfcore/base:1.8
 LABEL authors="Kevin Menden; Tristan Kast" \
       description="Docker image containing all requirements for nf-core/cageseq pipeline"
 
 COPY environment.yml /
 RUN conda env create -f /environment.yml && conda clean -a
+RUN conda env export --name nf-core-cageseq-1.0dev > nf-core-cageseq-1.0dev.yml
 ENV PATH /opt/conda/envs/nf-core-cageseq-1.0dev/bin:$PATH
 
 RUN apt-get update; apt-get install -y build-essential g++
