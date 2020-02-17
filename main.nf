@@ -76,7 +76,7 @@ params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : 
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 //params.artifacts5end = params.artifacts5end ? params.artifacts5end[ params.artifacts5end ].fasta ?: false : false
 //params.artifacts3end = params.artifacts3end ? params.artifacts3end[ params.artifacts3end ].fasta ?: false : false
-params.min_cluster = 100
+params.min_cluster = 30
 
 // Validate inputs
 if( params.star_index ){
@@ -504,6 +504,36 @@ process get_ctss {
     """
     bash make_ctss.sh $bam_count
     """
+}
+
+/**
+ * STEP 9 - Cluster CTSS files
+ */
+
+process cluster_ctss {
+    tag "${ctss.baseName}"
+    publishDir "${params.outdir}/ctss/clusters", mode: 'copy'
+
+    input:
+    file ctss from ctss_counts
+
+    output:
+    file "*.bed" into ctss_clusters
+
+    shell:
+    '''
+    bash process_ctss.sh !{ctss}
+
+    paraclu !{params.min_cluster} "!{ctss.baseName}_pos_4Ps" > "!{ctss.baseName}pos_clustered"
+    paraclu !{params.min_cluster} "!{ctss.baseName}_neg_4Ps" > "!{ctss.baseName}neg_clustered"
+
+    paraclu-cut.sh  "!{ctss.baseName}pos_clustered" >  "!{ctss.baseName}pos_clustered_simplified"
+    paraclu-cut.sh  "!{ctss.baseName}neg_clustered" >  "!{ctss.baseName}neg_clustered_simplified"
+
+
+    cat "!{ctss.baseName}pos_clustered_simplified" "!{ctss.baseName}neg_clustered_simplified" >  "!{ctss.baseName}clustered_simplified.bed"
+    awk -F '\t' '{print $1"\t"$3"\t"$4"\t"$1":"$3".."$4","$2"\t"$6"\t"$2}' "!{ctss.baseName}clustered_simplified.bed" >  "!{ctss.baseName}_clustered_simplified.bed"
+    '''
 }
 
 
