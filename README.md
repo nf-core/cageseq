@@ -2,7 +2,7 @@
 
 **CAGE-seq pipeline**.
 
-[![Build Status](https://travis-ci.com/nf-core/cageseq.svg?branch=master)](https://travis-ci.com/nf-core/cageseq)
+
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.04.0-brightgreen.svg)](https://www.nextflow.io/)
 
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)

@@ -14,3 +14,4 @@ dependencies:
 - multiqc=1.7
 - unzip=6.0
 - bowtie2=2.3.5
+- r-rmarkdown=1.12

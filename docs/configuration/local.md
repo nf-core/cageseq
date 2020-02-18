@@ -37,11 +37,11 @@ First, pull the image file where you have an internet connection:
 > Make sure that this tag corresponds to the version of the pipeline that you're using
 
 ```bash
-singularity pull --name nf-core-cageseq-1.0.img docker://nf-core/cageseq:1.0
+singularity pull --name nf-core-cageseq-dev.img docker://nf-core/cageseq:dev
 ```
 
 Then transfer this file and run the pipeline with this path:
 
 ```bash
-nextflow run /path/to/nf-core-cageseq -with-singularity /path/to/nf-core-cageseq-1.0.img
+nextflow run /path/to/nf-core-cageseq -with-singularity /path/to/nf-core-cageseq-dev.img
 ```

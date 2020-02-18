@@ -146,11 +146,19 @@ ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
 /*
  * Create a channel for input read files
  */
-Channel
-    .fromPath( params.reads)
-    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}" }
-    .into { read_files_fastqc; read_files_trimming }
 
+if(params.readPaths){
+         Channel
+             .from(params.readPaths)
+             .map { row -> [ row[0], file(row[1])] }
+             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
+             .into { read_files_fastqc; read_files_trimming }
+     } else {
+         Channel
+            .fromFilePairs( params.reads )
+            .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\n" }
+            .into { read_files_fastqc; read_files_trimming }
+}
 
 // Header log info
 log.info nfcoreHeader()
@@ -168,7 +176,7 @@ summary['CutG']                         = params.cutG
 summary['CutArtifacts']                 = params.cutArtifacts
 summary['EcoSite']                      = params.ecoSite
 summary['LinkerSeq']                    = params.linkerSeq
-summary['Min. cluster']        = params.min_cluster
+summary['Min. cluster']                 = params.min_cluster
 summary['Save Reference']               = params.saveReference
 summary['Max Resources']                = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if(workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
@@ -213,9 +221,6 @@ ${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style
 }
 
 
-/*TODO
- * Parse software version numbers
- */
 process get_software_versions {
 
     output:
@@ -242,19 +247,19 @@ process get_software_versions {
  * STEP 1 - FastQC
  */
 process fastqc {
-    tag "${reads.baseName}"
+    tag "$sample_name"
     publishDir "${params.outdir}/fastqc", mode: 'copy',
         saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
 
     input:
-    file reads from read_files_fastqc
+    set val(sample_name), file(reads) from read_files_fastqc
 
     output:
     file "*_fastqc.{zip,html}" into fastqc_results
 
     script:
     """
-    fastqc -q $reads
+    fastqc --quiet --threads $task.cpus $reads
     """
 }
 
@@ -262,7 +267,7 @@ process fastqc {
 /*
  * STEP 2  - Build STAR index
  */
-if(!params.star_index){
+
 
     process makeSTARindex {
         tag "${fasta.baseName}"
@@ -276,6 +281,9 @@ if(!params.star_index){
         output:
         file "star" into star_index
 
+        when:
+            !(params.star_index)
+
         script:
         """
         mkdir star
@@ -288,7 +296,7 @@ if(!params.star_index){
             --genomeFastaFiles $fasta
         """
     }
-}
+
 
 
 /*
@@ -296,17 +304,17 @@ if(!params.star_index){
  */
 if(params.trimming){
     process trimming {
-        tag "$prefix"
+        tag "$sample_name"
         publishDir "${params.outdir}/trimmed/adapter_trimmed", mode: 'copy',
                 saveAs: {filename ->
                     if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
                     else "$filename" }
 
         input:
-        file reads from read_files_trimming
+        set val(sample_name), file(reads) from read_files_trimming
 
         output:
-        file "*.fastq.gz" into trimmed_reads_cutG
+        set val(sample_name), file("*.fastq.gz") into trimmed_reads_cutG
         file "*.output.txt" into cutadapt_results
 
         script:
@@ -353,8 +361,6 @@ if(params.trimming){
 
 
     }
-
-
   }
   else{
     read_files_trimming.into{ trimmed_reads_cutG }
@@ -366,13 +372,13 @@ if(params.trimming){
    */
   if (params.cutG){
       process cut_5G{
-        tag "${reads.baseName}"
+        tag "$sample_name"
 
           input:
-          file reads from trimmed_reads_cutG
+          set val(sample_name), file(reads) from trimmed_reads_cutG
 
           output:
-          file "*.fastq.gz" into processed_reads
+          set val(sample_name), file("*.fastq.gz") into processed_reads
 
           script:
           prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?$/
@@ -393,19 +399,19 @@ if(params.trimming){
    */
 if (params.cutArtifacts){
   process cut_artifacts {
-    tag "${reads.baseName}"
+    tag "$sample_name"
     publishDir "${params.outdir}/trimmed/artifacst_trimmed", mode: 'copy',
       saveAs: {filename ->
           if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
           else "$filename" }
 
                   input:
-                  file reads from processed_reads
+                  set val(sample_name), file(reads) from processed_reads
                   file artifacts5end from ch_5end_artifacts
                   file artifacts3end from ch_3end_artifacts
 
                   output:
-                  file  "*.fastq.gz" into further_processed_reads
+                  set val(sample_name), file("*.fastq.gz") into further_processed_reads
                   file  "*.output.txt" into artifact_cutting_results
 
                   script:
@@ -426,24 +432,24 @@ else{
 }
 
 // Post trimming QC, only needed if some trimming has been done
-if(params.trimming || params.cutG || params.cutArtifacts){
   process trimmed_fastqc {
-      tag "${reads.baseName}"
+      tag "$sample_name"
       publishDir "${params.outdir}/trimmed/fastqc", mode: 'copy',
               saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
 
       input:
-      file reads from further_processed_reads_fastqc
+      set val(sample_name), file(reads) from further_processed_reads_fastqc
 
       output:
-      file "*_fastqc.{zip,html}" into trimmed_fastqc_results
+      set val(sample_name), file("*_fastqc.{zip,html}") into trimmed_fastqc_results
 
+      when:
+        params.trimming || params.cutG || params.cutArtifacts
       script:
       """
       fastqc -q $reads
       """
   }
-}
 
 /**
  * STEP 7 - STAR alignment
@@ -451,26 +457,25 @@ if(params.trimming || params.cutG || params.cutArtifacts){
 
 
 process star {
-    tag "$prefix"
+    tag "$sample_name"
     publishDir "${params.outdir}/STAR", mode: 'copy',
             saveAs: {filename ->
                 if (filename.indexOf(".bam") == -1) "logs/$filename"
                 else  filename }
 
     input:
-    file reads from further_processed_reads_star
+    set val(sample_name), file(reads) from further_processed_reads_star
     file index from star_index.collect()
     file gtf from gtf_star.collect()
 
     output:
-    file '*.bam' into star_aligned
+    set val(sample_name), file("*.bam") into star_aligned
     file "*.out" into alignment_logs
     file "*SJ.out.tab"
-    file "*Log.out" into star_log
 
     script:
-    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.processed)?(\.further_processed)?$/
 
+    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.processed)?(\.further_processed)?$/
 
     """
     STAR --genomeDir $index \\
@@ -491,14 +496,14 @@ process star {
  * STEP 8 - Get CTSS files
  */
 process get_ctss {
-    tag "${bam_count.baseName}"
+    tag "$sample_name"
     publishDir "${params.outdir}/ctss", mode: 'copy'
 
     input:
-    file bam_count from star_aligned
+    set val(sample_name), file(bam_count) from star_aligned
 
     output:
-    file "*.ctss.bed" into ctss_counts
+    set val(sample_name), file("*.ctss.bed") into ctss_counts
 
     script:
     """
@@ -511,11 +516,11 @@ process get_ctss {
  */
 
 process cluster_ctss {
-    tag "${ctss.baseName}"
+    tag "${ctss.simpleName}"
     publishDir "${params.outdir}/ctss/clusters", mode: 'copy'
 
     input:
-    file ctss from ctss_counts
+    set val(sample_name), file(ctss) from ctss_counts
 
     output:
     file "*.bed" into ctss_clusters
@@ -547,10 +552,10 @@ process multiqc {
     file multiqc_config from ch_multiqc_config
     file ('fastqc/*') from fastqc_results.collect().ifEmpty([])
     file ('software_versions/*') from software_versions_yaml
-    //if(params.trimming){file ('trimmed/*') from cutadapt_results.collect()}
-    //if(params.cutArtifacts){file ('artifacts_trimmed/*') from  artifact_cutting_results.collect()}
-    //if(params.trimming || params.cutG || params.cutArtifacts){file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])}
-    file ('alignment/*') from alignment_logs.collect()
+    file ('trimmed/*') from cutadapt_results.collect().ifEmpty([])
+    file ('artifacts_trimmed/*') from  artifact_cutting_results.collect().ifEmpty([])
+    file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])
+    file ('alignment/*') from alignment_logs.collect().ifEmpty([])
     file workflow_summary from create_workflow_summary(summary)
 
     output:
@@ -562,7 +567,7 @@ process multiqc {
     rfilename = custom_runName ? "--filename " + custom_runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
     """
     multiqc . -f $rtitle $rfilename --config $multiqc_config \\
-            -m star -m cutadapt -m fastqc -m custom_content
+            -m custom_content -m fastqc -m star -m cutadapt
     """
 }
 
