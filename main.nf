@@ -198,7 +198,7 @@ if(params.email) {
   summary['MultiQC maxsize'] = params.maxMultiqcEmailFileSize
 }
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
-log.info "\033[2m----------------------------------------------------\033[0m"
+log.info "-\033[2m----------------------------------------------------\033[0m"
 
 // Check the hostnames against configured profiles
 checkHostname()
@@ -355,7 +355,7 @@ if(params.trimming){
             -m 15 -M 45 \\
             -o "$prefix".trimmed.fastq.gz \\
             $reads \\
-            > "$prefix"adapter_trimming.output.txt
+            > "$prefix"_adapter_trimming.output.txt
             """
         }
 
@@ -420,6 +420,7 @@ if (params.cutArtifacts){
                   cutadapt -a file:$artifacts3end \\
                   -g file:$artifacts5end -e 0.1 --discard-trimmed \\
                   --match-read-wildcards -m 15 -O 19 \\
+                  --cores=${task.cpus} \\
                   -o "$prefix".artifact_trimmed.fastq.gz \\
                   $reads \\
                   > ${reads.baseName}.artifact_trimming.output.txt
@@ -429,6 +430,7 @@ if (params.cutArtifacts){
 }
 else{
   processed_reads.into{further_processed_reads_star; further_processed_reads_fastqc}
+  artifact_cutting_results = Channel.empty()
 }
 
 // Post trimming QC, only needed if some trimming has been done
@@ -681,15 +683,23 @@ workflow.onComplete {
     def output_tf = new File( output_d, "pipeline_report.txt" )
     output_tf.withWriter { w -> w << email_txt }
 
+
     c_reset = params.monochrome_logs ? '' : "\033[0m";
     c_purple = params.monochrome_logs ? '' : "\033[0;35m";
     c_green = params.monochrome_logs ? '' : "\033[0;32m";
     c_red = params.monochrome_logs ? '' : "\033[0;31m";
+
+    if (workflow.stats.ignoredCount > 0 && workflow.success) {
+      log.info "-${c_purple}Warning, pipeline completed, but with errored process(es) ${c_reset}-"
+      log.info "-${c_red}Number of ignored errored process(es) : ${workflow.stats.ignoredCount} ${c_reset}-"
+      log.info "-${c_green}Number of successfully ran process(es) : ${workflow.stats.succeedCountFmt} ${c_reset}-"
+    }
+
     if(workflow.success){
-        log.info "${c_purple}[nf-core/cageseq]${c_green} Pipeline complete${c_reset}"
+        log.info "-${c_purple}[nf-core/cageseq]${c_green} Pipeline completed successfully${c_reset}-"
     } else {
         checkHostname()
-        log.info "${c_purple}[nf-core/cageseq]${c_red} Pipeline completed with errors${c_reset}"
+        log.info "-${c_purple}[nf-core/cageseq]${c_red} Pipeline completed with errors${c_reset}-"
     }
 
 }
@@ -707,14 +717,14 @@ def nfcoreHeader(){
     c_cyan = params.monochrome_logs ? '' : "\033[0;36m";
     c_white = params.monochrome_logs ? '' : "\033[0;37m";
 
-    return """    ${c_dim}----------------------------------------------------${c_reset}
+    return """-${c_dim}    ----------------------------------------------------${c_reset}
                                             ${c_green},--.${c_black}/${c_green},-.${c_reset}
     ${c_blue}        ___     __   __   __   ___     ${c_green}/,-._.--~\'${c_reset}
     ${c_blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${c_yellow}}  {${c_reset}
     ${c_blue}  | \\| |       \\__, \\__/ |  \\ |___     ${c_green}\\`-._,-`-,${c_reset}
                                             ${c_green}`._,._,\'${c_reset}
     ${c_purple}  nf-core/cageseq v${workflow.manifest.version}${c_reset}
-    ${c_dim}----------------------------------------------------${c_reset}
+    ${c_dim} ----------------------------------------------------${c_reset}
     """.stripIndent()
 }
 
