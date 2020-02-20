@@ -363,7 +363,8 @@ if(params.trimming){
     }
   }
   else{
-    read_files_trimming.into{ trimmed_reads_cutG }
+    read_files_trimming.set{ trimmed_reads_cutG }
+    cutadapt_results = Channel.empty()
   }
 
 
@@ -391,9 +392,8 @@ if(params.trimming){
       }
   }
   else {
-      trimmed_reads_cutG.into{ processed_reads}
+      trimmed_reads_cutG.set{processed_reads}
   }
-
   /**
    * STEP 5 - Remove artifacts
    */
@@ -456,7 +456,7 @@ else{
 /**
  * STEP 7 - STAR alignment
  */
-
+further_processed_reads_star = further_processed_reads_star.dump(tag:"star")
 
 process star {
     tag "$sample_name"
