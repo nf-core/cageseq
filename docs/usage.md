@@ -10,7 +10,6 @@
 * [Main arguments](#main-arguments)
   * [`-profile`](#-profile)
   * [`--reads`](#--reads)
-<<<<<<< HEAD
   * [`--artifacts5end`](#--artifacts5end)
   * [`--artifacts3end`](#--artifacts3end)
   * [`--trimming`](#--trimming)
@@ -23,12 +22,7 @@
   * [`--fasta`](#--fasta)
   * [`--gtf`](#--gtf)
   * [`--star_index`](#--star_index)
-=======
   * [`--single_end`](#--single_end)
-* [Reference genomes](#reference-genomes)
-  * [`--genome` (using iGenomes)](#--genome-using-igenomes)
-  * [`--fasta`](#--fasta)
->>>>>>> abeec3dc23a86fa66e4a507276e917d5695fba38
   * [`--igenomes_ignore`](#--igenomes_ignore)
 * [Job resources](#job-resources)
   * [Automatic resubmission](#automatic-resubmission)
@@ -131,21 +125,14 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
   * A profile with a complete configuration for automated testing
   * Includes links to test data so needs no other parameters
 
-
 ### `--reads`
-<<<<<<< HEAD
-Use this to specify the location of your input FastQ file. For example:
-=======
 
 Use this to specify the location of your input FastQ files. For example:
->>>>>>> abeec3dc23a86fa66e4a507276e917d5695fba38
 
 ```bash
 --reads path/to/data/sample.fastq
 ```
 
-<<<<<<< HEAD
-=======
 Please note the following requirements:
 
 1. The path must be enclosed in quotes
@@ -164,7 +151,6 @@ By default, the pipeline expects paired-end data. If you have single-end data, y
 
 It is not possible to run a mixture of single-end and paired-end files in one run.
 
->>>>>>> abeec3dc23a86fa66e4a507276e917d5695fba38
 ## Reference genomes
 
 The pipeline config files come bundled with paths to the illumina iGenomes reference index files. If running with docker or AWS, the configuration is set up to use the [AWS-iGenomes](https://ewels.github.io/AWS-iGenomes/) resource.
@@ -190,7 +176,6 @@ Note that you can use the same configuration setup to save sets of reference fil
 
 The syntax for this reference configuration is as follows:
 
-
 ```nextflow
 params {
   genomes {
@@ -204,17 +189,10 @@ params {
 }
 ```
 
-<<<<<<< HEAD
-### `--igenomes_ignore`
-Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.
-
-### `--fasta` `--gtf` `--star_index`
-=======
 <!-- TODO nf-core: Describe reference path flags -->
 
-### `--fasta`
+### `--fasta` `--gtf` `--star_index`
 
->>>>>>> abeec3dc23a86fa66e4a507276e917d5695fba38
 If you prefer, you can specify the full path to your reference genome when you run the pipeline:
 
 ```bash
@@ -223,10 +201,10 @@ If you prefer, you can specify the full path to your reference genome when you r
 --star '[path to STAR index]'
 ```
 
-<<<<<<< HEAD
 The minimum requirements for running the pipeline are the Fasta and GTF files. If a STAR index is not given, it will be automatically build.
 
 ### `--saveReference`
+
 All generated reference files will be saved to the results folder if this flag is set.
 
 ## Adapter clipping and trimming
@@ -257,14 +235,9 @@ Specifying a file containing artifacts at the 3' end. By default a file with all
 
 Sets the minimum amount of reads for paraclu to build a cluster. Default: 100.
 
-
-
-
-=======
 ### `--igenomes_ignore`
 
 Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.
->>>>>>> abeec3dc23a86fa66e4a507276e917d5695fba38
 
 ## Job resources
 

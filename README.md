@@ -10,24 +10,14 @@
 [![Docker](https://img.shields.io/docker/automated/nfcore/cageseq.svg)](https://hub.docker.com/r/nfcore/cageseq)
 
 ## Introduction
+
 UNDER DEVELOPMENT
 
 This pipeline is currenlty under development. The workflow is not yet finished.
-<<<<<<< HEAD
+
 UNDER DEVELOPMENT
 
 This pipeline is currenlty under development. The workflow is not yet finished.
-
-
-**nf-core/cageseq** is a pipeline built for the analysis of [CAGE-sequencing](https://www.ncbi.nlm.nih.gov/pubmed/22362160) data.
-
-
-
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker / singularity containers making installation trivial and results highly reproducible.
-
-Currently, this pipeline only supports CAGE-seq data generated with the old protocol as desribed in [CAGE-seq](https://www.ncbi.nlm.nih.gov/pubmed/22362160). The recently developed new CAGE-seq protocol will however be implemented in future releases.
-
-=======
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
 
@@ -54,7 +44,6 @@ nextflow run nf-core/cageseq -profile <docker/singularity/conda/institute> --rea
 ```
 
 See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
->>>>>>> abeec3dc23a86fa66e4a507276e917d5695fba38
 
 ## Documentation
 
@@ -73,6 +62,7 @@ The nf-core/cageseq pipeline comes with documentation about the pipeline, found 
 
 This pipeline includes steps for adapter and artefact trimming ([cutadapt](https://cutadapt.readthedocs.io/en/stable/guide.html)), alignment to a reference ([STAR](https://github.com/alexdobin/STAR)) and CAGE tag counting.
 Additionally, several quality control steps ([FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [MultiQC](https://multiqc.info/)) are included to allow for easy verification of results after a run.
+
 ## Credits
 
 nf-core/cageseq was originally written by Kevin Menden and Tristan Kast.
