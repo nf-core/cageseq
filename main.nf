@@ -21,8 +21,6 @@ def helpMessage() {
     nextflow run nf-core/cageseq --reads /path/to/data.fastq.gz --star_index /path/to/index -profile docker
 
     Mandatory arguments:
-      --reads                       Path to input data (must be surrounded with quotes)
-
       --reads [file]                Path to input data (must be surrounded with quotes)
       -profile [str]                Configuration profile to use. Can use multiple (comma separated)
                                     Available: conda, docker, singularity, test, awsbatch, <institute> and more
@@ -39,7 +37,7 @@ def helpMessage() {
       --min_cluster                 Minimum amount of reads to build a cluster with paraclu
 
       References                    If not specified in the configuration file or you wish to overwrite any of the references
-        --fasta [file]              Path to fasta reference
+      --fasta [file]              Path to fasta reference
       --star_index                  Path to the star index, if not given the pipeline will automatically try to build one with the given fasta and gtf file
       --genome                      Name of iGenomes reference
       --gtf                         Path to gtf file
@@ -419,8 +417,8 @@ if (params.cutArtifacts){
 
                   input:
                   set val(sample_name), file(reads) from processed_reads
-                  file artifacts5end from ch_5end_artifacts
-                  file artifacts3end from ch_3end_artifacts
+                  file artifacts5end from ch_5end_artifacts.collect()
+                  file artifacts3end from ch_3end_artifacts.collect()
 
                   output:
                   set val(sample_name), file("*.fastq.gz") into further_processed_reads
