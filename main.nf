@@ -26,7 +26,6 @@ def helpMessage() {
                                     Available: conda, docker, singularity, test, awsbatch, <institute> and more
 
     Options:
-      --genome [str]                Name of iGenomes reference
       --trimming                    Set to false to skip the file Trimming
       --cutEcoP                     Set to false to not cut the EcoP
       --cutLinker                   Set to false to not cut the linker
@@ -37,7 +36,7 @@ def helpMessage() {
       --min_cluster                 Minimum amount of reads to build a cluster with paraclu
 
       References                    If not specified in the configuration file or you wish to overwrite any of the references
-      --fasta [file]              Path to fasta reference
+      --fasta [file]                Path to fasta reference
       --star_index                  Path to the star index, if not given the pipeline will automatically try to build one with the given fasta and gtf file
       --genome                      Name of iGenomes reference
       --gtf                         Path to gtf file
