@@ -13,6 +13,7 @@ regexes = {
     'bedtools': ['v_bedtools.txt', r"bedtools v(\S+)"],
     'cutadapt': ['v_cutadapt.txt', r"(\S+)"],
     'samtools': ['v_samtools.txt', r"samtools (\S+)"],
+    'rseqc': ['v_rseqc.txt', r"read_distribution.py (\S+)"],
 }
 results = OrderedDict()
 results['nf-core/cageseq'] = '<span style="color:#999999;\">N/A</span>'
@@ -24,6 +25,7 @@ results['STAR'] = '<span style="color:#999999;\">N/A</span>'
 results['bedtools'] = '<span style="color:#999999;\">N/A</span>'
 results['cutadapt'] = '<span style="color:#999999;\">N/A</span>'
 results['samtools'] = '<span style="color:#999999;\">N/A</span>'
+results['rseqc'] = '<span style="color:#999999;\">N/A</span>'
 
 # Search each file using its regex
 for k, v in regexes.items():

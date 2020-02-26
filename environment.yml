@@ -19,3 +19,4 @@ dependencies:
 - bioconda::multiqc=1.8
 - unzip=6.0
 - bioconda::bowtie2=2.3.5
+- bioconda::rseqc=3.0.1

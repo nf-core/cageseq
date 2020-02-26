@@ -86,7 +86,10 @@ if( params.star_index ){
         .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
 }
 else if ( params.fasta ){
-    ch_fasta_for_star_index = file(params.fasta, checkIfExists: true)
+    Channel
+        .fromPath(params.fasta)
+        .ifEmpty { exit 1, "fasta file not found: ${params.fasta}" }
+        .into { ch_fasta_for_star_index; ; fasta_rseqc}
 }
 else {
     exit 1, "No reference genome specified!"
@@ -96,7 +99,7 @@ if( params.gtf ){
     Channel
         .fromPath(params.gtf)
         .ifEmpty { exit 1, "GTF annotation file not found: ${params.gtf}" }
-        .into { gtf_makeSTARindex; gtf_star}
+        .into { gtf_makeSTARindex; gtf_star; gtf_rseqc}
 } else {
     exit 1, "No GTF annotation specified!"
 }
@@ -190,7 +193,6 @@ if (workflow.profile.contains('awsbatch')) {
     summary['AWS Region']   = params.awsregion
     summary['AWS Queue']    = params.awsqueue
     summary['AWS CLI']      = params.awscli
-
 }
 summary['Config Profile'] = workflow.profile
 if (params.config_profile_description) summary['Config Description'] = params.config_profile_description
@@ -245,10 +247,24 @@ process get_software_versions {
     cutadapt --version > v_cutadapt.txt
     samtools --version > v_samtools.txt
     bedtools --version > v_bedtools.txt
+    read_distribution.py --version > v_rseqc.txt
     scrape_software_versions.py &> software_versions_mqc.yaml
     """
 }
+process convert_gtf {
+    tag "$gtf"
 
+    input:
+    file gtf from gtf_rseqc
+
+    output:
+    file "${gtf.baseName}.bed" into bed_rseqc
+
+    script: // This script is bundled with the pipeline, in nfcore/cageseq/bin/
+    """
+    gtf2bed.pl $gtf > ${gtf.baseName}.bed
+    """
+}
 /*
  * STEP 1 - FastQC
  */
@@ -278,33 +294,33 @@ process fastqc {
  */
 
 
-    process makeSTARindex {
-        tag "${fasta.baseName}"
-        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
-                saveAs: { params.saveReference ? it : null }, mode: 'copy'
+process makeSTARindex {
+    tag "${fasta.baseName}"
+    publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+            saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
-        input:
-        file fasta from ch_fasta_for_star_index
-        file gtf from gtf_makeSTARindex
+    input:
+    file fasta from ch_fasta_for_star_index
+    file gtf from gtf_makeSTARindex.collect()
 
-        output:
-        file "star" into star_index
+    output:
+    file "star" into star_index
 
-        when:
-            !(params.star_index)
+    when:
+        !(params.star_index)
 
-        script:
-        """
-        mkdir star
-        STAR \\
-            --runMode genomeGenerate \\
-            --runThreadN ${task.cpus} \\
-            --sjdbGTFfile $gtf \\
-            --sjdbOverhang 50 \\
-            --genomeDir star/ \\
-            --genomeFastaFiles $fasta
-        """
-    }
+    script:
+    """
+    mkdir star
+    STAR \\
+        --runMode genomeGenerate \\
+        --runThreadN ${task.cpus} \\
+        --sjdbGTFfile $gtf \\
+        --sjdbOverhang 50 \\
+        --genomeDir star/ \\
+        --genomeFastaFiles $fasta
+    """
+}
 
 
 
@@ -494,14 +510,40 @@ process star {
         --readFilesIn $reads \\
         --runThreadN ${task.cpus} \\
         --outSAMtype BAM SortedByCoordinate \\
+        --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0 \\
+        --outFilterMismatchNmax 1 \\
         --readFilesCommand zcat \\
         --runDirPerm All_RWX \\
         --outFileNamePrefix $prefix \\
         --outFilterMatchNmin ${params.min_aln_length}
     """
 }
+star_aligned.into { bam_stats; bam_star }
+process samtools_stats {
+    tag "$sample_name"
+    label 'process_medium'
+    // if (params.save_align_intermeds) {
+    //     publishDir "${params.outdir}/STAR", mode: 'copy',
+    //         saveAs: { filename ->
+    //                       if (filename.endsWith(".flagstat")) "samtools_stats/$filename"
+    //                       else if (filename.endsWith(".idxstats")) "samtools_stats/$filename"
+    //                       else if (filename.endsWith(".stats")) "samtools_stats/$filename"
+    //                       else filename
+    //                 }
+    // }
 
+    input:
+    set val(sample_name), file(bam_count) from bam_stats
 
+    output:
+    file "*.{flagstat,idxstats,stats}" into bam_flagstat_mqc
+
+    script:
+    """
+    samtools idxstats $bam_count > ${bam_count}.idxstats
+    samtools stats $bam_count > ${bam_count}.stats
+    """
+}
 
 /**
  * STEP 8 - Get CTSS files
@@ -511,7 +553,7 @@ process get_ctss {
     publishDir "${params.outdir}/ctss", mode: 'copy'
 
     input:
-    set val(sample_name), file(bam_count) from star_aligned
+    set val(sample_name), file(bam_count) from bam_star
 
     output:
     set val(sample_name), file("*.ctss.bed") into ctss_counts
@@ -547,12 +589,34 @@ process cluster_ctss {
     paraclu-cut.sh  "!{ctss.baseName}neg_clustered" >  "!{ctss.baseName}neg_clustered_simplified"
 
 
-    cat "!{ctss.baseName}pos_clustered_simplified" "!{ctss.baseName}neg_clustered_simplified" >  "!{ctss.baseName}clustered_simplified.bed"
-    awk -F '\t' '{print $1"\t"$3"\t"$4"\t"$1":"$3".."$4","$2"\t"$6"\t"$2}' "!{ctss.baseName}clustered_simplified.bed" >  "!{ctss.baseName}_clustered_simplified.bed"
+    cat "!{ctss.baseName}pos_clustered_simplified" "!{ctss.baseName}neg_clustered_simplified" >  "!{ctss.baseName}_clustered_simplified"
+    awk -F '\t' '{print $1"\t"$3"\t"$4"\t"$1":"$3".."$4","$2"\t"$6"\t"$2}' "!{ctss.baseName}_clustered_simplified" >  "!{ctss.baseName}_clustered_simplified.bed"
     '''
 }
 
+process ctss_qc {
+     tag "$clusters"
+     publishDir "${params.outdir}/rseqc" , mode: 'copy',
+         saveAs: {filename ->
+                  if (filename.indexOf("read_distribution.txt") > 0) "read_distribution/$filename"
+                  else filename
+         }
 
+     input:
+     file clusters from ctss_clusters
+     file gtf from bed_rseqc.collect()
+     file fasta from fasta_rseqc.collect()
+
+     output:
+     file "*.txt" into rseqc_results
+
+     shell:
+     '''
+     cat !{fasta} |  awk '$0 ~ ">" {if (NR > 1) {print c;} c=0;printf substr($0,2,100) "\t"; } $0 !~ ">" {c+=length($0);} END { print c; }' > chrom_sizes.tmp
+     bedtools bedtobam -i !{clusters} -g chrom_sizes.tmp > !{clusters.baseName}.bam
+     read_distribution.py -i !{clusters.baseName}.bam -r !{gtf} > !{clusters.baseName}.read_distribution.txt
+     '''
+ }
 /*
  * STEP 10 - MultiQC
  */
@@ -568,6 +632,8 @@ process multiqc {
     file ('artifacts_trimmed/*') from  artifact_cutting_results.collect().ifEmpty([])
     file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])
     file ('alignment/*') from alignment_logs.collect().ifEmpty([])
+    file ('alignment/samtools_stats/*') from bam_flagstat_mqc.collect().ifEmpty([])
+    file ('rseqc/*') from rseqc_results.collect().ifEmpty([])
     file workflow_summary from ch_workflow_summary.collectFile(name: "workflow_summary_mqc.yaml")
 
     output:
@@ -582,7 +648,7 @@ process multiqc {
 
     """
     multiqc -f $rtitle $rfilename $custom_config_file \\
-    -m custom_content -m fastqc -m star -m cutadapt .
+    -m custom_content -m fastqc -m star -m cutadapt -m rseqc -m samtools .
     """
 }
 

@@ -27,20 +27,20 @@ if [[ $var =~ bam$ ]]; then
   base=${file%%.*}
   echo "working on: ${base}"
 
-  TMPFILE="/tmp/$(basename $0).$RANDOM.txt"
-     samtools view  -F 4 -u -q $QCUT -b $var |  bamToBed -i stdin > $TMPFILE
-     cat  ${TMPFILE} \
-  | awk 'BEGIN{OFS="\t"}{if($6=="+"){print $1,$2,$5}}' \
+  TMPFILE="/tmp/$(basename "$0").$RANDOM.txt"
+   samtools view  -F 4 -u -q $QCUT -b "$var" |  bamToBed -i stdin > "$TMPFILE"
+
+  awk 'BEGIN{OFS="\t"}{if($6=="+"){print $1,$2,$5}}' "${TMPFILE}" \
   | sort -k1,1 -k2,2n \
   | groupBy -i stdin -g 1,2 -c 3 -o count \
-  | awk -v x="$base" 'BEGIN{OFS="\t"}{print $1,$2,$2+1,  x  ,$3,"+"}' >> $base.ctss.bed
+  | awk -v x="$base" 'BEGIN{OFS="\t"}{print $1,$2,$2+1,  x  ,$3,"+"}' >> "$base".ctss.bed
 
-  cat  ${TMPFILE} \
-  | awk 'BEGIN{OFS="\t"}{if($6=="-"){print $1,$3,$5}}' \
+
+  awk 'BEGIN{OFS="\t"}{if($6=="-"){print $1,$3,$5}}' "${TMPFILE}" \
   | sort -k1,1 -k2,2n \
   | groupBy -i stdin -g 1,2 -c 3 -o count \
-  | awk -v x="$base" 'BEGIN{OFS="\t"}{print $1,$2-1,$2, x  ,$3,"-"}' >> $base.ctss.bed
+  | awk -v x="$base" 'BEGIN{OFS="\t"}{print $1,$2-1,$2, x  ,$3,"-"}' >> "$base".ctss.bed
 
-  rm $TMPFILE
+  rm "$TMPFILE"
 fi
 done
