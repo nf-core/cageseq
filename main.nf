@@ -89,7 +89,7 @@ else if ( params.fasta ){
     Channel
         .fromPath(params.fasta)
         .ifEmpty { exit 1, "fasta file not found: ${params.fasta}" }
-        .into { ch_fasta_for_star_index; ; fasta_rseqc}
+        .into { fasta_star_index; fasta_bowtie_index; fasta_rseqc}
 }
 else {
     exit 1, "No reference genome specified!"
@@ -242,8 +242,8 @@ process get_software_versions {
     echo $workflow.nextflow.version > v_nextflow.txt
     fastqc --version > v_fastqc.txt
     multiqc --version > v_multiqc.txt
-    bowtie2 --version > v_bowtie2.txt
     STAR --version > v_star.txt
+    bowtie --version > v_bowite.txt
     cutadapt --version > v_cutadapt.txt
     samtools --version > v_samtools.txt
     bedtools --version > v_bedtools.txt
@@ -300,14 +300,14 @@ process makeSTARindex {
             saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
     input:
-    file fasta from ch_fasta_for_star_index
+    file fasta from fasta_star_index
     file gtf from gtf_makeSTARindex.collect()
 
     output:
     file "star" into star_index
 
     when:
-        !(params.star_index)
+        !(params.star_index) || !(params.star_align)
 
     script:
     """
@@ -321,7 +321,29 @@ process makeSTARindex {
         --genomeFastaFiles $fasta
     """
 }
+process makeBowtieindex {
+    tag "${fasta.baseName}"
+    publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+            saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
+    input:
+    file fasta from fasta_bowtie_index
+
+    output:
+    // ${fasta.baseName}.index into bowtie_index
+    file "${fasta.baseName}.index*" into bowtie_index
+    when:
+        !(params.bowtie_index) ||!(params.bowtie_align)
+
+    script:
+    """
+
+
+    bowtie-build --threads ${task.cpus} ${fasta} ${fasta.baseName}.index
+
+
+    """
+}
 
 
 /*
@@ -451,10 +473,10 @@ if (params.cutArtifacts){
                   > ${reads.baseName}.artifact_trimming.output.txt
                   """
   }
-  further_processed_reads.into { further_processed_reads_star; further_processed_reads_fastqc }
+  further_processed_reads.into { further_processed_reads_star;further_processed_reads_bowtie; further_processed_reads_fastqc }
 }
 else{
-  processed_reads.into{further_processed_reads_star; further_processed_reads_fastqc}
+  processed_reads.into{further_processed_reads_star; further_processed_reads_bowtie; further_processed_reads_fastqc}
   artifact_cutting_results = Channel.empty()
 }
 
@@ -497,8 +519,11 @@ process star {
 
     output:
     set val(sample_name), file("*.bam") into star_aligned
-    file "*.out" into alignment_logs
+    file "*.out" into star_alignment_logs
     file "*SJ.out.tab"
+
+    when:
+     params.star_align
 
     script:
 
@@ -519,6 +544,51 @@ process star {
     """
 }
 star_aligned.into { bam_stats; bam_star }
+
+process bowtie {
+    tag "$sample_name"
+    publishDir "${params.outdir}/bowtie", mode: 'copy',
+            saveAs: {filename ->
+                if (filename.indexOf(".bam") == -1) "logs/$filename"
+                else  filename }
+
+    input:
+    set val(sample_name), file(reads) from further_processed_reads_bowtie
+    file index_array from bowtie_index.collect()
+
+    output:
+    set val(sample_name), file("*.bam") into bowtie_aligned
+    file "*.out" into bowtie_alignment_logs
+
+    when:
+     params.bowtie_align
+
+    script:
+
+    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.processed)?(\.further_processed)?$/
+    index = index_array[0].baseName - ~/.\d$/
+    """
+    bowtie --sam \\
+        -m 1 \\
+        --best \\
+        --strata \\
+        -k 1 \\
+        --tryhard \\
+        --threads ${task.cpus} \\
+        --phred33-quals \\
+        --chunkmbs 64 \\
+        --seedmms 2 \\
+        --seedlen 28 \\
+        --maqerr 70  \\
+        ${index}  \\
+        -q ${reads} \\
+        --un ${reads.baseName}.unAl > ${sample_name}.sam 2> ${sample_name}.out
+
+        samtools sort -@ ${task.cpus} -o ${sample_name}.bam ${sample_name}.sam
+    """
+}
+bowtie_aligned.into { bam_stats; bam_bowtie }
+
 process samtools_stats {
     tag "$sample_name"
     label 'process_medium'
@@ -631,7 +701,8 @@ process multiqc {
     file ('trimmed/*') from cutadapt_results.collect().ifEmpty([])
     file ('artifacts_trimmed/*') from  artifact_cutting_results.collect().ifEmpty([])
     file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])
-    file ('alignment/*') from alignment_logs.collect().ifEmpty([])
+    file ('alignment/*') from star_alignment_logs.collect().ifEmpty([])
+    file ('alignment/*') from bowtie_alignment_logs.collect().ifEmpty([])
     file ('alignment/samtools_stats/*') from bam_flagstat_mqc.collect().ifEmpty([])
     file ('rseqc/*') from rseqc_results.collect().ifEmpty([])
     file workflow_summary from ch_workflow_summary.collectFile(name: "workflow_summary_mqc.yaml")
@@ -648,7 +719,7 @@ process multiqc {
 
     """
     multiqc -f $rtitle $rfilename $custom_config_file \\
-    -m custom_content -m fastqc -m star -m cutadapt -m rseqc -m samtools .
+    -m custom_content -m fastqc -m star -m cutadapt -m rseqc -m samtools -m bowtie1 .
     """
 }
 
