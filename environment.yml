@@ -18,4 +18,5 @@ dependencies:
 - bioconda::star=2.6.1d             # Don't upgrade me - 2.7X indices incompatible with iGenomes.
 - bioconda::multiqc=1.8
 - unzip=6.0
-- bioconda::bowtie2=2.3.5
+- bioconda::bowtie=1.2.3
+- bioconda::rseqc=3.0.1

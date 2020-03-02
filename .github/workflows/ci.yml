@@ -13,6 +13,8 @@ jobs:
       matrix:
         # Nextflow versions: check pipeline minimum and current latest
         nxf_ver: ['19.10.0', '']
+        aligner: ["--aligner 'bowtie'", "--aligner 'star'"]
+        options: ['--trimming false','--cutEcoP false','--cutLinker false','--cutG false','--cutArtifacts false', '--star_index false','--bowtie_index false']
     steps:
       - uses: actions/checkout@v2
       - name: Install Nextflow
