@@ -30,6 +30,8 @@ def helpMessage() {
       --cutEcoP                     Set to false to not cut the EcoP
       --cutLinker                   Set to false to not cut the linker
       --cutG                        Set to false to not cut the additonal G at the 5' end
+      --star_index                  Path to STAR index, set to false if igenomes should be used
+      --bowtie_index                Path to bowtie index, set to false if igenomes should be used
       --cutArtifacts                Set to false to not cut artifacts
       --artifacts5end               Path to 5 end artifact file, if not given the pipeline will use a default file with all possible artifacts
       --artifacts3end               Path to 3 end artifact file, if not given the pipeline will use a default file with all possible artifacts
@@ -37,10 +39,11 @@ def helpMessage() {
 
       References                    If not specified in the configuration file or you wish to overwrite any of the references
       --fasta [file]                Path to fasta reference
-      --star_index                  Path to the star index, if not given the pipeline will automatically try to build one with the given fasta and gtf file
       --genome                      Name of iGenomes reference
       --gtf                         Path to gtf file
 
+      Alignment:
+      --aligner                     Specifies the aligner to use (available are: 'star', 'bowtie')
 
       Other options:
         --outdir [file]                 The output directory where the results will be saved
@@ -72,6 +75,7 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
 }
 
 params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
+params.bowtie_index = params.genome ? params.genomes[ params.genome ].bowtie ?: false : false
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 if (params.fasta) { ch_fasta = file(params.fasta, checkIfExists: true) }
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
@@ -80,10 +84,18 @@ params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : fals
 params.min_cluster = 30
 
 // Validate inputs
-if( params.star_index ){
+if (params.aligner != 'star' && params.aligner != 'bowtie') {
+    exit 1, "Invalid aligner option: ${params.aligner}. Valid options: 'star', 'bowtie'"
+}
+if( params.star_index && params.aligner == 'star' ){
     star_index = Channel
         .fromPath(params.star_index)
         .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
+}
+else if( params.bowtie_index && params.aligner == 'bowtie' ){
+    bowtie_index = Channel
+        .fromPath(params.bowtie_index)
+        .ifEmpty { exit 1, "STAR index not found: ${params.bowtie_index}" }
 }
 else if ( params.fasta ){
     Channel
@@ -168,7 +180,17 @@ if(params.readPaths){
 log.info nfcoreHeader()
 def summary = [:]
 summary['Run Name']        = custom_runName ?: workflow.runName
-summary['Reads']           = params.reads
+if (params.genome){summary['Reads'] = params.reads}
+if (params.aligner == 'star') {
+    summary['Aligner'] = "STAR"
+    if (params.star_index)summary['STAR Index'] = params.star_index
+    else if (params.fasta)summary['Fasta Ref'] = params.fasta
+} else if (params.aligner == 'bowtie') {
+    summary['Aligner'] = "bowtie"
+    if (params.bowtie_index)summary['bowtie Index'] = params.bowtie_index
+    else if (params.fasta)summary['Fasta Ref'] = params.fasta
+    if (params.splicesites)summary['Splice Sites'] = params.splicesites
+}
 summary['Fasta Ref']       = params.fasta
 summary['GTF Ref']         = params.gtf
 if(params.artifacts5end){ summary["5' artifacts"] = params.artifacts5end}
@@ -265,6 +287,7 @@ process convert_gtf {
     gtf2bed.pl $gtf > ${gtf.baseName}.bed
     """
 }
+
 /*
  * STEP 1 - FastQC
  */
@@ -295,6 +318,7 @@ process fastqc {
 
 
 process makeSTARindex {
+    label 'high_memory'
     tag "${fasta.baseName}"
     publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
             saveAs: { params.saveReference ? it : null }, mode: 'copy'
@@ -307,18 +331,19 @@ process makeSTARindex {
     file "star" into star_index
 
     when:
-        !(params.star_index) || !(params.star_align)
+        params.aligner == 'star' && !params.star_index && params.fasta
 
     script:
+    def avail_mem = task.memory ? "--limitGenomeGenerateRAM ${task.memory.toBytes() - 100000000}" : ''
     """
     mkdir star
     STAR \\
         --runMode genomeGenerate \\
         --runThreadN ${task.cpus} \\
         --sjdbGTFfile $gtf \\
-        --sjdbOverhang 50 \\
         --genomeDir star/ \\
-        --genomeFastaFiles $fasta
+        --genomeFastaFiles $fasta \\
+        $avail_mem
     """
 }
 process makeBowtieindex {
@@ -333,7 +358,7 @@ process makeBowtieindex {
     // ${fasta.baseName}.index into bowtie_index
     file "${fasta.baseName}.index*" into bowtie_index
     when:
-        !(params.bowtie_index) ||!(params.bowtie_align)
+        params.aligner == 'bowtie' && !params.bowtie_index && params.fasta
 
     script:
     """
@@ -504,8 +529,9 @@ else{
  * STEP 7 - STAR alignment
  */
 further_processed_reads_star = further_processed_reads_star.dump(tag:"star")
-
+if (params.aligner == 'star') {
 process star {
+    label 'high_memory'
     tag "$sample_name"
     publishDir "${params.outdir}/STAR", mode: 'copy',
             saveAs: {filename ->
@@ -522,8 +548,6 @@ process star {
     file "*.out" into star_alignment_logs
     file "*SJ.out.tab"
 
-    when:
-     params.star_align
 
     script:
 
@@ -542,10 +566,16 @@ process star {
         --outFileNamePrefix $prefix \\
         --outFilterMatchNmin ${params.min_aln_length}
     """
-}
-star_aligned.into { bam_stats; bam_star }
 
+}
+
+star_aligned.into { bam_stats; bam_aligned }
+} else{
+    star_alignment_logs = Channel.empty()
+}
+if (params.aligner == 'bowtie'){
 process bowtie {
+    label 'high_memory'
     tag "$sample_name"
     publishDir "${params.outdir}/bowtie", mode: 'copy',
             saveAs: {filename ->
@@ -557,11 +587,9 @@ process bowtie {
     file index_array from bowtie_index.collect()
 
     output:
-    set val(sample_name), file("*.bam") into bowtie_aligned
+    set val(sample_name), file("*.bam") into bam_stats, bam_aligned
     file "*.out" into bowtie_alignment_logs
 
-    when:
-     params.bowtie_align
 
     script:
 
@@ -586,8 +614,11 @@ process bowtie {
 
         samtools sort -@ ${task.cpus} -o ${sample_name}.bam ${sample_name}.sam
     """
+
 }
-bowtie_aligned.into { bam_stats; bam_bowtie }
+}else{
+    bowtie_alignment_logs= Channel.empty()
+}
 
 process samtools_stats {
     tag "$sample_name"
@@ -623,7 +654,7 @@ process get_ctss {
     publishDir "${params.outdir}/ctss", mode: 'copy'
 
     input:
-    set val(sample_name), file(bam_count) from bam_star
+    set val(sample_name), file(bam_count) from bam_aligned
 
     output:
     set val(sample_name), file("*.ctss.bed") into ctss_counts
