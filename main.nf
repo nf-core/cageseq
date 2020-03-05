@@ -89,27 +89,36 @@ if (params.aligner != 'star' && params.aligner != 'bowtie') {
 }
 if( params.star_index && params.aligner == 'star' ){
     star_index = Channel
-        .fromPath(params.star_index)
+        .fromPath(params.star_index, checkIfExists: true)
         .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
 }
 else if( params.bowtie_index && params.aligner == 'bowtie' ){
     bowtie_index = Channel
-        .fromPath(params.bowtie_index)
+        .fromPath(params.bowtie_index, checkIfExists: true)
         .ifEmpty { exit 1, "STAR index not found: ${params.bowtie_index}" }
 }
 else if ( params.fasta ){
     Channel
-        .fromPath(params.fasta)
+        .fromPath(params.fasta, checkIfExists: true)
         .ifEmpty { exit 1, "fasta file not found: ${params.fasta}" }
-        .into { fasta_star_index; fasta_bowtie_index; fasta_rseqc}
+        .into { fasta_star_index; fasta_bowtie_index}
 }
 else {
     exit 1, "No reference genome specified!"
 }
 
+
+if( params.fasta ){
+  fasta_rseqc = Channel
+      .fromPath(params.fasta, checkIfExists: true)
+      .ifEmpty { exit 1, "fasta file not found: ${params.fasta}" }
+} else {
+    exit 1, "No fasta file specified!"
+}
+
 if( params.gtf ){
     Channel
-        .fromPath(params.gtf)
+        .fromPath(params.gtf, checkIfExists: true)
         .ifEmpty { exit 1, "GTF annotation file not found: ${params.gtf}" }
         .into { gtf_makeSTARindex; gtf_star; gtf_rseqc}
 } else {
@@ -316,60 +325,62 @@ process fastqc {
  * STEP 2  - Build STAR index
  */
 
+if(params.aligner == 'star' && !params.star_index && params.fasta){
+    process makeSTARindex {
+        label 'high_memory'
+        tag "${fasta.baseName}"
+        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+                saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
-process makeSTARindex {
-    label 'high_memory'
-    tag "${fasta.baseName}"
-    publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
-            saveAs: { params.saveReference ? it : null }, mode: 'copy'
+        input:
+        file fasta from fasta_star_index
+        file gtf from gtf_makeSTARindex.collect()
 
-    input:
-    file fasta from fasta_star_index
-    file gtf from gtf_makeSTARindex.collect()
+        output:
+        file "star" into star_index
 
-    output:
-    file "star" into star_index
+        when:
 
-    when:
-        params.aligner == 'star' && !params.star_index && params.fasta
 
-    script:
-    def avail_mem = task.memory ? "--limitGenomeGenerateRAM ${task.memory.toBytes() - 100000000}" : ''
-    """
-    mkdir star
-    STAR \\
-        --runMode genomeGenerate \\
-        --runThreadN ${task.cpus} \\
-        --sjdbGTFfile $gtf \\
-        --genomeDir star/ \\
-        --genomeFastaFiles $fasta \\
-        $avail_mem
-    """
+        script:
+        def avail_mem = task.memory ? "--limitGenomeGenerateRAM ${task.memory.toBytes() - 100000000}" : ''
+        """
+        mkdir star
+        STAR \\
+            --runMode genomeGenerate \\
+            --runThreadN ${task.cpus} \\
+            --sjdbGTFfile $gtf \\
+            --genomeDir star/ \\
+            --genomeFastaFiles $fasta \\
+            $avail_mem
+        """
+    }
 }
-process makeBowtieindex {
-    tag "${fasta.baseName}"
-    publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
-            saveAs: { params.saveReference ? it : null }, mode: 'copy'
+    if(params.aligner == 'bowtie' && !params.bowtie_index && params.fasta){
+    process makeBowtieindex {
+        tag "${fasta.baseName}"
+        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+                saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
-    input:
-    file fasta from fasta_bowtie_index
+        input:
+        file fasta from fasta_bowtie_index
 
-    output:
-    // ${fasta.baseName}.index into bowtie_index
-    file "${fasta.baseName}.index*" into bowtie_index
-    when:
-        params.aligner == 'bowtie' && !params.bowtie_index && params.fasta
-
-    script:
-    """
+        output:
+        // ${fasta.baseName}.index into bowtie_index
+        file "${fasta.baseName}.index*" into bowtie_index
+        when:
 
 
-    bowtie-build --threads ${task.cpus} ${fasta} ${fasta.baseName}.index
+        script:
+        """
 
 
-    """
+        bowtie-build --threads ${task.cpus} ${fasta} ${fasta.baseName}.index
+
+
+        """
+    }
 }
-
 
 /*
  * STEP 3 - Cut Enzyme binding site at 5' and linker at 3'
