@@ -1,26 +1,30 @@
-name: cageseq CI
+name: nf-core/cageseq CI
 # This workflow is triggered on pushes and PRs to the repository.
+# It runs the pipeline with the minimal test dataset to check that it completes without any syntax errors
 on: [push, pull_request]
 
 jobs:
   test:
+    env:
+      NXF_VER: ${{ matrix.nxf_ver }}
+      NXF_ANSI_LOG: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        nxf_ver: ['19.04.0', '']
+        # Nextflow versions: check pipeline minimum and current latest
+        nxf_ver: ['19.10.0', '']
+        aligner: ["--aligner 'bowtie'", "--aligner 'star'"]
+        options: ['--trimming false','--cutEcoP false','--cutLinker false','--cutG false','--cutArtifacts false', '--star_index false','--bowtie_index false']
     steps:
-      - uses: actions/checkout@v1
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+      - uses: actions/checkout@v2
       - name: Install Nextflow
         run: |
-          export NXF_VER=${{ matrix.nxf_ver }}
           wget -qO- get.nextflow.io | bash
           sudo mv nextflow /usr/local/bin/
-      - name: Download and tag image
+      - name: Pull docker image
         run: |
-          docker pull nfcore/cageseq:dev && docker tag nfcore/cageseq:dev nfcore/cageseq:dev
-      - name: Run test
+          docker pull nfcore/cageseq:dev
+          docker tag nfcore/cageseq:dev nfcore/cageseq:dev
+      - name: Run pipeline with test data
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile test,docker

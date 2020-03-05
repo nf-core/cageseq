@@ -6,14 +6,17 @@ channels:
   - bioconda
   - defaults
 dependencies:
-- bedtools=2.27.1
-- cutadapt=2.1
-- fastqc=0.11.8
-- numpy=1.16.2
-- pandas=0.24.2
-- r-markdown=0.9
-- samtools=1.9
-- star=2.6.1d             # Don't upgrade me - 2.7X indices incompatible with iGenomes.
-- multiqc=1.7
+
+- conda-forge::python=3.7.3
+- conda-forge::markdown=3.1.1
+- conda-forge::pymdown-extensions=6.0
+- conda-forge::pygments=2.5.2
+- bioconda::bedtools=2.27.1
+- bioconda::cutadapt=2.1
+- bioconda::fastqc=0.11.8
+- bioconda::samtools=1.9
+- bioconda::star=2.6.1d             # Don't upgrade me - 2.7X indices incompatible with iGenomes.
+- bioconda::multiqc=1.8
 - unzip=6.0
-- bowtie2=2.3.5
+- bioconda::bowtie=1.2.3
+- bioconda::rseqc=3.0.1
