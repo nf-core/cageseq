@@ -64,7 +64,7 @@ NXF_OPTS='-Xms1g -Xmx4g'
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/cageseq --reads /path/to/reads.fastq.gz -profile docker --fasta /path/to/genome.fasta --gtf /path/to/genome.gtf
+nextflow run nf-core/rnaseq --reads '*_R{1,2}.fastq.gz' --genome GRCh37 aligner star -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -141,16 +141,6 @@ Please note the following requirements:
 
 If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
 
-### `--single_end`
-
-By default, the pipeline expects paired-end data. If you have single-end data, you need to specify `--single_end` on the command line when you launch the pipeline. A normal glob pattern, enclosed in quotation marks, can then be used for `--reads`. For example:
-
-```bash
---single_end --reads '*.fastq'
-```
-
-It is not possible to run a mixture of single-end and paired-end files in one run.
-
 ## Reference genomes
 
 The pipeline config files come bundled with paths to the illumina iGenomes reference index files. If running with docker or AWS, the configuration is set up to use the [AWS-iGenomes](https://ewels.github.io/AWS-iGenomes/) resource.
@@ -170,7 +160,7 @@ You can find the keys to specify the genomes in the [iGenomes config file](../co
 * _S. cerevisiae_
   * `--genome 'R64-1-1'`
 
-> There are numerous others - check the config file for more.
+> There are numerous others - check the `igenomes.config` in `conf/` for more.
 
 Note that you can use the same configuration setup to save sets of reference files for your own use, even if they are not part of the iGenomes resource. See the [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for instructions on where to save such a file.
 
@@ -189,19 +179,18 @@ params {
 }
 ```
 
-<!-- TODO nf-core: Describe reference path flags -->
-
-### `--fasta` `--gtf` `--star_index`
+### `--fasta` `--gtf` `--star_index` `--bowtie_index`
 
 If you prefer, you can specify the full path to your reference genome when you run the pipeline:
 
 ```bash
 --fasta '[path to Fasta reference]' \
 --gtf '[path to GTF file]' \
---star '[path to STAR index]'
+--star_index '[path to STAR index]'
+--bowtie_index '[path to bowite index]'
 ```
 
-The minimum requirements for running the pipeline are the Fasta and GTF files. If a STAR index is not given, it will be automatically build.
+The minimum requirements for running the pipeline are the Fasta and GTF files. If a STAR or bowtie index is not given, it will be automatically build.
 
 ### `--saveReference`
 
@@ -213,7 +202,7 @@ Input fastq files are trimmed in three different steps, which are by default all
 
 ### `--trimming`
 
-The first process is regulated by the flag `--trimming`. Here the enzyme binding site at the 5' and linker at the 3' end are cut
+The first process is regulated by the flag `--trimming`. Here the enzyme binding site at the 5' and linker at the 3' end are cut.
 
 ### `--cutG`
 
@@ -221,7 +210,7 @@ The removing of the added G at the 5' end can be deactivated with this flag.
 
 ### `--cutArtifacts`
 
-Artifacts, generated in the sequencing process, are cut if this flag is not set to false. It is possible to specify fasta files containing the belonging adapters with the following arguments. If `--cutArtifacts` is set to falase, `--artifacts5end` and `--artifacts3end` is ignored.
+Artifacts, generated in the sequencing process, are cut if this flag is not set to false. It is possible to specify fasta files containing the belonging adapters with the following arguments. If `--cutArtifacts` is set to false, `--artifacts5end` and `--artifacts3end` is ignored.
 
 ### `--artifacts5end`
 
@@ -233,7 +222,7 @@ Specifying a file containing artifacts at the 3' end. By default a file with all
 
 ### `--min_cluster`
 
-Sets the minimum amount of reads for paraclu to build a cluster. Default: 100.
+Sets the minimum amount of reads for paraclu to build a cluster. Default: 20.
 
 ### `--igenomes_ignore`
 

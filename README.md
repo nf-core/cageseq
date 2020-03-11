@@ -2,8 +2,8 @@
 
 **CAGE-seq pipeline**.
 
-[![GitHub Actions CI Status](https://github.com/nf-core/cageseq/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/cageseq/actions)
-[![GitHub Actions Linting Status](https://github.com/nf-core/cageseq/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/cageseq/actions)
+[![GitHub Actions CI Status](https://github.com/nf-core/cageseq/workflows/cageseq%20CI/badge.svg)](https://github.com/nf-core/cageseq/actions)
+[![GitHub Actions Linting Status](https://github.com/nf-core/cageseq/workflows/cageseq%20linting/badge.svg)](https://github.com/nf-core/cageseq/actions)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-brightgreen.svg)](https://www.nextflow.io/)
 
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)
@@ -18,6 +18,18 @@ This pipeline is currenlty under development. The workflow is not yet finished.
 UNDER DEVELOPMENT
 
 This pipeline is currenlty under development. The workflow is not yet finished.
+
+The pipeline includes steps for adapter and artefact trimming
+([cutadapt](https://cutadapt.readthedocs.io/en/stable/guide.html)), alignment to
+a reference ([STAR](https://github.com/alexdobin/STAR) or
+[bowtie](http://bowtie-bio.sourceforge.net/index.shtml)) and CAGE tag counting
+and clustering ([paraclu](http://cbrc3.cbrc.jp/~martin/paraclu/)).
+Additionally, several quality control steps
+([FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/),
+[RSeQC](http://rseqc.sourceforge.net/),
+[MultiQC](https://multiqc.info/))
+are included to allow for easy verification of results after a run.
+
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
 
@@ -37,10 +49,8 @@ nextflow run nf-core/cageseq -profile test,<docker/singularity/conda/institute>
 
 iv. Start running your own analysis!
 
-<!-- TODO nf-core: Update the default command above used to run the pipeline -->
-
 ```bash
-nextflow run nf-core/cageseq -profile <docker/singularity/conda/institute> --reads '*_R{1,2}.fastq.gz' --genome GRCh37
+nextflow run nf-core/cageseq --reads '*_R{1,2}.fastq.gz' --aligner <'star'/'bowtie'> --genome GRCh38 -profile <docker/singularity/conda/institute>
 ```
 
 See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
@@ -57,11 +67,6 @@ The nf-core/cageseq pipeline comes with documentation about the pipeline, found 
 3. [Running the pipeline](docs/usage.md)
 4. [Output and how to interpret the results](docs/output.md)
 5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
-
-<!-- TODO nf-core: Add a brief overview of what the pipeline does and how it works -->
-
-This pipeline includes steps for adapter and artefact trimming ([cutadapt](https://cutadapt.readthedocs.io/en/stable/guide.html)), alignment to a reference ([STAR](https://github.com/alexdobin/STAR)) and CAGE tag counting.
-Additionally, several quality control steps ([FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/), [MultiQC](https://multiqc.info/)) are included to allow for easy verification of results after a run.
 
 ## Credits
 
