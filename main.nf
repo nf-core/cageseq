@@ -18,7 +18,7 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run nf-core/cageseq --reads /path/to/data.fastq.gz --star_index /path/to/index -profile docker
+    nextflow run nf-core/cageseq --reads '*_R{1,2}.fastq.gz' --aligner star --genome GRCh38 -profile docker
 
     Mandatory arguments:
       --reads [file]                Path to input data (must be surrounded with quotes)
@@ -192,16 +192,14 @@ summary['Run Name']        = custom_runName ?: workflow.runName
 if (params.genome){summary['Reads'] = params.reads}
 if (params.aligner == 'star') {
     summary['Aligner'] = "STAR"
-    if (params.star_index)summary['STAR Index'] = params.star_index
-    else if (params.fasta)summary['Fasta Ref'] = params.fasta
+    if (params.star_index){summary['STAR Index'] = params.star_index}
+    else if (params.fasta){summary['Fasta Ref'] = params.fasta}
 } else if (params.aligner == 'bowtie') {
     summary['Aligner'] = "bowtie"
     if (params.bowtie_index)summary['bowtie Index'] = params.bowtie_index
     else if (params.fasta)summary['Fasta Ref'] = params.fasta
     if (params.splicesites)summary['Splice Sites'] = params.splicesites
 }
-summary['Fasta Ref']       = params.fasta
-summary['GTF Ref']         = params.gtf
 if(params.artifacts5end){ summary["5' artifacts"] = params.artifacts5end}
 if(params.artifacts3end){ summary["3' artifacts"] = params.artifacts3end}
 summary['Trimming']         = params.trimming
@@ -366,7 +364,6 @@ if(params.aligner == 'star' && !params.star_index && params.fasta){
         file fasta from fasta_bowtie_index
 
         output:
-        // ${fasta.baseName}.index into bowtie_index
         file "${fasta.baseName}.index*" into bowtie_index
         when:
 
@@ -480,6 +477,7 @@ if(params.trimming){
   /**
    * STEP 5 - Remove artifacts
    */
+
 if (params.cutArtifacts){
   process cut_artifacts {
     tag "$sample_name"
@@ -672,16 +670,16 @@ process get_ctss {
 
     script:
     """
-    bash make_ctss.sh $bam_count
+    make_ctss.sh -q 20 -i ${bam_count.baseName} -n ${sample_name}
     """
 }
 
 /**
  * STEP 9 - Cluster CTSS files
  */
-
+ctss_counts = ctss_counts.dump(tag:"ctss_counts")
 process cluster_ctss {
-    tag "${ctss.simpleName}"
+    tag "${ctss}"
     publishDir "${params.outdir}/ctss/clusters", mode: 'copy'
 
     input:
@@ -692,20 +690,20 @@ process cluster_ctss {
 
     shell:
     '''
-    bash process_ctss.sh !{ctss}
+    bash process_ctss.sh !{ctss[0].baseName} !{ctss[1].baseName}
 
-    paraclu !{params.min_cluster} "!{ctss.baseName}_pos_4Ps" > "!{ctss.baseName}pos_clustered"
-    paraclu !{params.min_cluster} "!{ctss.baseName}_neg_4Ps" > "!{ctss.baseName}neg_clustered"
+    paraclu !{params.min_cluster} "!{ctss[1].baseName}_pos_4Ps" > "!{ctss[1].baseName}pos_clustered"
+    paraclu !{params.min_cluster} "!{ctss[0].baseName}_neg_4Ps" > "!{ctss[0].baseName}neg_clustered"
 
-    paraclu-cut.sh  "!{ctss.baseName}pos_clustered" >  "!{ctss.baseName}pos_clustered_simplified"
-    paraclu-cut.sh  "!{ctss.baseName}neg_clustered" >  "!{ctss.baseName}neg_clustered_simplified"
+    paraclu-cut.sh  "!{ctss[1].baseName}pos_clustered" >  "!{ctss[1].baseName}pos_clustered_simplified"
+    paraclu-cut.sh  "!{ctss[0].baseName}neg_clustered" >  "!{ctss[0].baseName}neg_clustered_simplified"
 
 
-    cat "!{ctss.baseName}pos_clustered_simplified" "!{ctss.baseName}neg_clustered_simplified" >  "!{ctss.baseName}_clustered_simplified"
-    awk -F '\t' '{print $1"\t"$3"\t"$4"\t"$1":"$3".."$4","$2"\t"$6"\t"$2}' "!{ctss.baseName}_clustered_simplified" >  "!{ctss.baseName}_clustered_simplified.bed"
+    cat "!{ctss[1].baseName}pos_clustered_simplified" "!{ctss[0].baseName}neg_clustered_simplified" >  "!{ctss[0].baseName}_clustered_simplified"
+    awk -F '\t' '{print $1"\t"$3"\t"$4"\t"$1":"$3".."$4","$2"\t"$6"\t"$2}' "!{ctss[0].baseName}_clustered_simplified" >  "!{ctss[0].baseName}_clustered_simplified.bed"
     '''
 }
-
+ctss_clusters = ctss_clusters.dump(tag:"trim")
 process ctss_qc {
      tag "$clusters"
      publishDir "${params.outdir}/rseqc" , mode: 'copy',
@@ -816,7 +814,6 @@ workflow.onComplete {
     email_fields['summary']['Nextflow Build'] = workflow.nextflow.build
     email_fields['summary']['Nextflow Compile Timestamp'] = workflow.nextflow.timestamp
 
-    // TODO nf-core: If not using MultiQC, strip out this code (including params.max_multiqc_email_size)
     // On success try attach the multiqc report
     def mqc_report = null
     try {
