@@ -1,6 +1,6 @@
 # ![nf-core/cageseq](docs/images/nf-core-cageseq_logo.png)
 
-**CAGE-seq pipeline**.
+**Nextflow CAGE-seq analysis pipeline, part of the nf-core community**
 
 [![GitHub Actions CI Status](https://github.com/nf-core/cageseq/workflows/cageseq%20CI/badge.svg)](https://github.com/nf-core/cageseq/actions)
 [![GitHub Actions Linting Status](https://github.com/nf-core/cageseq/workflows/cageseq%20linting/badge.svg)](https://github.com/nf-core/cageseq/actions)
@@ -15,13 +15,9 @@ UNDER DEVELOPMENT
 
 This pipeline is currenlty under development. The workflow is not yet finished.
 
-UNDER DEVELOPMENT
-
-This pipeline is currenlty under development. The workflow is not yet finished.
-
 The pipeline includes steps for adapter and artefact trimming
 ([cutadapt](https://cutadapt.readthedocs.io/en/stable/guide.html)), alignment to
-a reference ([STAR](https://github.com/alexdobin/STAR) or
+a reference genome ([STAR](https://github.com/alexdobin/STAR) or
 [bowtie](http://bowtie-bio.sourceforge.net/index.shtml)) and CAGE tag counting
 and clustering ([paraclu](http://cbrc3.cbrc.jp/~martin/paraclu/)).
 Additionally, several quality control steps
@@ -55,8 +51,6 @@ nextflow run nf-core/cageseq --reads '*_R{1,2}.fastq.gz' --aligner <'star'/'bowt
 See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
 
 ## Documentation
-
-The nf-core/cageseq pipeline comes with documentation about the pipeline, found in the `docs/` directory:
 
 1. [Installation](https://nf-co.re/usage/installation)
 2. Pipeline configuration
