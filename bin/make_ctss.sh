@@ -16,15 +16,11 @@ case ${opt} in
 q) QCUT=${OPTARG};;
 i) VAR=${OPTARG};;
 n) NAME=${OPTARG};;
-*) usage;;
 esac
 done
 
 if [ "${QCUT}" = "" ]; then QCUT=20; fi
 
-# for VAR in "$@"
-# do
-# file=${VAR##*/}
 echo "working on: ${VAR}"
 
 #convert sam to bam and bam to bed
@@ -35,13 +31,14 @@ samtools view  -F 4 -u -q $QCUT -b "$VAR.bam" |  bamToBed -i stdin > "$TMPFILE"
 awk 'BEGIN{OFS="\t"}{if($6=="+"){print $1,$2,$5}}' "${TMPFILE}" \
 | sort -k1,1 -k2,2n \
 | groupBy -i stdin -g 1,2 -c 3 -o count \
-| awk -v x="$NAME" 'BEGIN{OFS="\t"}{print $1,$2,$2+1,  x  ,$3,"+"}' >> "$NAME".pos.ctss.bed
+| awk -v x="$NAME" 'BEGIN{OFS="\t"}{print $1,$2,$2+1,  x  ,$3,"+"}' >> "$NAME".pos_ctss.bed
 
 #generate ctss on the negative strand
 awk 'BEGIN{OFS="\t"}{if($6=="-"){print $1,$3,$5}}' "${TMPFILE}" \
 | sort -k1,1 -k2,2n \
 | groupBy -i stdin -g 1,2 -c 3 -o count \
-| awk -v x="$NAME" 'BEGIN{OFS="\t"}{print $1,$2-1,$2, x  ,$3,"-"}' >> "$NAME".neg.ctss.bed
+| awk -v x="$NAME" 'BEGIN{OFS="\t"}{print $1,$2-1,$2, x  ,$3,"-"}' >> "$NAME".neg_ctss.bed
+
+cat "$NAME".pos_ctss.bed "$NAME".neg_ctss.bed > "$NAME".ctss.bed
 
 rm "$TMPFILE"
-# done

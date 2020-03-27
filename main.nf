@@ -36,6 +36,7 @@ def helpMessage() {
       --artifacts5end               Path to 5 end artifact file, if not given the pipeline will use a default file with all possible artifacts
       --artifacts3end               Path to 3 end artifact file, if not given the pipeline will use a default file with all possible artifacts
       --min_cluster                 Minimum amount of reads to build a cluster with paraclu
+      --tpm_cluster_threshold       Threshold for expression count of ctss considered in paraclu clustering
 
       References                    If not specified in the configuration file or you wish to overwrite any of the references
       --fasta [file]                Path to fasta reference
@@ -82,6 +83,7 @@ params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : fals
 //params.artifacts5end = params.artifacts5end ? params.artifacts5end[ params.artifacts5end ].fasta ?: false : false
 //params.artifacts3end = params.artifacts3end ? params.artifacts3end[ params.artifacts3end ].fasta ?: false : false
 params.min_cluster = 30
+params.tpm_cluster_threshold = 0.2
 
 // Validate inputs
 if (params.aligner != 'star' && params.aligner != 'bowtie') {
@@ -210,6 +212,7 @@ summary['CutArtifacts']     = params.cutArtifacts
 summary['EcoSite']          = params.ecoSite
 summary['LinkerSeq']        = params.linkerSeq
 summary['Min. cluster']     = params.min_cluster
+summary['Cluster threshold']= params.tpm_cluster_threshold
 summary['Save Reference']   = params.saveReference
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
@@ -666,7 +669,8 @@ process get_ctss {
     set val(sample_name), file(bam_count) from bam_aligned
 
     output:
-    set val(sample_name), file("*.ctss.bed") into ctss_counts
+    set val(sample_name), file("*.ctss.bed") into ctss_samples
+    file("*.ctss.bed") into ctss_counts
 
     script:
     """
@@ -677,32 +681,38 @@ process get_ctss {
 /**
  * STEP 9 - Cluster CTSS files
  */
-ctss_counts = ctss_counts.dump(tag:"ctss_counts")
+ctss_counts = ctss_counts.collect().dump(tag:"ctss_counts")
 process cluster_ctss {
+    label "high_memory"
     tag "${ctss}"
     publishDir "${params.outdir}/ctss/clusters", mode: 'copy'
 
     input:
-    set val(sample_name), file(ctss) from ctss_counts
+    file ctss from ctss_counts.collect()
 
     output:
-    file "*.bed" into ctss_clusters
+    file "*.bed" into ctss_qc, ctss_clusters
+
 
     shell:
     '''
-    bash process_ctss.sh !{ctss[0].baseName} !{ctss[1].baseName}
+    process_ctss.sh -t !{params.tpm_cluster_threshold} !{ctss}
 
-    paraclu !{params.min_cluster} "!{ctss[1].baseName}_pos_4Ps" > "!{ctss[1].baseName}pos_clustered"
-    paraclu !{params.min_cluster} "!{ctss[0].baseName}_neg_4Ps" > "!{ctss[0].baseName}neg_clustered"
+    paraclu !{params.min_cluster} "ctss_all_pos_4Ps" > "ctss_all_pos_clustered"
+    paraclu !{params.min_cluster} "ctss_all_neg_4Ps" > "ctss_allneg_clustered"
 
-    paraclu-cut.sh  "!{ctss[1].baseName}pos_clustered" >  "!{ctss[1].baseName}pos_clustered_simplified"
-    paraclu-cut.sh  "!{ctss[0].baseName}neg_clustered" >  "!{ctss[0].baseName}neg_clustered_simplified"
+    paraclu-cut.sh  "ctss_all_pos_clustered" >  "ctss_all_pos_clustered_simplified"
+    paraclu-cut.sh  "ctss_all_neg_clustered" >  "ctss_all_neg_clustered_simplified"
 
-
-    cat "!{ctss[1].baseName}pos_clustered_simplified" "!{ctss[0].baseName}neg_clustered_simplified" >  "!{ctss[0].baseName}_clustered_simplified"
-    awk -F '\t' '{print $1"\t"$3"\t"$4"\t"$1":"$3".."$4","$2"\t"$6"\t"$2}' "!{ctss[0].baseName}_clustered_simplified" >  "!{ctss[0].baseName}_clustered_simplified.bed"
+    cat "ctss_all_pos_clustered_simplified" "ctss_all_neg_clustered_simplified" >  "ctss_all_clustered_simplified"
+    awk -F '\t' '{print $1"\t"$3"\t"$4"\t"$1":"$3".."$4","$2"\t"$6"\t"$2}' "ctss_all_clustered_simplified" >  "ctss_all_clustered_simplified.bed"
     '''
 }
+
+
+/**
+ * STEP 10 - QC for clustered ctss
+ */
 ctss_clusters = ctss_clusters.dump(tag:"trim")
 process ctss_qc {
      tag "$clusters"
@@ -713,7 +723,7 @@ process ctss_qc {
          }
 
      input:
-     file clusters from ctss_clusters
+     file clusters from ctss_qc
      file gtf from bed_rseqc.collect()
      file fasta from fasta_rseqc.collect()
 
@@ -727,8 +737,57 @@ process ctss_qc {
      read_distribution.py -i !{clusters.baseName}.bam -r !{gtf} > !{clusters.baseName}.read_distribution.txt
      '''
  }
+
+ /*
+  * STEP 11 - Generate count files
+  */
+ process generate_counts {
+     tag "${sample_name}"
+     // publishDir "${params.outdir}/ctss/", mode: 'copy'
+
+     input:
+     set val(sample_name), file(ctss) from ctss_samples
+     file clusters from ctss_clusters.collect()
+
+     output:
+     file "*.txt" into count_files
+
+     shell:
+     '''
+     #intersect ctss files with generated clusters
+     intersectBed -a !{clusters} -b !{ctss} -loj -s > !{ctss}_counts_tmp
+
+     echo !{sample_name} > !{ctss}_counts.txt
+
+     bedtools groupby -i !{ctss}_counts_tmp -g 1,2,3,4,6 -c 11 -o sum |
+     awk -v OFS='\t' '{if($6=="-1") $6=0; print $6 }' >> !{ctss}_counts.txt
+     '''
+ }
+
 /*
- * STEP 10 - MultiQC
+ * STEP 11 - Generate count matrix
+ */
+process generate_count_matrix {
+    tag "${counts}"
+    publishDir "${params.outdir}/ctss/", mode: 'copy'
+
+    input:
+    file counts from count_files.collect()
+    file clusters from ctss_clusters.collect()
+
+    output:
+    file "*.txt" into count_matrix
+
+    shell:
+    '''
+    awk '{ print $4}' !{clusters} > coordinates
+    paste -d "\t" coordinates !{counts} >> count_table.txt
+    '''
+}
+
+
+/*
+ * STEP 12 - MultiQC
  */
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'

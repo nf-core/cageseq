@@ -63,7 +63,8 @@ See [usage docs](docs/usage.md) for all of the available options when running th
 
 ## Credits
 
-nf-core/cageseq was originally written by Kevin Menden and Tristan Kast.
+nf-core/cageseq was originally written by Kevin Menden and Tristan Kast and modified by Matthias Hörtenhuber.
+
 
 ## Contributions and Support
 
