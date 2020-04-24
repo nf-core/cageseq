@@ -15,7 +15,7 @@ shift $((OPTIND -1)) #throw out the -t parameter from $@ inputs
 FILES=$@
 
 # "Pooling ctss"
-cat "$FILES" > ctss_all
+cat $FILES > ctss_all
 
 
 #  "Sorting pooled ctss"
