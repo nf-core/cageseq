@@ -711,33 +711,6 @@ process cluster_ctss {
 }
 
 
-/**
- * STEP 10 - QC for clustered ctss
- */
-ctss_clusters = ctss_clusters.dump(tag:"trim")
-process ctss_qc {
-    tag "$clusters"
-    publishDir "${params.outdir}/rseqc" , mode: 'copy',
-     saveAs: {filename ->
-              if (filename.indexOf("read_distribution.txt") > 0) "read_distribution/$filename"
-              else filename
-     }
-
-    input:
-    file clusters from ctss_qc
-    file gtf from bed_rseqc.collect()
-    file fasta from fasta_rseqc.collect()
-
-    output:
-    file "*.txt" into rseqc_results
-
-    shell:
-    '''
-    cat !{fasta} |  awk '$0 ~ ">" {if (NR > 1) {print c;} c=0;printf substr($0,2,100) "\t"; } $0 !~ ">" {c+=length($0);} END { print c; }' > chrom_sizes.tmp
-    bedtools bedtobam -i !{clusters} -g chrom_sizes.tmp > !{clusters.baseName}.bam
-    read_distribution.py -i !{clusters.baseName}.bam -r !{gtf} > !{clusters.baseName}.read_distribution.txt
-    '''
- }
 
  /*
   * STEP 11 - Generate count files
@@ -752,6 +725,7 @@ process ctss_qc {
 
     output:
     file "*.txt" into count_files
+    file "*.bed" into count_qc
 
     shell:
     '''
@@ -760,8 +734,8 @@ process ctss_qc {
 
     echo !{sample_name} > !{ctss}_counts.txt
 
-    bedtools groupby -i !{ctss}_counts_tmp -g 1,2,3,4,6 -c 11 -o sum |
-    awk -v OFS='\t' '{if($6=="-1") $6=0; print $6 }' >> !{ctss}_counts.txt
+    bedtools groupby -i !{ctss}_counts_tmp -g 1,2,3,4,6 -c 11 -o sum > !{ctss}_counts.bed
+    awk -v OFS='\t' '{if($6=="-1") $6=0; print $6 }' !{ctss}_counts.bed >> !{ctss}_counts.txt
     '''
  }
 
@@ -786,6 +760,32 @@ process generate_count_matrix {
     '''
 }
 
+/**
+ * STEP 10 - QC for clustered ctss
+ */
+process ctss_qc {
+    tag "$clusters"
+    publishDir "${params.outdir}/rseqc" , mode: 'copy',
+     saveAs: {filename ->
+              if (filename.indexOf("read_distribution.txt") > 0) "read_distribution/$filename"
+              else filename
+     }
+
+    input:
+    file clusters from count_qc
+    file gtf from bed_rseqc.collect()
+    file fasta from fasta_rseqc.collect()
+
+    output:
+    file "*.txt" into rseqc_results
+
+    shell:
+    '''
+    cat !{fasta} |  awk '$0 ~ ">" {if (NR > 1) {print c;} c=0;printf substr($0,2,100) "\t"; } $0 !~ ">" {c+=length($0);} END { print c; }' > chrom_sizes.tmp
+    bedtools bedtobam -i !{clusters} -g chrom_sizes.tmp > !{clusters.baseName}.bam
+    read_distribution.py -i !{clusters.baseName}.bam -r !{gtf} > !{clusters.baseName}.read_distribution.txt
+    '''
+ }
 
 /*
  * STEP 12 - MultiQC
