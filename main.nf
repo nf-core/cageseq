@@ -21,32 +21,34 @@ def helpMessage() {
     nextflow run nf-core/cageseq --reads '*_R{1,2}.fastq.gz' --aligner star --genome GRCh38 -profile docker
 
     Mandatory arguments:
-      --reads [file]                Path to input data (must be surrounded with quotes)
-      -profile [str]                Configuration profile to use. Can use multiple (comma separated)
-                                    Available: conda, docker, singularity, test, awsbatch, <institute> and more
+        --reads [file]                    Path to input data (must be surrounded with quotes)
+        -profile [str]                    Configuration profile to use. Can use multiple (comma separated)
+                                          Available: conda, docker, singularity, test, awsbatch, <institute> and more
 
-    Options:
-      --trimming                    Set to false to skip the file Trimming
-      --cutEcoP                     Set to false to not cut the EcoP
-      --cutLinker                   Set to false to not cut the linker
-      --cutG                        Set to false to not cut the additonal G at the 5' end
-      --star_index                  Path to STAR index, set to false if igenomes should be used
-      --bowtie_index                Path to bowtie index, set to false if igenomes should be used
-      --cutArtifacts                Set to false to not cut artifacts
-      --artifacts5end               Path to 5 end artifact file, if not given the pipeline will use a default file with all possible artifacts
-      --artifacts3end               Path to 3 end artifact file, if not given the pipeline will use a default file with all possible artifacts
-      --min_cluster                 Minimum amount of reads to build a cluster with paraclu
-      --tpm_cluster_threshold       Threshold for expression count of ctss considered in paraclu clustering
+    Trimming:
+        --skip_trimming [bool]          Set to true to skip all file trimming steps
+        --trim_ecop [bool]              Set to false to not trim the EcoP site
+        --trim_linker [bool]            Set to false to not trim the linker
+        --trim_5g [bool]                Set to false to not trim the additonal G at the 5' end
+        --trim_artifacts [bool]         Set to false to not trim artifacts
+        --artifacts_5end [file]         Path to 5 end artifact file, if not given the pipeline will use a default file with all possible artifacts
+        --artifacts_3end [file]         Path to 3 end artifact file, if not given the pipeline will use a default file with all possible artifacts
 
-      References                    If not specified in the configuration file or you wish to overwrite any of the references
-      --fasta [file]                Path to fasta reference
-      --genome                      Name of iGenomes reference
-      --gtf                         Path to gtf file
+    References                          If not specified in the configuration file or you wish to overwrite any of the references
+        --fasta [file]                  Path to fasta reference
+        --genome [str]               Name of iGenomes reference
+        --gtf [file]                    Path to gtf file
 
-      Alignment:
-      --aligner                     Specifies the aligner to use (available are: 'star', 'bowtie')
+    Alignment:
+        --aligner [str]              Specifies the aligner to use (available are: 'star', 'bowtie')
+        --star_index [file]             Path to STAR index, set to false if igenomes should be used
+        --bowtie_index [file]           Path to bowtie index, set to false if igenomes should be used
 
-      Other options:
+    Clustering:
+        --min_cluster [int]                  Minimum amount of reads to build a cluster with paraclu
+        --tpm_cluster_threshold [int]         Threshold for expression count of ctss considered in paraclu clustering
+
+    Other options:
         --outdir [file]                 The output directory where the results will be saved
         --email [email]                 Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
         --email_on_fail [email]         Same as --email, except only send mail if the workflow is not successful
@@ -54,9 +56,9 @@ def helpMessage() {
         -name [str]                     Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
 
     AWSBatch options:
-      --awsqueue [str]                The AWSBatch JobQueue that needs to be set when running on AWSBatch
-      --awsregion [str]               The AWS Region for your AWS Batch job to run on
-      --awscli [str]                  Path to the AWS CLI tool
+        --awsqueue [str]                The AWSBatch JobQueue that needs to be set when running on AWSBatch
+        --awsregion [str]               The AWS Region for your AWS Batch job to run on
+        --awscli [str]                  Path to the AWS CLI tool
     """.stripIndent()
 }
 
@@ -80,8 +82,8 @@ params.bowtie_index = params.genome ? params.genomes[ params.genome ].bowtie ?: 
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 if (params.fasta) { ch_fasta = file(params.fasta, checkIfExists: true) }
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
-//params.artifacts5end = params.artifacts5end ? params.artifacts5end[ params.artifacts5end ].fasta ?: false : false
-//params.artifacts3end = params.artifacts3end ? params.artifacts3end[ params.artifacts3end ].fasta ?: false : false
+//params.artifacts_5end = params.artifacts_5end ? params.artifacts_5end[ params.artifacts_5end ].fasta ?: false : false
+//params.artifacts_3end = params.artifacts_3end ? params.artifacts_3end[ params.artifacts_3end ].fasta ?: false : false
 params.min_cluster = 30
 params.tpm_cluster_threshold = 0.2
 
@@ -127,18 +129,18 @@ if( params.gtf ){
     exit 1, "No GTF annotation specified!"
 }
 
-if( params.artifacts5end ){
+if( params.artifacts_5end ){
     ch_5end_artifacts = Channel
-        .fromPath(params.artifacts5end)
+        .fromPath(params.artifacts_5end)
 }
 else {
     ch_5end_artifacts = Channel
         .fromPath("$baseDir/assets/artifacts_5end.fasta")
 }
 
-if( params.artifacts3end ){
+if( params.artifacts_3end ){
      ch_3end_artifacts = Channel
-        .fromPath(params.artifacts3end)
+        .fromPath(params.artifacts_3end)
 }
 else {
     ch_3end_artifacts = Channel
@@ -202,17 +204,16 @@ if (params.aligner == 'star') {
     else if (params.fasta)summary['Fasta Ref'] = params.fasta
     if (params.splicesites)summary['Splice Sites'] = params.splicesites
 }
-if(params.artifacts5end){ summary["5' artifacts"] = params.artifacts5end}
-if(params.artifacts3end){ summary["3' artifacts"] = params.artifacts3end}
-summary['Trimming']         = params.trimming
-summary['CutEcoP']          = params.cutEcop
-summary['CutLinker']        = params.cutLinker
-summary['CutG']             = params.cutG
-summary['CutArtifacts']     = params.cutArtifacts
+if(params.artifacts_5end){ summary["5' artifacts"] = params.artifacts_5end}
+if(params.artifacts_3end){ summary["3' artifacts"] = params.artifacts_3end}
+summary['trim_ecop']          = params.trim_ecop
+summary['trim_linker']        = params.trim_linker
+summary['trim_5g']             = params.trim_5g
+summary['trim_artifacts']     = params.trim_artifacts
 summary['EcoSite']          = params.ecoSite
 summary['LinkerSeq']        = params.linkerSeq
 summary['Min. cluster']     = params.min_cluster
-summary['Cluster threshold']= params.tpm_cluster_threshold
+summary['Cluster Threshold']= params.tpm_cluster_threshold
 summary['Save Reference']   = params.saveReference
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
@@ -385,8 +386,9 @@ if(params.aligner == 'star' && !params.star_index && params.fasta){
 /*
  * STEP 3 - Cut Enzyme binding site at 5' and linker at 3'
  */
-if(params.trimming){
-    process trimming {
+
+if(!params.skip_trimming){
+    process trim_adapters {
         tag "$sample_name"
         publishDir "${params.outdir}/trimmed/adapter_trimmed", mode: 'copy',
                 saveAs: {filename ->
@@ -397,46 +399,46 @@ if(params.trimming){
         set val(sample_name), file(reads) from read_files_trimming
 
         output:
-        set val(sample_name), file("*.fastq.gz") into trimmed_reads_cutG
+        set val(sample_name), file("*.fastq.gz") into trimmed_reads_trim_5g
         file "*.output.txt" into cutadapt_results
 
         script:
         prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
         // Cut Both EcoP and Linker
-        if (params.cutEcop && params.cutLinker){
+        if (params.trim_ecop && params.trim_linker){
             """
             cutadapt -a ${params.ecoSite}...${params.linkerSeq} \\
             --match-read-wildcards \\
             -m 15 -M 45  \\
-            -o "$prefix".trimmed.fastq.gz \\
+            -o "$prefix".adapter_trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
             """
         }
 
         // Cut only EcoP site
-        else if (params.cutEcop && !params.cutLinker){
+        else if (params.trim_ecop && !params.trim_linker){
             """
             mkdir trimmed
             cutadapt -g ^${params.ecoSite} \\
             -e 0 \\
             --match-read-wildcards \\
             --discard-untrimmed \\
-            -o "$prefix".trimmed.fastq.gz \\
+            -o "$prefix".adapter_trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
             """
         }
 
         // Cut only Linker
-        else if (!params.cutEcop && params.cutLinker){
+        else if (!params.trim_ecop && params.trim_linker){
             """
             mkdir trimmed
             cutadapt -a ${params.linkerSeq}\$ \\
             -e 0 \\
             --match-read-wildcards \\
             -m 15 -M 45 \\
-            -o "$prefix".trimmed.fastq.gz \\
+            -o "$prefix".adapter_trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
             """
@@ -446,7 +448,7 @@ if(params.trimming){
     }
   }
   else{
-    read_files_trimming.set{ trimmed_reads_cutG }
+    read_files_trimming.set{ trimmed_reads_trim_5g }
     cutadapt_results = Channel.empty()
   }
 
@@ -454,12 +456,15 @@ if(params.trimming){
   /**
    * STEP 4 - Remove added G from 5-end
    */
-  if (params.cutG){
-      process cut_5G{
+  if (params.trim_5g && !params.skip_trimming){
+      process trim_5g{
         tag "$sample_name"
-
+        publishDir "${params.outdir}/trimmed/g_trimmed", mode: 'copy',
+                saveAs: {filename ->
+                    if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
+                    else "$filename" }
           input:
-          set val(sample_name), file(reads) from trimmed_reads_cutG
+          set val(sample_name), file(reads) from trimmed_reads_trim_5g
 
           output:
           set val(sample_name), file("*.fastq.gz") into processed_reads
@@ -468,31 +473,33 @@ if(params.trimming){
           prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?$/
           """
           cutadapt -g ^G \\
-          -e 0 --match-read-wildcards \\
-          -o "$prefix".G_trimmed.fastq.gz \\
-          $reads
+          -e 0 --match-read-wildcards --discard-trimmed \\
+          --cores=${task.cpus} \\
+          -o "$prefix".g_trimmed.fastq.gz \\
+          $reads \\
+          > ${reads.baseName}.g_trimming.output.txt
           """
       }
   }
   else {
-      trimmed_reads_cutG.set{processed_reads}
+      trimmed_reads_trim_5g.set{processed_reads}
   }
   /**
    * STEP 5 - Remove artifacts
    */
 
-if (params.cutArtifacts){
-  process cut_artifacts {
+if (params.trim_artifacts && !params.skip_trimming){
+  process trim_artifacts {
     tag "$sample_name"
-    publishDir "${params.outdir}/trimmed/artifacst_trimmed", mode: 'copy',
+    publishDir "${params.outdir}/trimmed/artifacts_trimmed", mode: 'copy',
       saveAs: {filename ->
           if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
           else "$filename" }
 
                   input:
                   set val(sample_name), file(reads) from processed_reads
-                  file artifacts5end from ch_5end_artifacts.collect()
-                  file artifacts3end from ch_3end_artifacts.collect()
+                  file artifacts_5end from ch_5end_artifacts.collect()
+                  file artifacts_3end from ch_3end_artifacts.collect()
 
                   output:
                   set val(sample_name), file("*.fastq.gz") into further_processed_reads
@@ -501,13 +508,13 @@ if (params.cutArtifacts){
                   script:
                   prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?(\.processed)?$/
                   """
-                  cutadapt -a file:$artifacts3end \\
-                  -g file:$artifacts5end -e 0.1 --discard-trimmed \\
+                  cutadapt -a file:$artifacts_3end \\
+                  -g file:$artifacts_5end -e 0.1 --discard-trimmed \\
                   --match-read-wildcards -m 15 -O 19 \\
                   --cores=${task.cpus} \\
-                  -o "$prefix".artifact_trimmed.fastq.gz \\
+                  -o "$prefix".artifacts_trimmed.fastq.gz \\
                   $reads \\
-                  > ${reads.baseName}.artifact_trimming.output.txt
+                  > ${reads.baseName}.artifacts_trimming.output.txt
                   """
   }
   further_processed_reads.into { further_processed_reads_star;further_processed_reads_bowtie; further_processed_reads_fastqc }
@@ -530,7 +537,7 @@ else{
       set val(sample_name), file("*_fastqc.{zip,html}") into trimmed_fastqc_results
 
       when:
-        params.trimming || params.cutG || params.cutArtifacts
+        (params.trim_5g || params.trim_artifacts) && !params.skip_trimming
       script:
       """
       fastqc -q $reads
