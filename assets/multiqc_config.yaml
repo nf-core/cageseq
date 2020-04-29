@@ -9,9 +9,9 @@ top_modules:
     - 'star'
     - 'samtools'
     - 'rseqc'
-extra_fn_clean_exts:
-    - '.trimmed.G'
-    - '.trimmed.G_trimmed.artifact'
+extra_fn_clean_trim:
+    - '.adapter_trimmed.g'
+
 report_section_order:
     software_versions:
         order: -1000

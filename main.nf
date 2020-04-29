@@ -27,6 +27,7 @@ def helpMessage() {
 
     Trimming:
         --skip_trimming [bool]          Set to true to skip all file trimming steps
+        --save_trimmed                  Set to true to Save trimmed FastQ files
         --trim_ecop [bool]              Set to false to not trim the EcoP site
         --trim_linker [bool]            Set to false to not trim the linker
         --trim_5g [bool]                Set to false to not trim the additonal G at the 5' end
@@ -206,14 +207,14 @@ if (params.aligner == 'star') {
 }
 if(params.artifacts_5end){ summary["5' artifacts"] = params.artifacts_5end}
 if(params.artifacts_3end){ summary["3' artifacts"] = params.artifacts_3end}
-summary['trim_ecop']          = params.trim_ecop
-summary['trim_linker']        = params.trim_linker
-summary['trim_5g']             = params.trim_5g
-summary['trim_artifacts']     = params.trim_artifacts
+summary['trim_ecop']        = params.trim_ecop
+summary['trim_linker']      = params.trim_linker
+summary['trim_5g']          = params.trim_5g
+summary['trim_artifacts']   = params.trim_artifacts
 summary['EcoSite']          = params.ecoSite
 summary['LinkerSeq']        = params.linkerSeq
 summary['Min. cluster']     = params.min_cluster
-summary['Cluster Threshold']= params.tpm_cluster_threshold
+summary['Cluster Threshold [tpm]']= params.tpm_cluster_threshold
 summary['Save Reference']   = params.saveReference
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
@@ -281,7 +282,7 @@ process get_software_versions {
     samtools --version > v_samtools.txt
     bedtools --version > v_bedtools.txt
     read_distribution.py --version > v_rseqc.txt
-    python scrape_software_versions.py &> software_versions_mqc.yaml
+    python bin/scrape_software_versions.py &> software_versions_mqc.yaml
     """
 }
 process convert_gtf {
@@ -671,7 +672,7 @@ process get_ctss {
 
     output:
     set val(sample_name), file("*.ctss.bed") into ctss_samples
-    file("*.ctss.bed") into ctss_counts
+    file("*.ctss.bed") into ctss_counts, ctss_counts_qc
 
     script:
     """
@@ -692,7 +693,7 @@ process cluster_ctss {
     file ctss from ctss_counts.collect()
 
     output:
-    file "*.bed" into ctss_qc, ctss_clusters
+    file "*.bed" into ctss_clusters
 
 
     shell:
@@ -772,7 +773,7 @@ process ctss_qc {
      }
 
     input:
-    file clusters from count_qc
+    file clusters from ctss_counts_qc
     file gtf from bed_rseqc.collect()
     file fasta from fasta_rseqc.collect()
 
