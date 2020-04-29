@@ -282,7 +282,7 @@ process get_software_versions {
     samtools --version > v_samtools.txt
     bedtools --version > v_bedtools.txt
     read_distribution.py --version > v_rseqc.txt
-    python bin/scrape_software_versions.py &> software_versions_mqc.yaml
+    scrape_software_versions.py &> software_versions_mqc.yaml
     """
 }
 process convert_gtf {
