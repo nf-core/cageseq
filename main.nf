@@ -672,7 +672,7 @@ process get_ctss {
 
     output:
     set val(sample_name), file("*.ctss.bed") into ctss_samples
-    file("*.ctss.bed") into ctss_counts, ctss_counts_qc
+    file("*.ctss.bed") into (ctss_counts, ctss_counts_qc)
 
     script:
     """
@@ -683,7 +683,7 @@ process get_ctss {
 /**
  * STEP 9 - Cluster CTSS files
  */
-ctss_counts = ctss_counts.collect().dump(tag:"ctss_counts")
+// ctss_counts = ctss_counts.collect().dump(tag:"ctss_counts")
 process cluster_ctss {
     label "high_memory"
     tag "${ctss}"

@@ -1,6 +1,6 @@
 # ![nf-core/cageseq](docs/images/nf-core-cageseq_logo.png)
 
-**Nextflow CAGE-seq analysis pipeline, part of the nf-core community**
+Nextflow CAGE-seq analysis pipeline, part of the nf-core community
 
 [![GitHub Actions CI Status](https://github.com/nf-core/cageseq/workflows/cageseq%20CI/badge.svg)](https://github.com/nf-core/cageseq/actions)
 [![GitHub Actions Linting Status](https://github.com/nf-core/cageseq/workflows/cageseq%20linting/badge.svg)](https://github.com/nf-core/cageseq/actions)
@@ -64,7 +64,6 @@ See [usage docs](docs/usage.md) for all of the available options when running th
 ## Credits
 
 nf-core/cageseq was originally written by Kevin Menden and Tristan Kast and modified by Matthias Hörtenhuber.
-
 
 ## Contributions and Support
 
