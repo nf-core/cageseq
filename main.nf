@@ -180,7 +180,7 @@ ch_output_docs = file("$baseDir/docs/output.md", checkIfExists: true)
 if(params.readPaths){
          Channel
              .from(params.readPaths)
-             .map { row -> [ row[0], file(row[1])] }
+             .map { row -> [ row[0].replaceAll("\\s","_"), file(row[1])] }
              .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
              .into { read_files_fastqc; read_files_trimming }
      } else {
@@ -751,7 +751,7 @@ process generate_count_matrix {
     file clusters from ctss_clusters.collect()
 
     output:
-    file "*.txt" into count_matrix
+    file "*.tsv" into count_matrix
 
     shell:
     '''
