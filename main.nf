@@ -656,7 +656,6 @@ process samtools_stats {
     script:
     """
     samtools idxstats $bam_count > ${bam_count}.idxstats
-    samtools stats $bam_count > ${bam_count}.stats
     """
 }
 
@@ -757,7 +756,7 @@ process generate_count_matrix {
     shell:
     '''
     awk '{ print $4}' !{clusters} > coordinates
-    paste -d "\t" coordinates !{counts} >> count_table.txt
+    paste -d "\t" coordinates !{counts} >> count_table.tsv
     '''
 }
 
