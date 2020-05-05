@@ -388,46 +388,46 @@ if(params.aligner == 'bowtie' && !params.bowtie_index && params.fasta){
 /*
  * STEP 3 - Cut Enzyme binding site at 5' and linker at 3'
  */
- if (!params.skip_trimming) {
-     process trim_galore {
-         label 'low_memory'
-         tag "$sample_name"
-         publishDir "${params.outdir}/trim_galore", mode: "${params.publish_dir_mode}",
-             saveAs: {filename ->
-                 if (filename.indexOf("_fastqc") > 0) "fastqc/$filename"
-                 else if (filename.indexOf("trimming_report.txt") > 0) "logs/$filename"
-                 else null
-             }
-
-         input:
-         set val(sample_name), file(reads) from read_files_trimming
-
-         output:
-         set val(sample_name), file("*fq.gz") into trimmed_reads_trim_5g
-         file "*trimming_report.txt" into trimgalore_results
-         file "*_fastqc.{zip,html}" into trimgalore_fastqc_reports
-
-         script:
-         c_r1 = clip_r1 > 0 ? "--clip_r1 ${clip_r1}" : ''
-         c_r2 = clip_r2 > 0 ? "--clip_r2 ${clip_r2}" : ''
-         tpc_r1 = three_prime_clip_r1 > 0 ? "--three_prime_clip_r1 ${three_prime_clip_r1}" : ''
-         tpc_r2 = three_prime_clip_r2 > 0 ? "--three_prime_clip_r2 ${three_prime_clip_r2}" : ''
-         nextseq = params.trim_nextseq > 0 ? "--nextseq ${params.trim_nextseq}" : ''
-         if (params.single_end) {
-             """
-             trim_galore --fastqc --gzip $c_r1 $tpc_r1 $nextseq $reads
-             """
-         } else {
-             """
-             trim_galore --paired --fastqc --gzip $c_r1 $c_r2 $tpc_r1 $tpc_r2 $nextseq $reads
-             """
-         }
-     }
- }else{
-    raw_reads_trimgalore
-        .set {trimgalore_reads}
-    trimgalore_results = Channel.empty()
- }
+ // if (!params.skip_trimming) {
+ //     process trim_galore {
+ //         label 'low_memory'
+ //         tag "$sample_name"
+ //         publishDir "${params.outdir}/trim_galore", mode: "${params.publish_dir_mode}",
+ //             saveAs: {filename ->
+ //                 if (filename.indexOf("_fastqc") > 0) "fastqc/$filename"
+ //                 else if (filename.indexOf("trimming_report.txt") > 0) "logs/$filename"
+ //                 else null
+ //             }
+ //
+ //         input:
+ //         set val(sample_name), file(reads) from read_files_trimming
+ //
+ //         output:
+ //         set val(sample_name), file("*fq.gz") into trimmed_reads_trim_5g
+ //         file "*trimming_report.txt" into trimgalore_results
+ //         file "*_fastqc.{zip,html}" into trimgalore_fastqc_reports
+ //
+ //         script:
+ //         c_r1 = clip_r1 > 0 ? "--clip_r1 ${clip_r1}" : ''
+ //         c_r2 = clip_r2 > 0 ? "--clip_r2 ${clip_r2}" : ''
+ //         tpc_r1 = three_prime_clip_r1 > 0 ? "--three_prime_clip_r1 ${three_prime_clip_r1}" : ''
+ //         tpc_r2 = three_prime_clip_r2 > 0 ? "--three_prime_clip_r2 ${three_prime_clip_r2}" : ''
+ //         nextseq = params.trim_nextseq > 0 ? "--nextseq ${params.trim_nextseq}" : ''
+ //         if (params.single_end) {
+ //             """
+ //             trim_galore --fastqc --gzip $c_r1 $tpc_r1 $nextseq $reads
+ //             """
+ //         } else {
+ //             """
+ //             trim_galore --paired --fastqc --gzip $c_r1 $c_r2 $tpc_r1 $tpc_r2 $nextseq $reads
+ //             """
+ //         }
+ //     }
+ // }else{
+ //    raw_reads_trimgalore
+ //        .set {trimgalore_reads}
+ //    trimgalore_results = Channel.empty()
+ // }
 if(!params.skip_trimming){
     process trim_adapters {
         tag "$sample_name"
