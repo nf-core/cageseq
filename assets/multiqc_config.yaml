@@ -7,6 +7,7 @@ top_modules:
     - 'fastqc'
     - 'cutadapt'
     - 'star'
+    - 'bowtie'
     - 'samtools'
     - 'rseqc'
 extra_fn_clean_trim:

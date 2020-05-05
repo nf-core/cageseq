@@ -277,7 +277,7 @@ process get_software_versions {
     fastqc --version > v_fastqc.txt
     multiqc --version > v_multiqc.txt
     STAR --version > v_star.txt
-    bowtie --version > v_bowite.txt
+    bowtie --version > v_bowtie.txt
     cutadapt --version > v_cutadapt.txt
     samtools --version > v_samtools.txt
     bedtools --version > v_bedtools.txt
@@ -388,14 +388,53 @@ if(params.aligner == 'bowtie' && !params.bowtie_index && params.fasta){
 /*
  * STEP 3 - Cut Enzyme binding site at 5' and linker at 3'
  */
+ if (!params.skip_trimming) {
+     process trim_galore {
+         label 'low_memory'
+         tag "$sample_name"
+         publishDir "${params.outdir}/trim_galore", mode: "${params.publish_dir_mode}",
+             saveAs: {filename ->
+                 if (filename.indexOf("_fastqc") > 0) "fastqc/$filename"
+                 else if (filename.indexOf("trimming_report.txt") > 0) "logs/$filename"
+                 else null
+             }
 
+         input:
+         set val(sample_name), file(reads) from read_files_trimming
+
+         output:
+         set val(sample_name), file("*fq.gz") into trimmed_reads_trim_5g
+         file "*trimming_report.txt" into trimgalore_results
+         file "*_fastqc.{zip,html}" into trimgalore_fastqc_reports
+
+         script:
+         c_r1 = clip_r1 > 0 ? "--clip_r1 ${clip_r1}" : ''
+         c_r2 = clip_r2 > 0 ? "--clip_r2 ${clip_r2}" : ''
+         tpc_r1 = three_prime_clip_r1 > 0 ? "--three_prime_clip_r1 ${three_prime_clip_r1}" : ''
+         tpc_r2 = three_prime_clip_r2 > 0 ? "--three_prime_clip_r2 ${three_prime_clip_r2}" : ''
+         nextseq = params.trim_nextseq > 0 ? "--nextseq ${params.trim_nextseq}" : ''
+         if (params.single_end) {
+             """
+             trim_galore --fastqc --gzip $c_r1 $tpc_r1 $nextseq $reads
+             """
+         } else {
+             """
+             trim_galore --paired --fastqc --gzip $c_r1 $c_r2 $tpc_r1 $tpc_r2 $nextseq $reads
+             """
+         }
+     }
+ }else{
+    raw_reads_trimgalore
+        .set {trimgalore_reads}
+    trimgalore_results = Channel.empty()
+ }
 if(!params.skip_trimming){
     process trim_adapters {
         tag "$sample_name"
         publishDir "${params.outdir}/trimmed/adapter_trimmed", mode: 'copy',
                 saveAs: {filename ->
                     if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
-                    else if (!params.save_trimmed) "$filename"
+                    else if (params.save_trimmed) "$filename"
                     else null
                 }
 
@@ -408,10 +447,11 @@ if(!params.skip_trimming){
 
         script:
         prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
+
         // Cut Both EcoP and Linker
         if (params.trim_ecop && params.trim_linker){
             """
-            cutadapt -a ${params.ecoSite}...${params.linkerSeq} \\
+            cutadapt -a ^${params.ecoSite}...${params.linkerSeq} \\
             --match-read-wildcards \\
             -m 15 -M 45  \\
             -o "$prefix".adapter_trimmed.fastq.gz \\
@@ -462,7 +502,7 @@ if(!params.skip_trimming){
         publishDir "${params.outdir}/trimmed/g_trimmed", mode: 'copy',
                 saveAs: {filename ->
                     if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
-                    else if (!params.save_trimmed) "$filename"
+                    else if (params.save_trimmed) "$filename"
                     else null
                 }
           input:
@@ -496,7 +536,7 @@ if (params.trim_artifacts && !params.skip_trimming){
         publishDir "${params.outdir}/trimmed/artifacts_trimmed", mode: 'copy',
           saveAs: {filename ->
               if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
-              else if (!params.save_trimmed) "$filename"
+              else if (params.save_trimmed) "$filename"
               else null
           }
 
@@ -541,7 +581,7 @@ process trimmed_fastqc {
     set val(sample_name), file("*_fastqc.{zip,html}") into trimmed_fastqc_results
 
     when:
-    (params.trim_5g || params.trim_artifacts) && !params.skip_trimming
+    (params.trim_ecop || params.trim_linker || params.trim_5g || params.trim_artifacts) && !params.skip_trimming
     script:
     """
     fastqc -q $reads
@@ -682,7 +722,7 @@ process get_ctss {
 /**
  * STEP 9 - Cluster CTSS files
  */
-// ctss_counts = ctss_counts.collect().dump(tag:"ctss_counts")
+ctss_counts = ctss_counts.collect().dump(tag:"ctss_counts")
 process cluster_ctss {
     label "high_memory"
     tag "${ctss}"
