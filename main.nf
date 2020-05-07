@@ -203,7 +203,6 @@ if (params.aligner == 'star') {
     summary['Aligner'] = "bowtie"
     if (params.bowtie_index)summary['bowtie Index'] = params.bowtie_index
     else if (params.fasta)summary['Fasta Ref'] = params.fasta
-    if (params.splicesites)summary['Splice Sites'] = params.splicesites
 }
 if(params.artifacts_5end){ summary["5' artifacts"] = params.artifacts_5end}
 if(params.artifacts_3end){ summary["3' artifacts"] = params.artifacts_3end}
@@ -669,15 +668,15 @@ process bowtie {
         --phred33-quals \\
         --chunkmbs 64 \\
         --seedmms 2 \\
-        --seedlen 28 \\
+        --seedlen 25 \\
         --maqerr 70  \\
         ${index}  \\
         -q ${reads} \\
-        --un ${reads.baseName}.unAl > ${sample_name}.sam 2> ${sample_name}.out
+        --un ${reads.baseName}.unAl > ${prefix}.sam 2> ${prefix}.out
 
-        samtools sort -@ ${task.cpus} -o ${sample_name}.bam ${sample_name}.sam
+        samtools sort -@ ${task.cpus} -o ${sample_name}.bam ${prefix}.sam
     """
-
+  
 }
 }else{
     bowtie_alignment_logs= Channel.empty()
