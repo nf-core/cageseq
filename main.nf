@@ -37,18 +37,20 @@ def helpMessage() {
 
     References                          If not specified in the configuration file or you wish to overwrite any of the references
         --fasta [file]                  Path to fasta reference
-        --genome [str]               Name of iGenomes reference
+        --genome [str]                  Name of iGenomes reference
         --gtf [file]                    Path to gtf file
 
     Alignment:
-        --aligner [str]              Specifies the aligner to use (available are: 'star', 'bowtie')
+        --aligner [str]                 Specifies the aligner to use (available are: 'star', 'bowtie')
         --star_index [file]             Path to STAR index, set to false if igenomes should be used
         --bowtie_index [file]           Path to bowtie index, set to false if igenomes should be used
 
     Clustering:
-        --min_cluster [int]                  Minimum amount of reads to build a cluster with paraclu
-        --tpm_cluster_threshold [int]         Threshold for expression count of ctss considered in paraclu clustering
+        --min_cluster [int]             Minimum amount of reads to build a cluster with paraclu
+        --tpm_cluster_threshold [int]   Threshold for expression count of ctss considered in paraclu clustering
 
+    Output:
+        --bigwig [bool]                 Set to true to get the ctss files also as bigwigs
     Other options:
         --outdir [file]                 The output directory where the results will be saved
         --email [email]                 Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
@@ -217,6 +219,7 @@ summary['Cluster Threshold [tpm]']= params.tpm_cluster_threshold
 summary['Save Reference']   = params.saveReference
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
+summary['bigwig output']    = params.bigwig
 summary['Output dir']       = params.outdir
 summary['Launch dir']       = workflow.launchDir
 summary['Working dir']      = workflow.workDir
@@ -297,6 +300,17 @@ process convert_gtf {
     """
     gtf2bed.pl $gtf > ${gtf.baseName}.bed
     """
+}
+process get_chrom_sizes{
+  input:
+  file fasta from fasta_rseqc.collect()
+  output:
+  file "*.txt" into (chrom_sizes_ctss,chrom_sizes_bw)
+
+  shell:
+  '''
+  cat !{fasta} |  awk '$0 ~ ">" {if (NR > 1) {print c;} c=0;printf substr($0,2,100) "\t"; } $0 !~ ">" {c+=length($0);} END { print c; }' > chrom_sizes.txt
+  '''
 }
 
 /*
@@ -668,7 +682,7 @@ process bowtie {
         --phred33-quals \\
         --chunkmbs 64 \\
         --seedmms 2 \\
-        --seedlen 25 \\
+        --seedlen 20 \\
         --maqerr 70  \\
         ${index}  \\
         -q ${reads} \\
@@ -676,7 +690,7 @@ process bowtie {
 
         samtools sort -@ ${task.cpus} -o ${sample_name}.bam ${prefix}.sam
     """
-  
+
 }
 }else{
     bowtie_alignment_logs= Channel.empty()
@@ -704,20 +718,48 @@ process samtools_stats {
 process get_ctss {
     tag "$sample_name"
     publishDir "${params.outdir}/ctss", mode: 'copy'
+    publishDir "${params.outdir}/ctss", mode: 'copy',
+            saveAs: {filename ->
+                if (filename.indexOf(".bed") != -1) "bed/$filename"
+                else if (filename.indexOf(".bw") != -1) "bigwig/$filename"
+                else  filename }
 
     input:
     set val(sample_name), file(bam_count) from bam_aligned
 
     output:
-    set val(sample_name), file("*.ctss.bed") into ctss_samples
+    set val(sample_name), file("*.ctss.bed") into (ctss_samples,ctss_bw)
     file("*.ctss.bed") into (ctss_counts, ctss_counts_qc)
 
-    script:
-    """
-    make_ctss.sh -q 20 -i ${bam_count.baseName} -n ${sample_name}
-    """
+    shell:
+    '''
+    make_ctss.sh -q 20 -i !{bam_count.baseName} -n !{sample_name}
+
+    '''
 }
 
+process make_bigwig{
+    tag "$sample_name"
+    publishDir "${params.outdir}/ctss/bigwig", mode: 'copy'
+
+    input:
+    set val(sample_name), file(ctss_file) from ctss_bw
+    file chrom_sizes from chrom_sizes_bw
+
+    output:
+    file("*.ctss.bw")
+    // file("*.ctss.bw") into (ctss_counts, ctss_counts_qc)
+
+    when:
+        params.bigwig
+    script:
+    """
+        bedtools genomecov -bg -i ${sample_name}.ctss.bed -g ${chrom_sizes} > ${sample_name}.bedgraph
+        sort -k1,1 -k2,2n ${sample_name}.bedgraph > ${sample_name}_sorted.bedgraph
+        bedGraphToBigWig ${sample_name}_sorted.bedgraph ${chrom_sizes} ${sample_name}.ctss.bw
+    """
+
+}
 /**
  * STEP 9 - Cluster CTSS files
  */
@@ -813,15 +855,15 @@ process ctss_qc {
     input:
     file clusters from ctss_counts_qc
     file gtf from bed_rseqc.collect()
-    file fasta from fasta_rseqc.collect()
+    file chrom_sizes from chrom_sizes_ctss
 
     output:
     file "*.txt" into rseqc_results
 
     shell:
     '''
-    cat !{fasta} |  awk '$0 ~ ">" {if (NR > 1) {print c;} c=0;printf substr($0,2,100) "\t"; } $0 !~ ">" {c+=length($0);} END { print c; }' > chrom_sizes.tmp
-    bedtools bedtobam -i !{clusters} -g chrom_sizes.tmp > !{clusters.baseName}.bam
+
+    bedtools bedtobam -i !{clusters} -g !{chrom_sizes} > !{clusters.baseName}.bam
     read_distribution.py -i !{clusters.baseName}.bam -r !{gtf} > !{clusters.baseName}.read_distribution.txt
     '''
  }

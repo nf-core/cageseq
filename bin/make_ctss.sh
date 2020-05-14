@@ -1,27 +1,17 @@
 #!/bin/bash
 
-if [ $# -eq 0 ]
-then
- cat <<EOF
-Usage is : $0 -q <mapping quality cutoff> -i <map1.bam> -n <sample_name>
-EOF
- exit 1;
-fi
-
-QCUT=
-
 while getopts :i:q:n: opt
 do
 case ${opt} in
 q) QCUT=${OPTARG};;
 i) VAR=${OPTARG};;
 n) NAME=${OPTARG};;
+*) echo: "Usage is : $0 -q <mapping quality cutoff> -i <map1.bam> -n <sample_name">&2
+    exit 1;;
 esac
 done
 
 if [ "${QCUT}" = "" ]; then QCUT=20; fi
-
-echo "working on: ${VAR}"
 
 #convert sam to bam and bam to bed
 TMPFILE="/tmp/$(basename "$0").$RANDOM.txt"
