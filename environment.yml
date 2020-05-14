@@ -11,7 +11,7 @@ dependencies:
   - conda-forge::pymdown-extensions=6.0
   - conda-forge::pygments=2.5.2
   - bioconda::bedtools=2.29.2
-  - bioconda::cutadapt=2.9
+  - bioconda::cutadapt=2.10
   - bioconda::fastqc=0.11.9
   - bioconda::samtools=1.10
   - bioconda::star=2.6.1d # Don't upgrade me - 2.7X indices incompatible with iGenomes.
