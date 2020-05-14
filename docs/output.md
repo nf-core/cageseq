@@ -9,17 +9,27 @@ This document describes the output produced by the pipeline. Most of the plots a
 The pipeline is built using [Nextflow](https://www.nextflow.io/)
 and processes data using the following steps:
 
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+
 - [nf-core/cageseq: Output](#nf-corecageseq-output)
   - [Pipeline overview](#pipeline-overview)
-  - [FastQC](#fastqc)
-  - [cutadapt](#cutadapt)
-  - [STAR](#star)
-  - [RSeQC](#rseqc)
-    - [Read distribution](#read-distribution)
-  - [paraclu](#paraclu)
-  - [MultiQC](#multiqc)
+  - [1. Raw read QC](#1-raw-read-qc)
+  - [2. Trimming](#2-trimming)
+  - [3. Alignment](#3-alignment)
+    - [STAR](#star)
+    - [Bowtie 1](#bowtie-1)
+  - [5. CTSS generation](#5-ctss-generation)
+  - [4. CTSS clustering](#4-ctss-clustering)
+    - [paraclu](#paraclu)
+  - [6. Count table generation](#6-count-table-generation)
+  - [7. QC of results](#7-qc-of-results)
+    - [RSeQC](#rseqc)
+      - [Read distribution](#read-distribution)
+    - [MultiQC](#multiqc)
 
-1.**Raw read QC**
+<!-- /TOC -->
+
+## 1. Raw read QC
 
   [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) gives general quality metrics about your reads. It provides information about the quality score distribution across your reads, the per base sequence content (%T/A/G/C). You get information about adapter contamination and other overrepresented sequences.
 
@@ -32,7 +42,7 @@ and processes data using the following steps:
 - `zips/sample_fastqc.zip`
   - zip file containing the FastQC report, tab-delimited data file and plot images
 
-2.**Trimming**
+## 2. Trimming
 
 [Cutadapt](https://cutadapt.readthedocs.io/en/stable/) finds and removes adapter
 sequences, primers, poly-A tails and other types of unwanted sequence from your
@@ -42,39 +52,46 @@ By default this pipeline trims the cut enzyme binding site at the 5'-end and
 linkers at the 3'-end (can be disabled by setting `--trim_ecop` or `--trim_linkers to false`).
 Furthermore, to combat the leading-G-bias of CAGE-seq, G's at the 5'-end are removed. Additional artifacts can be removed via the `--trim_artifacts` parameter.
 
-All the following trimming process are skipped if `--skip_trimming` is set to true.
+All the following trimming process are skipped if `--skip_trimming` is set to true and the output below is only available if '--save_trimmed' is set to true.
 
 **Output directory: `results/trimmed`**
 
 - `adapter_trimmed/sample.adapter_trimmed.fastq.gz`
-  - Trimmed FastQ data
-  - **NB:** Only saved if `--save_trimmed` has been specified.
-- `adapter_trimmed/logs/`: Trimming report (describes which parameters that were used)
+  - FastQ file after removal of linkers and EcoP15 site.
+- `adapter_trimmed/logs/`
+  - Trimming report (describes which parameters that were used)
 - if `--trim_5g`:
   - `g_trimmed/sample.g_trimmed.fastq.gz`
-    - 5' G-corrected FastQ data
-    - **NB:** Only saved if `--save_trimmed` has been specified.
-  - `g_trimmed/logs/`: Trimming report (describes which parameters that were used)
+    - 5' G-corrected FastQ file
+  - `g_trimmed/logs/`
+    - Trimming report (describes which parameters that were used)
 - if `--trim_artifacts`:
   - `artifacts_trimmed/sample.artifact_trimmed.fastq.gz`
-    - FastQ data after artifact removal
-    - **NB:** Only saved if `--save_trimmed` has been specified.
-  - `artifacts_trimmed/logs/`: Trimming report (describes which parameters that were used)
+    - FastQ file after artifact removal
+  - `artifacts_trimmed/logs/`
+    - Trimming report (describes which parameters that were used)
 
-3.**Alignment**
+## 3. Alignment
 
-The reads are aligned either with STAR or with bowtie.
+The reads are aligned either with STAR or with bowtie, set via `--aligner`.
 
 ### STAR
 
-*Documentation*:
 STAR is a read aligner designed for RNA sequencing. STAR stands for Spliced Transcripts Alignment to a Reference.
 
-The STAR section of the MultiQC report shows a bar plot with alignment rates: good samples should have most reads as _Uniquely mapped_ and few _Unmapped_ reads.
-
-### bowtie
-
+The STAR section of the MultiQC report shows a stacked bar plot with alignment rates:
+good samples should have most reads as _Uniquely mapped_ and few _Unmapped_ reads.
 ![STAR](images/star_alignment_plot.png)
+
+### Bowtie 1
+
+[Bowtie 1](http://bowtie-bio.sourceforge.net/index.shtml) is an ultrafast,
+memory-efficient short read aligner.
+
+The bowtie 1 section of the MultiQC report shows a stacked bar plot with
+alignment rates:
+good samples should have most reads as _aligned_ and few _Not aligned_ reads.
+![STAR](images/bowtie1_alignment_plot.png)
 
 **Output directory: `results/STAR`**
 
@@ -87,17 +104,40 @@ The STAR section of the MultiQC report shows a bar plot with alignment rates: go
 - `Sample_SJ.out.tab`
   - Filtered splice junctions detected in the mapping
 
-4.**CTSS Clustering**
+## 5. CTSS generation
 
-## paraclu
+The custom script `bin/make_ctss.sh` generates a bed file for each sample with
+unclustered cage defined transcription start sites (CTSS).
+
+**Output directory: `results/ctss`**
+
+- `Sample.ctss.bed`
+  - A BED6 file with the cage defined transcription start sites
+
+## 4. CTSS clustering
+
+### paraclu
 
 [paraclu](http://cbrc3.cbrc.jp/~martin/paraclu/) finds clusters in data
-attached to sequences. It is used to define clusters of cage defined
-transcription start sites (CTSS).
+attached to sequences. It is applied on the pool of all ctss bed files to
+cluster and returns a bed file with the clustered CTSSs.
 
 **Output directory: `results/ctss/clusters`**
 
-## QC
+- `ctss_all_clustered_simplified.bed`
+  - A BED6 file with the clustered CTSSs and their pooled counts
+
+## 6. Count table generation
+
+The ctss files are intersected with the clusteres identified by paraclu and
+summarized in a count table.
+
+**Output directory: `results/ctss/`**
+
+- `count_table.tsv`:
+  - Each column of the count table stands for one sample and each row for one tag cluster. The first row of this table is the header with sample names and the first column contains the tag cluster coordinates.
+
+## 7. QC of results
 
 ### RSeQC
 
@@ -109,13 +149,11 @@ This pipeline only runs the read destribution RSeQC scripts on the CTSS clusters
 
 #### Read distribution
 
-**Output: `Sample_read_distribution.txt`**
-
-This tool calculates how mapped reads are distributed over genomic features.
+[read_distribution.py](http://rseqc.sourceforge.net/#read-distribution-py)
+calculates how mapped reads are distributed over genomic features.
 
 ![Read distribution](images/rseqc_read_distribution_plot.png)
-
-RSeQC documentation: [read_distribution.py](http://rseqc.sourceforge.net/#read-distribution-py)
+**Output: `Sample_read_distribution.txt`**
 
 ### MultiQC
 
