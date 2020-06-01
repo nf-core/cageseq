@@ -39,7 +39,10 @@ def helpMessage() {
         --fasta [file]                  Path to fasta reference
         --genome [str]                  Name of iGenomes reference
         --gtf [file]                    Path to gtf file
-
+    Ribosomal RNA removal:
+        --remove_ribo_RNA               Removes ribosomal RNA using SortMeRNA
+        --save_nonrRNA_reads            Save FastQ file intermediates after removing rRNA
+        --rRNA_database_manifest        Path to file that contains file paths for rRNA databases, optional
     Alignment:
         --aligner [str]                 Specifies the aligner to use (available are: 'star', 'bowtie')
         --star_index [file]             Path to STAR index, set to false if igenomes should be used
@@ -90,6 +93,17 @@ params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : fals
 params.min_cluster = 30
 params.tpm_cluster_threshold = 0.2
 
+// Get rRNA databases
+// Default is set to bundled DB list in `assets/rrna-db-defaults.txt`
+
+rRNA_database = file(params.rRNA_database_manifest)
+if (rRNA_database.isEmpty()) {exit 1, "File ${rRNA_database.getName()} is empty!"}
+Channel
+    .from( rRNA_database.readLines() )
+    .map { row -> file(row) }
+    .set { fasta_sortmerna }
+
+
 // Validate inputs
 if (params.aligner != 'star' && params.aligner != 'bowtie') {
     exit 1, "Invalid aligner option: ${params.aligner}. Valid options: 'star', 'bowtie'"
@@ -116,9 +130,10 @@ else {
 
 
 if( params.fasta ){
-  fasta_rseqc = Channel
+  Channel
       .fromPath(params.fasta, checkIfExists: true)
       .ifEmpty { exit 1, "fasta file not found: ${params.fasta}" }
+      .set{fasta_rseqc}
 } else {
     exit 1, "No fasta file specified!"
 }
@@ -214,8 +229,9 @@ summary['trim_5g']          = params.trim_5g
 summary['trim_artifacts']   = params.trim_artifacts
 summary['EcoSite']          = params.ecoSite
 summary['LinkerSeq']        = params.linkerSeq
+summary['Remove rRNA']      = params.removeRiboRNA
 summary['Min. cluster']     = params.min_cluster
-summary['Cluster Threshold [tpm]']= params.tpm_cluster_threshold
+summary['Cluster Threshold']= params.tpm_cluster_threshold
 summary['Save Reference']   = params.saveReference
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
@@ -574,10 +590,10 @@ if (params.trim_artifacts && !params.skip_trimming){
         > ${reads.baseName}.artifacts_trimming.output.txt
         """
     }
-    further_processed_reads.into { further_processed_reads_star;further_processed_reads_bowtie; further_processed_reads_fastqc }
+    further_processed_reads.into{further_processed_reads_fastqc; further_processed_reads_sortmerna }
 }
 else{
-    processed_reads.into{further_processed_reads_star; further_processed_reads_bowtie; further_processed_reads_fastqc}
+    processed_reads.into{further_processed_reads_fastqc; further_processed_reads_sortmerna}
     artifact_cutting_results = Channel.empty()
 }
 
@@ -600,7 +616,71 @@ process trimmed_fastqc {
     fastqc -q $reads
     """
 }
+/*
+ * STEP 2+ - SortMeRNA - remove rRNA sequences on request
+ */
+if (params.remove_ribo_RNA) {
+    // process sortmerna_index {
+    //   label 'low_memory'
+    //   tag "${fasta.baseName}"
+    //
+    //   input:
+    //   file(fasta) from fasta_sortmerna
+    //
+    //   output:
+    //   val("${fasta.baseName}") into sortmerna_db_name
+    //   file("$fasta") into fasta_sortmerna_db
+    //   file("${fasta.baseName}*") into sortmerna_db
+    //
+    //   script:
+    //   """
+    //   indexdb_rna --ref $fasta,${fasta.baseName} -m 3072 -v
+    //   """
+    // }
 
+    process sortmerna {
+        tag "$sample_name"
+        publishDir "${params.outdir}/SortMeRNA", mode: "copy",
+            saveAs: {filename ->
+                if (filename.indexOf("_rRNA_report.txt") > 0) "logs/$filename"
+                else if (params.save_nonrRNA_reads) "reads/$filename"
+                else null
+            }
+
+        input:
+        set val(sample_name), file(reads) from further_processed_reads_sortmerna
+        file(fasta) from fasta_sortmerna
+
+        output:
+        set val(sample_name), file("*.fq.gz") into further_processed_reads_star, further_processed_reads_bowtie;
+        file "*_rRNA_report.txt" into sortmerna_logs
+
+
+        script:
+        //concatenate reference files: ${db_fasta},${db_name}:${db_fasta},${db_name}:...
+        def Refs = ''
+        for (i=0; i<fasta.size(); i++) { Refs+= "-ref ${fasta[i]}" }
+
+
+            """
+            sortmerna ${Refs} \
+                --reads ${reads}\
+                --num_alignments 1 \
+                -a ${task.cpus} \
+                --fastx \
+                --aligned rRNA-reads \
+                --other non-rRNA-reads \
+                --log -v
+            gzip --force < non-rRNA-reads.fastq > ${sample_name}.fq.gz
+            mv rRNA-reads.log ${sample_name}_rRNA_report.txt
+            """
+    }
+} else {
+  further_processed_reads_sortmerna
+      .into {further_processed_reads_star; further_processed_reads_bowtie;}
+  sortmerna_logs = Channel.empty()
+
+}
 /**
  * STEP 7 - STAR alignment
  */
@@ -636,11 +716,12 @@ if (params.aligner == 'star') {
             --runThreadN ${task.cpus} \\
             --outSAMtype BAM SortedByCoordinate \\
             --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0 \\
+            --seedSearchStartLmax 20 \\
             --outFilterMismatchNmax 1 \\
             --readFilesCommand zcat \\
             --runDirPerm All_RWX \\
             --outFileNamePrefix $prefix \\
-            --outFilterMatchNmin ${params.min_aln_length}
+            --outFilterMultimapNmax 1
         """
 
     }
@@ -882,6 +963,7 @@ process multiqc {
     file ('trimmed/*') from cutadapt_results.collect().ifEmpty([])
     file ('artifacts_trimmed/*') from  artifact_cutting_results.collect().ifEmpty([])
     file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])
+    file ('sortmerna/*') from sortmerna_logs.collect().ifEmpty([])
     file ('alignment/*') from star_alignment_logs.collect().ifEmpty([])
     file ('alignment/*') from bowtie_alignment_logs.collect().ifEmpty([])
     file ('alignment/samtools_stats/*') from bam_flagstat_mqc.collect().ifEmpty([])
@@ -900,7 +982,7 @@ process multiqc {
 
     """
     multiqc -f $rtitle $rfilename $custom_config_file \\
-    -m custom_content -m fastqc -m star -m cutadapt -m rseqc -m samtools -m bowtie1 .
+    -m custom_content -m fastqc -m star -m cutadapt -m rseqc -m sortmerna -m samtools -m bowtie1 .
     """
 }
 
