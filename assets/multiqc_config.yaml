@@ -3,6 +3,17 @@ report_comment: >
     analysis pipeline. For information about how to interpret these results, please see the
     <a href="https://github.com/nf-core/cageseq" target="_blank">documentation</a>.
 
+# Run only these modules
+run_modules:
+    - custom_content
+    - fastqc
+    - star
+    - cutadapt
+    - rseqc
+    - sortmerna
+    - samtools
+    - bowtie1
+# Order of modules in the report
 top_modules:
     - 'fastqc'
     - 'cutadapt'
@@ -11,6 +22,7 @@ top_modules:
     - 'bowtie1'
     - 'samtools'
     - 'rseqc'
+# remove from file name in report
 extra_fn_clean_trim:
     - '.adapter_trimmed.g'
 

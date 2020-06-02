@@ -981,8 +981,7 @@ process multiqc {
     custom_config_file = params.multiqc_config ? "--config $mqc_custom_config" : ''
 
     """
-    multiqc -f $rtitle $rfilename $custom_config_file \\
-    -m custom_content -m fastqc -m star -m cutadapt -m rseqc -m sortmerna -m samtools -m bowtie1 .
+    multiqc . -f $rtitle $rfilename $custom_config_file
     """
 }
 
