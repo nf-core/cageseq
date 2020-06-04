@@ -229,7 +229,7 @@ summary['trim_5g']          = params.trim_5g
 summary['trim_artifacts']   = params.trim_artifacts
 summary['EcoSite']          = params.ecoSite
 summary['LinkerSeq']        = params.linkerSeq
-summary['Remove rRNA']      = params.removeRiboRNA
+summary['Remove rRNA']      = params.remove_ribo_RNA
 summary['Min. cluster']     = params.min_cluster
 summary['Cluster Threshold']= params.tpm_cluster_threshold
 summary['Save Reference']   = params.saveReference
@@ -312,7 +312,7 @@ process convert_gtf {
     output:
     file "${gtf.baseName}.bed" into bed_rseqc
 
-    script: // This script is bundled with the pipeline, in nfcore/cageseq/bin/
+    script:
     """
     gtf2bed.pl $gtf > ${gtf.baseName}.bed
     """
@@ -417,6 +417,7 @@ if(params.aligner == 'bowtie' && !params.bowtie_index && params.fasta){
 /*
  * STEP 3 - Cut Enzyme binding site at 5' and linker at 3'
  */
+
  // if (!params.skip_trimming) {
  //     process trim_galore {
  //         label 'low_memory'
@@ -437,26 +438,19 @@ if(params.aligner == 'bowtie' && !params.bowtie_index && params.fasta){
  //         file "*_fastqc.{zip,html}" into trimgalore_fastqc_reports
  //
  //         script:
- //         c_r1 = clip_r1 > 0 ? "--clip_r1 ${clip_r1}" : ''
- //         c_r2 = clip_r2 > 0 ? "--clip_r2 ${clip_r2}" : ''
+ //         c_r1 = clip_r1 > 0 ? "--clip_r1 ${clip_r1}" : '6'
  //         tpc_r1 = three_prime_clip_r1 > 0 ? "--three_prime_clip_r1 ${three_prime_clip_r1}" : ''
- //         tpc_r2 = three_prime_clip_r2 > 0 ? "--three_prime_clip_r2 ${three_prime_clip_r2}" : ''
  //         nextseq = params.trim_nextseq > 0 ? "--nextseq ${params.trim_nextseq}" : ''
- //         if (params.single_end) {
+ //              """
+ //             trim_galore --fastqc --gzip --cores ${task.cpu} $c_r1 $tpc_r1 $nextseq $reads
  //             """
- //             trim_galore --fastqc --gzip $c_r1 $tpc_r1 $nextseq $reads
- //             """
- //         } else {
- //             """
- //             trim_galore --paired --fastqc --gzip $c_r1 $c_r2 $tpc_r1 $tpc_r2 $nextseq $reads
- //             """
- //         }
  //     }
  // }else{
  //    raw_reads_trimgalore
  //        .set {trimgalore_reads}
  //    trimgalore_results = Channel.empty()
  // }
+
 if(!params.skip_trimming){
     process trim_adapters {
         tag "$sample_name"
@@ -482,7 +476,9 @@ if(!params.skip_trimming){
             """
             cutadapt -a ^${params.ecoSite}...${params.linkerSeq} \\
             --match-read-wildcards \\
-            -m 15 -M 45  \\
+            --minimum-length 20 --maximum-length 45 \\
+            --discard-untrimmed \\
+            --quality-cutoff 30 \\
             -o "$prefix".adapter_trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
@@ -496,7 +492,9 @@ if(!params.skip_trimming){
             cutadapt -g ^${params.ecoSite} \\
             -e 0 \\
             --match-read-wildcards \\
+            --minimum-length 20 --maximum-length 45 \\
             --discard-untrimmed \\
+            --quality-cutoff 30 \\
             -o "$prefix".adapter_trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
@@ -510,7 +508,9 @@ if(!params.skip_trimming){
             cutadapt -a ${params.linkerSeq}\$ \\
             -e 0 \\
             --match-read-wildcards \\
-            -m 15 -M 45 \\
+            --minimum-length 20 --maximum-length 45 \\
+            --discard-untrimmed \\
+            --quality-cutoff 30 \\
             -o "$prefix".adapter_trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
@@ -649,7 +649,7 @@ if (params.remove_ribo_RNA) {
 
         input:
         set val(sample_name), file(reads) from further_processed_reads_sortmerna
-        file(fasta) from fasta_sortmerna
+        file(fasta) from fasta_sortmerna.collect()
 
         output:
         set val(sample_name), file("*.fq.gz") into further_processed_reads_star, further_processed_reads_bowtie;
@@ -658,19 +658,18 @@ if (params.remove_ribo_RNA) {
 
         script:
         //concatenate reference files: ${db_fasta},${db_name}:${db_fasta},${db_name}:...
-        def Refs = ''
-        for (i=0; i<fasta.size(); i++) { Refs+= "-ref ${fasta[i]}" }
-
-
+        def Refs = ""
+        for (i=0; i<fasta.size(); i++) { Refs+= " -ref ${fasta[i]}" }
             """
-            sortmerna ${Refs} \
-                --reads ${reads}\
-                --num_alignments 1 \
-                -a ${task.cpus} \
-                --fastx \
-                --aligned rRNA-reads \
-                --other non-rRNA-reads \
-                --log -v
+            sortmerna ${Refs} \\
+                --reads ${reads} \\
+                --num_alignments 1 \\
+                --threads ${task.cpus} \\
+                --workdir . \\
+                --fastx \\
+                --aligned rRNA-reads \\
+                --other non-rRNA-reads \\
+                -v
             gzip --force < non-rRNA-reads.fastq > ${sample_name}.fq.gz
             mv rRNA-reads.log ${sample_name}_rRNA_report.txt
             """
@@ -818,28 +817,25 @@ process get_ctss {
 
     '''
 }
+if(params.bigwig){
+    process make_bigwig{
+        tag "$sample_name"
+        publishDir "${params.outdir}/ctss/bigwig", mode: 'copy'
 
-process make_bigwig{
-    tag "$sample_name"
-    publishDir "${params.outdir}/ctss/bigwig", mode: 'copy'
+        input:
+        set val(sample_name), file(ctss_file) from ctss_bw
+        file chrom_sizes from chrom_sizes_bw
 
-    input:
-    set val(sample_name), file(ctss_file) from ctss_bw
-    file chrom_sizes from chrom_sizes_bw
-
-    output:
-    file("*.ctss.bw")
-    // file("*.ctss.bw") into (ctss_counts, ctss_counts_qc)
-
-    when:
-        params.bigwig
-    script:
-    """
-        bedtools genomecov -bg -i ${sample_name}.ctss.bed -g ${chrom_sizes} > ${sample_name}.bedgraph
-        sort -k1,1 -k2,2n ${sample_name}.bedgraph > ${sample_name}_sorted.bedgraph
-        bedGraphToBigWig ${sample_name}_sorted.bedgraph ${chrom_sizes} ${sample_name}.ctss.bw
-    """
-
+        output:
+        file("*.ctss.bw")
+        // file("*.ctss.bw") into (ctss_counts, ctss_counts_qc)
+        script:
+        """
+            bedtools genomecov -bg -i ${sample_name}.ctss.bed -g ${chrom_sizes} > ${sample_name}.bedgraph
+            sort -k1,1 -k2,2n ${sample_name}.bedgraph > ${sample_name}_sorted.bedgraph
+            bedGraphToBigWig ${sample_name}_sorted.bedgraph ${chrom_sizes} ${sample_name}.ctss.bw
+        """
+    }
 }
 /**
  * STEP 9 - Cluster CTSS files

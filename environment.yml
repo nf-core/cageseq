@@ -20,4 +20,4 @@ dependencies:
   - bioconda::bowtie=1.2.3
   - bioconda::rseqc=3.0.1
   - bioconda::ucsc-bedgraphtobigwig=357
-  - sortmerna=4.2.0
+  - bioconda::sortmerna=4.2.0
