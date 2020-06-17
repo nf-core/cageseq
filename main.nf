@@ -476,7 +476,7 @@ if(!params.skip_trimming){
             """
             cutadapt -a ^${params.ecoSite}...${params.linkerSeq} \\
             --match-read-wildcards \\
-            --minimum-length 20 --maximum-length 45 \\
+            --minimum-length 15 --maximum-length 50 \\
             --discard-untrimmed \\
             --quality-cutoff 30 \\
             -o "$prefix".adapter_trimmed.fastq.gz \\
@@ -607,7 +607,7 @@ process trimmed_fastqc {
     set val(sample_name), file(reads) from further_processed_reads_fastqc
 
     output:
-    set val(sample_name), file("*_fastqc.{zip,html}") into trimmed_fastqc_results
+    path "*_fastqc.{zip,html}" into trimmed_fastqc_results
 
     when:
     (params.trim_ecop || params.trim_linker || params.trim_5g || params.trim_artifacts) && !params.skip_trimming
