@@ -476,9 +476,10 @@ if(!params.skip_trimming){
             """
             cutadapt -a ^${params.ecoSite}...${params.linkerSeq} \\
             --match-read-wildcards \\
-            --minimum-length 15 --maximum-length 50 \\
+            --minimum-length 15 --maximum-length 45 \\
             --discard-untrimmed \\
             --quality-cutoff 30 \\
+            --cores=${task.cpus} \\
             -o "$prefix".adapter_trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
@@ -495,6 +496,7 @@ if(!params.skip_trimming){
             --minimum-length 20 --maximum-length 45 \\
             --discard-untrimmed \\
             --quality-cutoff 30 \\
+            --cores=${task.cpus} \\
             -o "$prefix".adapter_trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
@@ -511,6 +513,7 @@ if(!params.skip_trimming){
             --minimum-length 20 --maximum-length 45 \\
             --discard-untrimmed \\
             --quality-cutoff 30 \\
+            --cores=${task.cpus} \\
             -o "$prefix".adapter_trimmed.fastq.gz \\
             $reads \\
             > "$prefix"_adapter_trimming.output.txt
@@ -544,11 +547,11 @@ if(!params.skip_trimming){
           prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?$/
           """
           cutadapt -g ^G \\
-          -e 0 --match-read-wildcards --discard-trimmed \\
+          -e 0 --match-read-wildcards \\
           --cores=${task.cpus} \\
           -o "$prefix".g_trimmed.fastq.gz \\
           $reads \\
-          > ${reads.baseName}.g_trimming.output.txt
+          > "$prefix".g_trimming.output.txt
           """
       }
   }
