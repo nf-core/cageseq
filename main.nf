@@ -476,7 +476,7 @@ if(!params.skip_trimming){
             """
             cutadapt -a ^${params.ecoSite}...${params.linkerSeq} \\
             --match-read-wildcards \\
-            --minimum-length 15 --maximum-length 45 \\
+            --minimum-length 15 --maximum-length 40 \\
             --discard-untrimmed \\
             --quality-cutoff 30 \\
             --cores=${task.cpus} \\
@@ -493,7 +493,7 @@ if(!params.skip_trimming){
             cutadapt -g ^${params.ecoSite} \\
             -e 0 \\
             --match-read-wildcards \\
-            --minimum-length 20 --maximum-length 45 \\
+            --minimum-length 20 --maximum-length 40 \\
             --discard-untrimmed \\
             --quality-cutoff 30 \\
             --cores=${task.cpus} \\
@@ -510,7 +510,7 @@ if(!params.skip_trimming){
             cutadapt -a ${params.linkerSeq}\$ \\
             -e 0 \\
             --match-read-wildcards \\
-            --minimum-length 20 --maximum-length 45 \\
+            --minimum-length 20 --maximum-length 40 \\
             --discard-untrimmed \\
             --quality-cutoff 30 \\
             --cores=${task.cpus} \\
@@ -642,6 +642,7 @@ if (params.remove_ribo_RNA) {
     // }
 
     process sortmerna {
+        label 'high_memory'
         tag "$sample_name"
         publishDir "${params.outdir}/SortMeRNA", mode: "copy",
             saveAs: {filename ->
