@@ -847,7 +847,7 @@ if(params.bigwig){
 ctss_counts = ctss_counts.collect().dump(tag:"ctss_counts")
 process cluster_ctss {
     label "high_memory"
-    tag "${ctss}"
+
     publishDir "${params.outdir}/ctss/clusters", mode: 'copy'
 
     input:
@@ -905,7 +905,6 @@ process cluster_ctss {
  * STEP 11 - Generate count matrix
  */
 process generate_count_matrix {
-    tag "${counts}"
     publishDir "${params.outdir}/ctss/", mode: 'copy'
 
     input:
