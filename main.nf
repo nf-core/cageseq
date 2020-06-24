@@ -451,7 +451,7 @@ if(params.aligner == 'bowtie' && !params.bowtie_index && params.fasta){
  //    trimgalore_results = Channel.empty()
  // }
 
-if(!params.skip_trimming){
+if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
     process trim_adapters {
         tag "$sample_name"
         publishDir "${params.outdir}/trimmed/adapter_trimmed", mode: 'copy',

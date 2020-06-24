@@ -14,15 +14,15 @@ run_modules:
     - samtools
     - bowtie1
 
-# Order of modules in the report
-top_modules:
-    - 'fastqc'
-    - 'cutadapt'
-    - 'sortmerna'
-    - 'star'
-    - 'bowtie1'
-    - 'samtools'
-    - 'rseqc'
+# # Order of modules in the report
+# top_modules:
+#     - 'fastqc'
+#     - 'cutadapt'
+#     - 'sortmerna'
+#     - 'star'
+#     - 'bowtie1'
+#     - 'samtools'
+#     - 'rseqc'
 
 # remove from file name in report
 extra_fn_clean_trim:
@@ -54,7 +54,7 @@ module_order:
     - rseqc
     - samtools
     - bowtie1
-    
+
 report_section_order:
     software_versions:
         order: -1000
