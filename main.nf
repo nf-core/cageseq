@@ -470,7 +470,7 @@ if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
         file "*.output.txt" into cutadapt_results
 
         script:
-        prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
+        // prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
 
         // Cut Both EcoP and Linker
         if (params.trim_ecop && params.trim_linker){
@@ -481,9 +481,9 @@ if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
             --discard-untrimmed \\
             --quality-cutoff 30 \\
             --cores=${task.cpus} \\
-            -o "$prefix".adapter_trimmed.fastq.gz \\
+            -o "$sample_name".adapter_trimmed.fastq.gz \\
             $reads \\
-            > "$prefix"_adapter_trimming.output.txt
+            > "$sample_name"_adapter_trimming.output.txt
             """
         }
 
@@ -498,9 +498,9 @@ if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
             --discard-untrimmed \\
             --quality-cutoff 30 \\
             --cores=${task.cpus} \\
-            -o "$prefix".adapter_trimmed.fastq.gz \\
+            -o "$sample_name".adapter_trimmed.fastq.gz \\
             $reads \\
-            > "$prefix"_adapter_trimming.output.txt
+            > "$sample_name"_adapter_trimming.output.txt
             """
         }
 
@@ -515,9 +515,9 @@ if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
             --discard-untrimmed \\
             --quality-cutoff 30 \\
             --cores=${task.cpus} \\
-            -o "$prefix".adapter_trimmed.fastq.gz \\
+            -o "$sample_name".adapter_trimmed.fastq.gz \\
             $reads \\
-            > "$prefix"_adapter_trimming.output.txt
+            > "$sample_name"_adapter_trimming.output.txt
             """
         }
     }
@@ -545,14 +545,14 @@ if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
           set val(sample_name), file("*.fastq.gz") into processed_reads
 
           script:
-          prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?$/
+          // prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?$/
           """
           cutadapt -g ^G \\
           -e 0 --match-read-wildcards \\
           --cores=${task.cpus} \\
-          -o "$prefix".g_trimmed.fastq.gz \\
+          -o "$sample_name".g_trimmed.fastq.gz \\
           $reads \\
-          > "$prefix".g_trimming.output.txt
+          > "$sample_name".g_trimming.output.txt
           """
       }
   }
@@ -583,13 +583,13 @@ if (params.trim_artifacts && !params.skip_trimming){
         file  "*.output.txt" into artifact_cutting_results
 
         script:
-        prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?(\.processed)?$/
+        // prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?(\.processed)?$/
         """
         cutadapt -a file:$artifacts_3end \\
         -g file:$artifacts_5end -e 0.1 --discard-trimmed \\
         --match-read-wildcards -m 15 -O 19 \\
         --cores=${task.cpus} \\
-        -o "$prefix".artifacts_trimmed.fastq.gz \\
+        -o "$sample_name".artifacts_trimmed.fastq.gz \\
         $reads \\
         > ${reads.baseName}.artifacts_trimming.output.txt
         """
@@ -711,7 +711,7 @@ if (params.aligner == 'star') {
 
         script:
 
-        prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.processed)?(\.further_processed)?$/
+        // prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.processed)?(\.further_processed)?$/
 
         """
         STAR --genomeDir $index \\
@@ -724,7 +724,7 @@ if (params.aligner == 'star') {
             --outFilterMismatchNmax 1 \\
             --readFilesCommand zcat \\
             --runDirPerm All_RWX \\
-            --outFileNamePrefix $prefix \\
+            --outFileNamePrefix $sample_name \\
             --outFilterMultimapNmax 1
         """
 
@@ -754,7 +754,7 @@ process bowtie {
 
     script:
 
-    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.processed)?(\.further_processed)?$/
+    // prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.processed)?(\.further_processed)?$/
     index = index_array[0].baseName - ~/.\d$/
     """
     bowtie --sam \\
@@ -771,9 +771,9 @@ process bowtie {
         --maqerr 70  \\
         ${index}  \\
         -q ${reads} \\
-        --un ${reads.baseName}.unAl > ${prefix}.sam 2> ${prefix}.out
+        --un ${reads.baseName}.unAl > ${sample_name}.sam 2> ${sample_name}.out
 
-        samtools sort -@ ${task.cpus} -o ${sample_name}.bam ${prefix}.sam
+        samtools sort -@ ${task.cpus} -o ${sample_name}.bam ${sample_name}.sam
     """
 
 }
