@@ -10,13 +10,16 @@ Nextflow CAGE-seq analysis pipeline, part of the nf-core community
 [![Docker](https://img.shields.io/docker/automated/nfcore/cageseq.svg)](https://hub.docker.com/r/nfcore/cageseq)
 
 ## Introduction
-
+___
 UNDER DEVELOPMENT
 
 This pipeline is currenlty under development. The workflow is not yet finished.
+___
 
-The pipeline includes steps for adapter and artefact trimming
-([cutadapt](https://cutadapt.readthedocs.io/en/stable/guide.html)), alignment to
+**nf-core/cageseq** is a bioinformatics analysis pipeline used for CAGE-seq sequencing data.
+
+The pipeline takes raw demultiplexed reads and includes steps for adapter and artefact trimming
+([cutadapt](https://cutadapt.readthedocs.io/en/stable/guide.html)), rRNA removal ([SortMeRNA](https://github.com/biocore/sortmerna), alignment to
 a reference genome ([STAR](https://github.com/alexdobin/STAR) or
 [bowtie](http://bowtie-bio.sourceforge.net/index.shtml)) and CAGE tag counting
 and clustering ([paraclu](http://cbrc3.cbrc.jp/~martin/paraclu/)).
@@ -24,7 +27,7 @@ Additionally, several quality control steps
 ([FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/),
 [RSeQC](http://rseqc.sourceforge.net/),
 [MultiQC](https://multiqc.info/))
-are included to allow for easy verification of results after a run.
+are included to allow for easy verification of the results after a run.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
 
@@ -32,9 +35,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 i. Install [`nextflow`](https://nf-co.re/usage/installation)
 
-ii. Install either [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility (please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))
+ii. Install one of [`docker`](https://docs.docker.com/engine/installation/), [`singularity`](https://www.sylabs.io/guides/3.0/user-guide/) or [`conda`](https://conda.io/miniconda.html)
 
-iii. Download the pipeline and test it on a minimal dataset with a single command
+iii. Download the nf-core/cagesq pipeline and test it on a minimal dataset with a single command
 
 ```bash
 nextflow run nf-core/cageseq -profile test,<docker/singularity/conda/institute>
