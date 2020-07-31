@@ -196,24 +196,17 @@ ch_output_docs_images = file("$baseDir/docs/images/", checkIfExists: true)
  * Create a channel for input read files
  */
 if (params.input_paths) {
-    if (params.single_end) {
-        Channel
-            .from(params.input_paths)
-            .map { row -> [ row[0], [ file(row[1][0], checkIfExists: true) ] ] }
-            .ifEmpty { exit 1, "params.input_paths was empty - no input files supplied" }
-            .into { ch_read_files_fastqc; ch_read_files_trimming }
-    } else {
-        Channel
-            .from(params.input_paths)
-            .map { row -> [ row[0], [ file(row[1][0], checkIfExists: true), file(row[1][1], checkIfExists: true) ] ] }
-            .ifEmpty { exit 1, "params.input_paths was empty - no input files supplied" }
-            .into { ch_read_files_fastqc; ch_read_files_trimming }
-    }
+  Channel
+      .from(params.input_paths)
+      .map { row -> [ row[0].replaceAll("\\s","_"), file(row[1])] }
+      .ifEmpty { exit 1, "params.input was empty - no input files supplied" }
+      .into { ch_read_files_fastqc; ch_read_files_trimming }
 } else {
-    Channel
-        .fromFilePairs(params.input, size: params.single_end ? 1 : 2)
-        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --single_end on the command line." }
-        .into { ch_read_files_fastqc; ch_read_files_trimming }
+  Channel
+    .fromFilePairs( params.input )
+    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\n" }
+    .into { ch_read_files_fastqc; ch_read_files_trimming }
+
 }
 
 // Header log info

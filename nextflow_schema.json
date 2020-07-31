@@ -303,6 +303,13 @@
                     "default": "${params.outdir}/pipeline_info",
                     "fa_icon": "fas fa-cogs",
                     "hidden": true
+                },
+                "clusterOptions": {
+                    "type": "string",
+                    "hidden": true,
+                    "fa_icon": "fas fa-network-wired",
+                    "description": "Arguments passed to Nextflow clusterOptions.",
+                    "default": "false"
                 }
             }
         },
