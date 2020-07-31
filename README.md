@@ -6,8 +6,9 @@ Nextflow CAGE-seq analysis pipeline, part of the nf-core community
 [![GitHub Actions Linting Status](https://github.com/nf-core/cageseq/workflows/cageseq%20linting/badge.svg)](https://github.com/nf-core/cageseq/actions)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-brightgreen.svg)](https://www.nextflow.io/)
 
-[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](https://bioconda.github.io/)
 [![Docker](https://img.shields.io/docker/automated/nfcore/cageseq.svg)](https://hub.docker.com/r/nfcore/cageseq)
+[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23cageseq-4A154B?logo=slack)](https://nfcore.slack.com/channels/cageseq)
 
 ## Introduction
 
@@ -36,43 +37,37 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 1. Install [`nextflow`](https://nf-co.re/usage/installation)
 
-2. Install one of [`docker`](https://docs.docker.com/engine/installation/), [`singularity`](https://www.sylabs.io/guides/3.0/user-guide/) or [`conda`](https://conda.io/miniconda.html)
+2. Install either [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
 
-3. Download the nf-core/cagesq pipeline and test it on a minimal dataset with a single command:
+3. Download the pipeline and test it on a minimal dataset with a single command:
+
+    ```bash
+    nextflow run nf-core/cageseq -profile test,<docker/singularity/conda/institute>
+    ```
+
+    > Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
+
+4. Start running your own analysis!
+
 ```bash
-nextflow run nf-core/cageseq -profile test,<docker/singularity/conda/institute>
-```
-
-> Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
-
-iv. Start running your own analysis!
-
-```bash
-nextflow run nf-core/cageseq --reads '*_R{1,2}.fastq.gz' --aligner <'star'/'bowtie'> --genome GRCh38 -profile <docker/singularity/conda/institute>
+nextflow run nf-core/cageseq -profile <docker/singularity/conda/institute> --input '*_R1.fastq.gz' --aligner <'star'/'bowtie1'> --genome GRCh38
 ```
 
 See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
 
 ## Documentation
 
-1. [Installation](https://nf-co.re/usage/installation)
-2. Pipeline configuration
-    * [Local installation](https://nf-co.re/usage/local_installation)
-    * [Adding your own system config](https://nf-co.re/usage/adding_own_config)
-    * [Reference genomes](https://nf-co.re/usage/reference_genomes)
-3. [Running the pipeline](docs/usage.md)
-4. [Output and how to interpret the results](docs/output.md)
-5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
+The nf-core/cageseq pipeline comes with documentation about the pipeline which you can read at [https://nf-core/cageseq/docs](https://nf-core/cageseq/docs) or find in the [`docs/` directory](docs).
 
 ## Credits
 
-nf-core/cageseq was originally written by Kevin Menden and Tristan Kast and modified by Matthias Hörtenhuber.
+nf-core/cageseq was originally written by Kevin Menden and Tristan Kast and updated by Matthias Hörtenhuber.
 
 ## Contributions and Support
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
-For further information or help, don't hesitate to get in touch on [Slack](https://nfcore.slack.com/channels/cageseq) (you can join with [this invite](https://nf-co.re/join/slack)).
+For further information or help, don't hesitate to get in touch on the [Slack `#cageseq` channel](https://nfcore.slack.com/channels/cageseq) (you can join with [this invite](https://nf-co.re/join/slack)).
 
 ## Citation
 
