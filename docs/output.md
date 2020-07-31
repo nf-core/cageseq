@@ -26,7 +26,6 @@ For further reading and documentation see the [FastQC help pages](http://www.bio
 * `fastqc/zips/`
   * `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
 
-
 ## 2. Trimming
 
 [Cutadapt](https://cutadapt.readthedocs.io/en/stable/) finds and removes adapter
@@ -41,20 +40,20 @@ All the following trimming process are skipped if `--skip_trimming` is set to tr
 
 **Output directory: `results/trimmed`**
 
-- `adapter_trimmed/sample.adapter_trimmed.fastq.gz`
-  - FastQ file after removal of linkers and EcoP15 site.
-- `adapter_trimmed/logs/`
-  - Trimming report (describes which parameters that were used)
-- if `--trim_5g`:
-  - `g_trimmed/sample.g_trimmed.fastq.gz`
-    - 5' G-corrected FastQ file
-  - `g_trimmed/logs/`
-    - Trimming report (describes which parameters that were used)
-- if `--trim_artifacts`:
-  - `artifacts_trimmed/sample.artifact_trimmed.fastq.gz`
-    - FastQ file after artifact removal
-  - `artifacts_trimmed/logs/`
-    - Trimming report (describes which parameters that were used)
+* `adapter_trimmed/sample.adapter_trimmed.fastq.gz`
+  * FastQ file after removal of linkers and EcoP15 site.
+* `adapter_trimmed/logs/`
+  * Trimming report (describes which parameters that were used)
+* if `--trim_5g`:
+  * `g_trimmed/sample.g_trimmed.fastq.gz`
+    * 5' G-corrected FastQ file
+  * `g_trimmed/logs/`
+    * Trimming report (describes which parameters that were used)
+* if `--trim_artifacts`:
+  * `artifacts_trimmed/sample.artifact_trimmed.fastq.gz`
+    * FastQ file after artifact removal
+  * `artifacts_trimmed/logs/`
+    * Trimming report (describes which parameters that were used)
 
 ## 3. Alignment
 
@@ -80,14 +79,14 @@ good samples should have most reads as _aligned_ and few _Not aligned_ reads.
 
 **Output directory: `results/STAR`**
 
-- `Sample_Aligned.sortedByCoord.out.bam`
-  - The aligned BAM file
-- `Sample_Log.final.out`
-  - The STAR alignment report, contains mapping results summary
-- `Sample_Log.out` and `Sample_Log.progress.out`
-  - STAR log files, containing a lot of detailed information about the run. Typically only useful for debugging purposes.
-- `Sample_SJ.out.tab`
-  - Filtered splice junctions detected in the mapping
+* `Sample_Aligned.sortedByCoord.out.bam`
+  * The aligned BAM file
+* `Sample_Log.final.out`
+  * The STAR alignment report, contains mapping results summary
+* `Sample_Log.out` and `Sample_Log.progress.out`
+  * STAR log files, containing a lot of detailed information about the run. Typically only useful for debugging purposes.
+* `Sample_SJ.out.tab`
+  * Filtered splice junctions detected in the mapping
 
 ## 5. CTSS generation
 
@@ -96,8 +95,8 @@ unclustered cage defined transcription start sites (CTSS).
 
 **Output directory: `results/ctss`**
 
-- `Sample.ctss.bed`
-  - A BED6 file with the cage defined transcription start sites
+* `Sample.ctss.bed`
+  * A BED6 file with the cage defined transcription start sites
 
 ## 4. CTSS clustering
 
@@ -109,8 +108,8 @@ cluster and returns a bed file with the clustered CTSSs.
 
 **Output directory: `results/ctss/clusters`**
 
-- `ctss_all_clustered_simplified.bed`
-  - A BED6 file with the clustered CTSSs and their pooled counts
+* `ctss_all_clustered_simplified.bed`
+  * A BED6 file with the clustered CTSSs and their pooled counts
 
 ## 6. Count table generation
 
@@ -119,8 +118,8 @@ summarized in a count table.
 
 **Output directory: `results/ctss/`**
 
-- `count_table.tsv`:
-  - Each column of the count table stands for one sample and each row for one tag cluster. The first row of this table is the header with sample names and the first column contains the tag cluster coordinates.
+* `count_table.tsv`:
+  * Each column of the count table stands for one sample and each row for one tag cluster. The first row of this table is the header with sample names and the first column contains the tag cluster coordinates.
 
 ## 7. QC of results
 
