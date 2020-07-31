@@ -228,6 +228,20 @@ Sets the minimum amount of reads for paraclu to build a cluster. Default: 20.
 
 Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.
 
+## Ribosomal RNA removal
+
+If rRNA removal is desired (for example, metatranscriptomics), add the following command line parameters.
+--removeRiboRNA
+
+Instructs to use SortMeRNA to remove reads related to ribosomal RNA (or any patterns found in the sequences defined by --rRNA_database_manifest).
+--saveNonRiboRNAReads
+
+By default, non-rRNA FastQ files will not be saved to the results directory. Specify this flag (or set to true in your config file) to copy these files when complete.
+--rRNA_database_manifest
+
+By default, rRNA databases in github biocore/sortmerna/rRNA_databases are used. Here the path to a text file can be provided that contains paths to fasta files (one per line, no ' or " for file names) that will be used for database creation for SortMeRNA instead of the default ones. You can see an example in the directory assets/rrna-default-dbs.txt. Consequently, similar reads to these sequences will be removed.
+
+
 ## Job resources
 
 ### Automatic resubmission

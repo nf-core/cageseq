@@ -10,6 +10,7 @@ Nextflow CAGE-seq analysis pipeline, part of the nf-core community
 [![Docker](https://img.shields.io/docker/automated/nfcore/cageseq.svg)](https://hub.docker.com/r/nfcore/cageseq)
 
 ## Introduction
+
 ___
 UNDER DEVELOPMENT
 
@@ -33,12 +34,11 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 ## Quick Start
 
-i. Install [`nextflow`](https://nf-co.re/usage/installation)
+1. Install [`nextflow`](https://nf-co.re/usage/installation)
 
-ii. Install one of [`docker`](https://docs.docker.com/engine/installation/), [`singularity`](https://www.sylabs.io/guides/3.0/user-guide/) or [`conda`](https://conda.io/miniconda.html)
+2. Install one of [`docker`](https://docs.docker.com/engine/installation/), [`singularity`](https://www.sylabs.io/guides/3.0/user-guide/) or [`conda`](https://conda.io/miniconda.html)
 
-iii. Download the nf-core/cagesq pipeline and test it on a minimal dataset with a single command
-
+3. Download the nf-core/cagesq pipeline and test it on a minimal dataset with a single command:
 ```bash
 nextflow run nf-core/cageseq -profile test,<docker/singularity/conda/institute>
 ```

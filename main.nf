@@ -194,11 +194,11 @@ ch_output_docs = file("$baseDir/docs/output.md", checkIfExists: true)
  * Create a channel for input read files
  */
 
-if(params.readPaths){
+if(params.input){
          Channel
-             .from(params.readPaths)
+             .from(params.input)
              .map { row -> [ row[0].replaceAll("\\s","_"), file(row[1])] }
-             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
+             .ifEmpty { exit 1, "params.input was empty - no input files supplied" }
              .into { read_files_fastqc; read_files_trimming }
      } else {
          Channel
