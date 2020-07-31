@@ -13,14 +13,17 @@
             "fa_icon": "far fa-trash-alt",
             "properties": {
                 "remove_ribo_RNA": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "fa_icon": "far fa-trash-alt"
                 },
                 "save_nonrRNA_reads": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "fa_icon": "far fa-save"
                 },
                 "rRNA_database_manifest": {
                     "type": "string",
-                    "default": "$baseDir/assets/rrna-db-defaults.txt"
+                    "default": "$baseDir/assets/rrna-db-defaults.txt",
+                    "fa_icon": "fas fa-database"
                 }
             }
         },
@@ -33,21 +36,21 @@
             "properties": {
                 "skip_trimming": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-cut"
+                    "fa_icon": "fas fa-fast-forward"
                 },
                 "save_trimmed": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-cut"
+                    "fa_icon": "far fa-save"
                 },
                 "trim_ecop": {
                     "type": "boolean",
                     "fa_icon": "fas fa-cut",
-                    "description": "Cut the enzyme binding site at the 5' end?"
+                    "description": "Set to cut the enzyme binding site at the 5' end"
                 },
                 "trim_linker": {
                     "type": "boolean",
                     "fa_icon": "fas fa-cut",
-                    "description": "Cut the linker at the 3' end?"
+                    "description": "Select to cut the linker at the 3' end?"
                 },
                 "trim_5g": {
                     "type": "boolean",
@@ -62,23 +65,26 @@
                 "ecoSite": {
                     "type": "string",
                     "default": "CAGCAG",
-                    "description": "Sequence of the ecoP15 site",
+                    "description": "Sequence of the ecoP15 site at the 5' end",
                     "fa_icon": "far fa-hand-scissors"
                 },
                 "linkerSeq": {
                     "type": "string",
                     "default": "TCGTATGCCGTCTTC",
-                    "fa_icon": "fas fa-link"
+                    "fa_icon": "fas fa-link",
+                    "description": "Sequence of the linker at the 3' end"
                 },
                 "artifacts_5end": {
                     "type": "string",
                     "default": "$baseDir/assets/artifacts_5end.fasta",
-                    "fa_icon": "far fa-hand-scissors"
+                    "fa_icon": "far fa-hand-scissors",
+                    "description": "Path to 5' end artifacts"
                 },
                 "artifacts_3end": {
                     "type": "string",
                     "default": "$baseDir/assets/artifacts_3end.fasta",
-                    "fa_icon": "far fa-hand-scissors"
+                    "fa_icon": "far fa-hand-scissors",
+                    "description": "Path to 3' end artifacts"
                 }
             }
         },
