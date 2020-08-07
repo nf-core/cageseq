@@ -5,135 +5,6 @@
     "description": "CAGE-seq pipeline",
     "type": "object",
     "definitions": {
-        "ribosomal_rna_removal_options": {
-            "title": "Ribosomal RNA removal options",
-            "type": "object",
-            "description": "Options to control the ribosomal RNA removal",
-            "default": "",
-            "fa_icon": "far fa-trash-alt",
-            "properties": {
-                "remove_ribo_RNA": {
-                    "type": "boolean",
-                    "fa_icon": "far fa-trash-alt"
-                },
-                "save_nonrRNA_reads": {
-                    "type": "boolean",
-                    "fa_icon": "far fa-save"
-                },
-                "rRNA_database_manifest": {
-                    "type": "string",
-                    "default": "$baseDir/assets/rrna-db-defaults.txt",
-                    "fa_icon": "fas fa-database"
-                }
-            }
-        },
-        "trimming_options": {
-            "title": "Trimming options",
-            "type": "object",
-            "description": "Options to adjust trimming criteria.",
-            "default": "",
-            "fa_icon": "fas fa-cut",
-            "properties": {
-                "skip_trimming": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-fast-forward"
-                },
-                "save_trimmed": {
-                    "type": "boolean",
-                    "fa_icon": "far fa-save"
-                },
-                "trim_ecop": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-cut",
-                    "description": "Set to cut the enzyme binding site at the 5' end"
-                },
-                "trim_linker": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-cut",
-                    "description": "Select to cut the linker at the 3' end?"
-                },
-                "trim_5g": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-cut",
-                    "description": "Trim the first `G` at the 5' end, if available"
-                },
-                "trim_artifacts": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-cut",
-                    "description": "Artifacts, generated in the sequencing process, are cut if this flag is not set to false."
-                },
-                "ecoSite": {
-                    "type": "string",
-                    "default": "CAGCAG",
-                    "description": "Sequence of the ecoP15 site at the 5' end",
-                    "fa_icon": "far fa-hand-scissors"
-                },
-                "linkerSeq": {
-                    "type": "string",
-                    "default": "TCGTATGCCGTCTTC",
-                    "fa_icon": "fas fa-link",
-                    "description": "Sequence of the linker at the 3' end"
-                },
-                "artifacts_5end": {
-                    "type": "string",
-                    "default": "$baseDir/assets/artifacts_5end.fasta",
-                    "fa_icon": "far fa-hand-scissors",
-                    "description": "Path to 5' end artifacts"
-                },
-                "artifacts_3end": {
-                    "type": "string",
-                    "default": "$baseDir/assets/artifacts_3end.fasta",
-                    "fa_icon": "far fa-hand-scissors",
-                    "description": "Path to 3' end artifacts"
-                }
-            }
-        },
-        "alignment_options": {
-            "title": "Alignment options",
-            "type": "object",
-            "description": "Options to adjust parameters and filtering criteria for read alignments.",
-            "default": "",
-            "fa_icon": "fas fa-map-signs",
-            "properties": {
-                "aligner": {
-                    "type": "string",
-                    "default": "star",
-                    "fa_icon": "fas fa-map-marked-alt",
-                    "description": "Alignment tool to be used",
-                    "enum": [
-                        "star",
-                        "bowtie1"
-                    ]
-                },
-                "min_aln_length": {
-                    "type": "integer",
-                    "default": "15",
-                    "fa_icon": "fas fa-ruler",
-                    "description": "Minimum number of aligned basepairs of a read to be kept"
-                }
-            }
-        },
-        "cage_tag_clustering_options": {
-            "title": "CAGE-tag clustering options",
-            "type": "object",
-            "description": "",
-            "default": "",
-            "fa_icon": "fas fa-align-left",
-            "properties": {
-                "min_cluster": {
-                    "type": "integer",
-                    "fa_icon": "fas fa-sort-amount-down",
-                    "default": "30",
-                    "description": "minimum cluster size"
-                },
-                "tpm_cluster_threshold": {
-                    "type": "number",
-                    "fa_icon": "fas fa-chart-bar",
-                    "description": "minimum tags per million a cluster has to have",
-                    "default": 0.2
-                }
-            }
-        },
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -174,6 +45,31 @@
                     "type": "boolean",
                     "description": "Specifies if TSS-bigwigs should be generated, additionally to the TSS-bed files",
                     "fa_icon": "fas fa-sign-out-alt"
+                }
+            }
+        },
+        "alignment_options": {
+            "title": "Alignment options",
+            "type": "object",
+            "description": "Adjust parameters and filtering criteria for read alignments.",
+            "default": "",
+            "fa_icon": "fas fa-map-signs",
+            "properties": {
+                "aligner": {
+                    "type": "string",
+                    "default": "star",
+                    "fa_icon": "fas fa-map-marked-alt",
+                    "description": "Alignment tool to be used",
+                    "enum": [
+                        "star",
+                        "bowtie1"
+                    ]
+                },
+                "min_aln_length": {
+                    "type": "integer",
+                    "default": "15",
+                    "fa_icon": "fas fa-ruler",
+                    "description": "Minimum number of aligned basepairs of a read to be kept"
                 }
             }
         },
@@ -228,6 +124,150 @@
                     "type": "boolean",
                     "fa_icon": "far fa-save",
                     "description": "All generated reference files will be saved to the results folder if this flag is set."
+                }
+            }
+        },
+        "trimming_options": {
+            "title": "Trimming options",
+            "type": "object",
+            "description": "Adjust trimming criteria and sequences.",
+            "default": "",
+            "fa_icon": "fas fa-cut",
+            "properties": {
+                "save_trimmed": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-save"
+                },
+                "trim_ecop": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-cut",
+                    "description": "Set to cut the enzyme binding site at the 5' end"
+                },
+                "trim_linker": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-cut",
+                    "description": "Select to cut the linker at the 3' end?"
+                },
+                "trim_5g": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-cut",
+                    "description": "Trim the first `G` at the 5' end, if available"
+                },
+                "trim_artifacts": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-cut",
+                    "description": "Artifacts, generated in the sequencing process, are cut if this flag is not set to false."
+                },
+                "ecoSite": {
+                    "type": "string",
+                    "default": "CAGCAG",
+                    "description": "Sequence of the ecoP15 site at the 5' end",
+                    "fa_icon": "far fa-hand-scissors"
+                },
+                "linkerSeq": {
+                    "type": "string",
+                    "default": "TCGTATGCCGTCTTC",
+                    "fa_icon": "fas fa-link",
+                    "description": "Sequence of the linker at the 3' end"
+                },
+                "artifacts_5end": {
+                    "type": "string",
+                    "default": "$baseDir/assets/artifacts_5end.fasta",
+                    "fa_icon": "far fa-hand-scissors",
+                    "description": "Path to 5' end artifacts"
+                },
+                "artifacts_3end": {
+                    "type": "string",
+                    "default": "$baseDir/assets/artifacts_3end.fasta",
+                    "fa_icon": "far fa-hand-scissors",
+                    "description": "Path to 3' end artifacts"
+                }
+            }
+        },
+        "ribosomal_rna_removal_options": {
+            "title": "Ribosomal RNA removal options",
+            "type": "object",
+            "description": "Control the ribosomal RNA removal through SortMeRNA.",
+            "default": "",
+            "fa_icon": "far fa-trash-alt",
+            "properties": {
+                "remove_ribo_RNA": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-trash-alt"
+                },
+                "save_nonrRNA_reads": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-save"
+                },
+                "rRNA_database_manifest": {
+                    "type": "string",
+                    "default": "$baseDir/assets/rrna-db-defaults.txt",
+                    "fa_icon": "fas fa-database"
+                }
+            }
+        },
+        "cage_tag_clustering_options": {
+            "title": "CAGE-tag clustering options",
+            "type": "object",
+            "description": "Define parameters for paraclu clustering.",
+            "default": "",
+            "fa_icon": "fas fa-align-left",
+            "properties": {
+                "min_cluster": {
+                    "type": "integer",
+                    "fa_icon": "fas fa-sort-amount-down",
+                    "default": "30",
+                    "description": "minimum cluster size"
+                },
+                "tpm_cluster_threshold": {
+                    "type": "number",
+                    "fa_icon": "fas fa-chart-bar",
+                    "description": "minimum tags per million a cluster has to have",
+                    "default": 0.2
+                }
+            }
+        },
+        "process_skipping_options": {
+            "title": "Process skipping options",
+            "type": "object",
+            "description": "Skip various steps within the workflow.",
+            "default": "",
+            "fa_icon": "fas fa-tasks",
+            "properties": {
+                "skip_initial_fastqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip FastQC run on input reads."
+                },
+                "skip_trimming": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip all trimming steps."
+                },
+                "skip_trimming_fastqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip FastQC run on trimmed reads."
+                },
+                "skip_alignment": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip alignment step."
+                },
+                "skip_samtools_stats": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip samtools stats QC step of aligned reads"
+                },
+                "skip_ctss_generation": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip steps generating CTSS files including clustering, bed/bigwig and count table output generation."
+                },
+                "skip_ctss_qc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip running RSeQC's read distribution QC step on the clustered CTSS."
                 }
             }
         },
@@ -404,22 +444,25 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/ribosomal_rna_removal_options"
-        },
-        {
-            "$ref": "#/definitions/trimming_options"
+            "$ref": "#/definitions/input_output_options"
         },
         {
             "$ref": "#/definitions/alignment_options"
         },
         {
+            "$ref": "#/definitions/reference_genome_options"
+        },
+        {
+            "$ref": "#/definitions/trimming_options"
+        },
+        {
+            "$ref": "#/definitions/ribosomal_rna_removal_options"
+        },
+        {
             "$ref": "#/definitions/cage_tag_clustering_options"
         },
         {
-            "$ref": "#/definitions/input_output_options"
-        },
-        {
-            "$ref": "#/definitions/reference_genome_options"
+            "$ref": "#/definitions/process_skipping_options"
         },
         {
             "$ref": "#/definitions/generic_options"
