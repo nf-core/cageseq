@@ -677,7 +677,7 @@ if(!params.skip_alignment){
 
             output:
             set val(sample_name), file("*.bam") into star_aligned
-            file "*.out" into alignment_logs
+            file "*.out" into star_alignment_logs
             file "*SJ.out.tab"
 
 
@@ -704,7 +704,7 @@ if(!params.skip_alignment){
 
         star_aligned.into { bam_stats; bam_aligned }
     } else{
-        alignment_logs = Channel.empty()
+        star_alignment_logs = Channel.empty()
     }
     if (params.aligner == 'bowtie1'){
     process bowtie {
@@ -721,7 +721,7 @@ if(!params.skip_alignment){
 
         output:
         set val(sample_name), file("*.bam") into bam_stats, bam_aligned
-        file "*.out" into alignment_logs
+        file "*.out" into bowtie_alignment_logs
 
 
         script:
@@ -750,11 +750,12 @@ if(!params.skip_alignment){
 
     }
     }else{
-        alignment_logs= Channel.empty()
+        bowtie_alignment_logs= Channel.empty()
     }
 } else {
   further_processed_reads_sortmerna.set{further_processed_reads_alignment}
-  alignment_logs = Channel.empty()
+  star_alignment_logs= Channel.empty()
+  bowtie_alignment_logs = Channel.empty()
 
 }
 if(!params.skip_samtools_stats){
@@ -949,7 +950,8 @@ process multiqc {
     file ('artifacts_trimmed/*') from  artifact_cutting_results.collect().ifEmpty([])
     file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])
     file ('sortmerna/*') from sortmerna_logs.collect().ifEmpty([])
-    file ('alignment/*') from alignment_logs.collect().ifEmpty([])
+    file ('alignment/*') from star_alignment_logs.collect().ifEmpty([])
+    file ('alignment/*') from bowtie_alignment_logs.collect().ifEmpty([])
     file ('alignment/samtools_stats/*') from bam_flagstat_mqc.collect().ifEmpty([])
     file ('rseqc/*') from rseqc_results.collect().ifEmpty([])
     file workflow_summary from ch_workflow_summary.collectFile(name: "workflow_summary_mqc.yaml")
