@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 /*
 ========================================================================================
-                         nf-core/cageseq
+                                    nf-core/cageseq
 ========================================================================================
- nf-core/cageseq Analysis Pipeline.
- #### Homepage / Documentation
- https://github.com/nf-core/cageseq
+nf-core/cageseq Analysis Pipeline.
+#### Homepage / Documentation
+https://github.com/nf-core/cageseq
 ----------------------------------------------------------------------------------------
 */
 
@@ -18,44 +18,63 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run nf-core/cageseq --reads /path/to/data.fastq.gz --star_index /path/to/index -profile docker
+    nextflow run nf-core/cageseq --input '*_R1.fastq.gz' -profile docker
 
     Mandatory arguments:
-      --reads [file]                Path to input data (must be surrounded with quotes)
-      -profile [str]                Configuration profile to use. Can use multiple (comma separated)
-                                    Available: conda, docker, singularity, test, awsbatch, <institute> and more
+        --input [file]                  Path to input data (must be surrounded with quotes)
+        -profile [str]                  Configuration profile to use. Can use multiple (comma separated)
+                                        Available: docker, singularity, conda, test, awsbatch, <institute> and more
 
-    Options:
-      --trimming                    Set to false to skip the file Trimming
-      --cutEcoP                     Set to false to not cut the EcoP
-      --cutLinker                   Set to false to not cut the linker
-      --cutG                        Set to false to not cut the additonal G at the 5' end
-      --star_index                  Path to STAR index, set to false if igenomes should be used
-      --bowtie_index                Path to bowtie index, set to false if igenomes should be used
-      --cutArtifacts                Set to false to not cut artifacts
-      --artifacts5end               Path to 5 end artifact file, if not given the pipeline will use a default file with all possible artifacts
-      --artifacts3end               Path to 3 end artifact file, if not given the pipeline will use a default file with all possible artifacts
-      --min_cluster                 Minimum amount of reads to build a cluster with paraclu
+    Trimming:
+        --save_trimmed [bool]           Set to true to Save trimmed FastQ files
+        --trim_ecop [bool]              Set to false to not trim the EcoP site
+        --trim_linker [bool]            Set to false to not trim the linker
+        --trim_5g [bool]                Set to false to not trim the additonal G at the 5' end
+        --trim_artifacts [bool]         Set to false to not trim artifacts
+        --artifacts_5end [file]         Path to 5 end artifact file, if not given the pipeline will use a default file with all possible artifacts
+        --artifacts_3end [file]         Path to 3 end artifact file, if not given the pipeline will use a default file with all possible artifacts
 
-      References                    If not specified in the configuration file or you wish to overwrite any of the references
-      --fasta [file]                Path to fasta reference
-      --genome                      Name of iGenomes reference
-      --gtf                         Path to gtf file
+    References                          If not specified in the configuration file or you wish to overwrite any of the references
+        --fasta [file]                  Path to fasta reference
+        --genome [str]                  Name of iGenomes reference
+        --gtf [file]                    Path to gtf file
+    Ribosomal RNA removal:
+        --remove_ribo_RNA               Removes ribosomal RNA using SortMeRNA
+        --save_nonrRNA_reads            Save FastQ file intermediates after removing rRNA
+        --rRNA_database_manifest        Path to file that contains file paths for rRNA databases, optional
+    Alignment:
+        --aligner [str]                 Specifies the aligner to use (available are: 'star', 'bowtie1')
+        --star_index [file]             Path to STAR index, set to false if igenomes should be used
+        --bowtie_index [file]           Path to bowtie index, set to false if igenomes should be used
 
-      Alignment:
-      --aligner                     Specifies the aligner to use (available are: 'star', 'bowtie')
+    Clustering:
+        --min_cluster [int]             Minimum amount of reads to build a cluster with paraclu
+        --tpm_cluster_threshold [int]   Threshold for expression count of ctss considered in paraclu clustering
 
-      Other options:
+    Output:
+        --bigwig [bool]                 Set this option to get besides ctss files in bed-format also in the bigwig-format
+
+    Skipping options:
+        --skip_initial_fastqc [bool]    Skip FastQC run on input reads
+        --skip_trimming [bool]          Skip all trimming steps
+        --skip_trimming_fastqc [bool]   Skip FastQC run on trimmed reads
+        --skip_alignment [bool]         Skip alignment step
+        --skip_samtools_stats [bool]    Skip samtools stats QC step of aligned reads
+        --skip_ctss_generation [bool]   Skip steps generating CTSS files including clustering, bed/bigwig and count table output generation
+        --skip_ctss_qc [bool]           Skip running RSeQC's read distribution QC step on the clustered CTSS
+
+    Other options:
         --outdir [file]                 The output directory where the results will be saved
+        --publish_dir_mode [str]        Mode for publishing results in the output directory. Available: symlink, rellink, link, copy, copyNoFollow, move (Default: copy)
         --email [email]                 Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
         --email_on_fail [email]         Same as --email, except only send mail if the workflow is not successful
-        --max_multiqc_email_size [str]  Theshold size for MultiQC report to be attached in notification email. If file generated by pipeline exceeds the threshold, it will not be attached (Default: 25MB)
+        --max_multiqc_email_size [str]  Threshold size for MultiQC report to be attached in notification email. If file generated by pipeline exceeds the threshold, it will not be attached (Default: 25MB)
         -name [str]                     Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
 
     AWSBatch options:
-      --awsqueue [str]                The AWSBatch JobQueue that needs to be set when running on AWSBatch
-      --awsregion [str]               The AWS Region for your AWS Batch job to run on
-      --awscli [str]                  Path to the AWS CLI tool
+        --awsqueue [str]                The AWSBatch JobQueue that needs to be set when running on AWSBatch
+        --awsregion [str]               The AWS Region for your AWS Batch job to run on
+        --awscli [str]                  Path to the AWS CLI tool
     """.stripIndent()
 }
 
@@ -79,20 +98,28 @@ params.bowtie_index = params.genome ? params.genomes[ params.genome ].bowtie ?: 
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 if (params.fasta) { ch_fasta = file(params.fasta, checkIfExists: true) }
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
-//params.artifacts5end = params.artifacts5end ? params.artifacts5end[ params.artifacts5end ].fasta ?: false : false
-//params.artifacts3end = params.artifacts3end ? params.artifacts3end[ params.artifacts3end ].fasta ?: false : false
-params.min_cluster = 30
+
+// Get rRNA databases
+// Default is set to bundled DB list in `assets/rrna-db-defaults.txt`
+
+rRNA_database = file(params.rRNA_database_manifest)
+if (rRNA_database.isEmpty()) {exit 1, "File ${rRNA_database.getName()} is empty!"}
+Channel
+    .from( rRNA_database.readLines() )
+    .map { row -> file(row) }
+    .set { fasta_sortmerna }
+
 
 // Validate inputs
-if (params.aligner != 'star' && params.aligner != 'bowtie') {
-    exit 1, "Invalid aligner option: ${params.aligner}. Valid options: 'star', 'bowtie'"
+if (params.aligner != 'star' && params.aligner != 'bowtie1') {
+    exit 1, "Invalid aligner option: ${params.aligner}. Valid options: 'star', 'bowtie1'"
 }
 if( params.star_index && params.aligner == 'star' ){
     star_index = Channel
         .fromPath(params.star_index, checkIfExists: true)
         .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
 }
-else if( params.bowtie_index && params.aligner == 'bowtie' ){
+else if( params.bowtie_index && params.aligner == 'bowtie1' ){
     bowtie_index = Channel
         .fromPath(params.bowtie_index, checkIfExists: true)
         .ifEmpty { exit 1, "STAR index not found: ${params.bowtie_index}" }
@@ -109,9 +136,10 @@ else {
 
 
 if( params.fasta ){
-  fasta_rseqc = Channel
-      .fromPath(params.fasta, checkIfExists: true)
-      .ifEmpty { exit 1, "fasta file not found: ${params.fasta}" }
+Channel
+    .fromPath(params.fasta, checkIfExists: true)
+    .ifEmpty { exit 1, "fasta file not found: ${params.fasta}" }
+    .set{fasta_rseqc}
 } else {
     exit 1, "No fasta file specified!"
 }
@@ -125,18 +153,18 @@ if( params.gtf ){
     exit 1, "No GTF annotation specified!"
 }
 
-if( params.artifacts5end ){
+if( params.artifacts_5end ){
     ch_5end_artifacts = Channel
-        .fromPath(params.artifacts5end)
+        .fromPath(params.artifacts_5end)
 }
 else {
     ch_5end_artifacts = Channel
         .fromPath("$baseDir/assets/artifacts_5end.fasta")
 }
 
-if( params.artifacts3end ){
-     ch_3end_artifacts = Channel
-        .fromPath(params.artifacts3end)
+if( params.artifacts_3end ){
+    ch_3end_artifacts = Channel
+        .fromPath(params.artifacts_3end)
 }
 else {
     ch_3end_artifacts = Channel
@@ -146,12 +174,13 @@ else {
 
 
 // Has the run name been specified by the user?
-//  this has the bonus effect of catching both -name and --name
+// this has the bonus effect of catching both -name and --name
 custom_runName = params.name
 if (!(workflow.runName ==~ /[a-z]+_[a-z]+/)) {
     custom_runName = workflow.runName
 }
 
+// Check AWS batch settings
 if (workflow.profile.contains('awsbatch')) {
     // AWSBatch sanity checking
     if (!params.awsqueue || !params.awsregion) exit 1, "Specify correct --awsqueue and --awsregion parameters on AWSBatch!"
@@ -167,54 +196,68 @@ if (workflow.profile.contains('awsbatch')) {
 ch_multiqc_config = file("$baseDir/assets/multiqc_config.yaml", checkIfExists: true)
 ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
 ch_output_docs = file("$baseDir/docs/output.md", checkIfExists: true)
+ch_output_docs_images = file("$baseDir/docs/images/", checkIfExists: true)
 
 /*
  * Create a channel for input read files
  */
+if (params.input_paths) {
+Channel
+    .from(params.input_paths)
+    .map { row -> [ row[0].replaceAll("\\s","_"), file(row[1])] }
+    .ifEmpty { exit 1, "params.input was empty - no input files supplied" }
+    .into { ch_read_files_fastqc; read_files_trimming }
+} else {
+Channel
+    .fromFilePairs( params.input )
+    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\n" }
+    .into { ch_read_files_fastqc; read_files_trimming }
 
-if(params.readPaths){
-         Channel
-             .from(params.readPaths)
-             .map { row -> [ row[0], file(row[1])] }
-             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-             .into { read_files_fastqc; read_files_trimming }
-     } else {
-         Channel
-            .fromFilePairs( params.reads )
-            .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\n" }
-            .into { read_files_fastqc; read_files_trimming }
 }
 
 // Header log info
 log.info nfcoreHeader()
 def summary = [:]
-summary['Run Name']        = custom_runName ?: workflow.runName
-if (params.genome){summary['Reads'] = params.reads}
-if (params.aligner == 'star') {
-    summary['Aligner'] = "STAR"
-    if (params.star_index)summary['STAR Index'] = params.star_index
-    else if (params.fasta)summary['Fasta Ref'] = params.fasta
-} else if (params.aligner == 'bowtie') {
-    summary['Aligner'] = "bowtie"
-    if (params.bowtie_index)summary['bowtie Index'] = params.bowtie_index
-    else if (params.fasta)summary['Fasta Ref'] = params.fasta
-    if (params.splicesites)summary['Splice Sites'] = params.splicesites
+if (workflow.revision) summary['Pipeline Release'] = workflow.revision
+summary['Run Name']         = custom_runName ?: workflow.runName
+summary['Input']            = params.input
+if (params.skip_initial_fastqc)  summary['Skip Initial FastQC'] = 'Yes'
+summary['Data Type']        = params.single_end ? 'Single-End' : 'Paired-End'
+if (params.artifacts_5end) summary["5' artifacts"] = params.artifacts_5end
+if (params.artifacts_3end) summary["3' artifacts"] = params.artifacts_3end
+if (params.skip_trimming) {summary['Skip Trimming'] = 'Yes'}
+else{
+    summary['trim_ecop']        = params.trim_ecop
+    summary['trim_linker']      = params.trim_linker
+    summary['trim_5g']          = params.trim_5g
+    summary['trim_artifacts']   = params.trim_artifacts
+    summary['EcoSite']          = params.ecoSite
+    summary['LinkerSeq']        = params.linkerSeq
 }
-summary['Fasta Ref']       = params.fasta
-summary['GTF Ref']         = params.gtf
-if(params.artifacts5end){ summary["5' artifacts"] = params.artifacts5end}
-if(params.artifacts3end){ summary["3' artifacts"] = params.artifacts3end}
-summary['Trimming']         = params.trimming
-summary['CutEcoP']          = params.cutEcop
-summary['CutLinker']        = params.cutLinker
-summary['CutG']             = params.cutG
-summary['CutArtifacts']     = params.cutArtifacts
-summary['EcoSite']          = params.ecoSite
-summary['LinkerSeq']        = params.linkerSeq
-summary['Min. cluster']     = params.min_cluster
+summary['Remove rRNA']      = params.remove_ribo_RNA
+if (params.skip_trimming_fastqc)  summary['Skip Trimming FastQC'] = 'Yes'
+if (params.skip_alignment){summary['Skip Alignment'] = 'Yes'}
+else {
+    if (params.aligner == 'star') {
+        summary['Aligner'] = "STAR"
+        if (params.star_index){summary['STAR Index'] = params.star_index}
+        else if (params.fasta){summary['Fasta Ref'] = params.fasta}
+    } else if (params.aligner == 'bowtie1') {
+        summary['Aligner'] = "bowtie"
+        if (params.bowtie_index) summary['bowtie Index'] = params.bowtie_index
+        else if (params.fasta) summary['Fasta Ref'] = params.fasta
+    }
+}
+if(params.skip_ctss_generation) {summary['Skip CTSS generation'] = 'Yes'}
+else{
+    summary['Min. cluster']     = params.min_cluster
+    summary['Cluster Threshold']= params.tpm_cluster_threshold
+}
+if(params.skip_ctss_qc) {summary['Skip CTSS QC'] = 'Yes'}
 summary['Save Reference']   = params.saveReference
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
+summary['bigwig output']    = params.bigwig
 summary['Output dir']       = params.outdir
 summary['Launch dir']       = workflow.launchDir
 summary['Working dir']      = workflow.workDir
@@ -226,9 +269,10 @@ if (workflow.profile.contains('awsbatch')) {
     summary['AWS CLI']      = params.awscli
 }
 summary['Config Profile'] = workflow.profile
-if (params.config_profile_description) summary['Config Description'] = params.config_profile_description
-if (params.config_profile_contact)     summary['Config Contact']     = params.config_profile_contact
-if (params.config_profile_url)         summary['Config URL']         = params.config_profile_url
+if (params.config_profile_description) summary['Config Profile Description'] = params.config_profile_description
+if (params.config_profile_contact)     summary['Config Profile Contact']     = params.config_profile_contact
+if (params.config_profile_url)         summary['Config Profile URL']         = params.config_profile_url
+summary['Config Files'] = workflow.configFiles.join(', ')
 if (params.email || params.email_on_fail) {
     summary['E-mail Address']    = params.email
     summary['E-mail on failure'] = params.email_on_fail
@@ -257,11 +301,11 @@ Channel.from(summary.collect{ [it.key, it.value] })
     .set { ch_workflow_summary }
 
 process get_software_versions {
-    publishDir "${params.outdir}/pipeline_info", mode: 'copy',
+    publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode,
         saveAs: { filename ->
-                      if (filename.indexOf(".csv") > 0) filename
-                      else null
-                }
+                    if (filename.indexOf(".csv") > 0) filename
+                    else null
+        }
 
     output:
     file 'software_versions_mqc.yaml' into ch_software_versions_yaml
@@ -274,63 +318,81 @@ process get_software_versions {
     fastqc --version > v_fastqc.txt
     multiqc --version > v_multiqc.txt
     STAR --version > v_star.txt
-    bowtie --version > v_bowite.txt
+    bowtie --version > v_bowtie.txt
     cutadapt --version > v_cutadapt.txt
     samtools --version > v_samtools.txt
     bedtools --version > v_bedtools.txt
     read_distribution.py --version > v_rseqc.txt
+    sortmerna --version > v_sortmerna.txt
     scrape_software_versions.py &> software_versions_mqc.yaml
     """
 }
-process convert_gtf {
-    tag "$gtf"
+if(!params.skip_ctss_qc){
+    process convert_gtf {
+        tag "$gtf"
 
-    input:
-    file gtf from gtf_rseqc
+        input:
+        file gtf from gtf_rseqc
 
-    output:
-    file "${gtf.baseName}.bed" into bed_rseqc
+        output:
+        file "${gtf.baseName}.bed" into bed_rseqc
 
-    script: // This script is bundled with the pipeline, in nfcore/cageseq/bin/
-    """
-    gtf2bed.pl $gtf > ${gtf.baseName}.bed
-    """
+        script:
+        """
+        gtf2bed.pl $gtf > ${gtf.baseName}.bed
+        """
+    }
 }
+if(!params.skip_ctss_generation){
+    process get_chrom_sizes{
+    input:
+    file fasta from fasta_rseqc.collect()
+    output:
+    file "*.txt" into (chrom_sizes_ctss,chrom_sizes_bw)
 
+    shell:
+    '''
+    cat !{fasta} |  awk '$0 ~ ">" {if (NR > 1) {print c;} c=0;printf substr($0,2,100) "\t"; } $0 !~ ">" {c+=length($0);} END { print c; }' > chrom_sizes.txt
+    '''
+    }
+}
 /*
  * STEP 1 - FastQC
  */
-process fastqc {
-    tag "$sample_name"
-    label 'process_medium'
-    publishDir "${params.outdir}/fastqc", mode: 'copy',
-        saveAs: { filename ->
-                      filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"
-                }
+if(!params.skip_initial_fastqc){
+    process fastqc {
+        tag "$sample_name"
+        label 'process_medium'
+        publishDir "${params.outdir}/fastqc", mode: params.publish_dir_mode,
+            saveAs: { filename ->
+                        filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"
+                    }
 
-    input:
-    set val(sample_name), file(reads) from read_files_fastqc
+        input:
+        set val(sample_name), file(reads) from ch_read_files_fastqc
 
-    output:
-    file "*_fastqc.{zip,html}" into ch_fastqc_results
+        output:
+        file "*_fastqc.{zip,html}" into fastqc_results
 
-    script:
-    """
-    fastqc --quiet --threads $task.cpus $reads
-    """
+        script:
+        """
+        fastqc --quiet --threads $task.cpus $reads
+        """
+    }
+} else {
+    fastqc_results = Channel.empty()
 }
 
-
 /*
- * STEP 2  - Build STAR index
+ * STEP 2  - Build STAR/bowtie1 index
  */
 
-if(params.aligner == 'star' && !params.star_index && params.fasta){
+if(params.aligner == 'star' && !params.star_index && params.fasta && !params.skip_alignment){
     process makeSTARindex {
         label 'high_memory'
         tag "${fasta.baseName}"
         publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
-                saveAs: { params.saveReference ? it : null }, mode: 'copy'
+                saveAs: { params.saveReference ? it : null }, mode: params.publish_dir_mode
 
         input:
         file fasta from fasta_star_index
@@ -338,9 +400,6 @@ if(params.aligner == 'star' && !params.star_index && params.fasta){
 
         output:
         file "star" into star_index
-
-        when:
-
 
         script:
         def avail_mem = task.memory ? "--limitGenomeGenerateRAM ${task.memory.toBytes() - 100000000}" : ''
@@ -356,393 +415,522 @@ if(params.aligner == 'star' && !params.star_index && params.fasta){
         """
     }
 }
-    if(params.aligner == 'bowtie' && !params.bowtie_index && params.fasta){
+
+if(params.aligner == 'bowtie1' && !params.bowtie_index && params.fasta && !params.skip_alignment){
     process makeBowtieindex {
         tag "${fasta.baseName}"
         publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
-                saveAs: { params.saveReference ? it : null }, mode: 'copy'
+                saveAs: { params.saveReference ? it : null }, mode: params.publish_dir_mode
 
         input:
         file fasta from fasta_bowtie_index
 
         output:
-        // ${fasta.baseName}.index into bowtie_index
         file "${fasta.baseName}.index*" into bowtie_index
         when:
 
 
         script:
         """
-
-
         bowtie-build --threads ${task.cpus} ${fasta} ${fasta.baseName}.index
-
-
         """
     }
 }
 
 /*
- * STEP 3 - Cut Enzyme binding site at 5' and linker at 3'
+ * STEP 3 - Cut enzyme binding site at 5' and linker at 3'
  */
-if(params.trimming){
-    process trimming {
+
+if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
+    process trim_adapters {
         tag "$sample_name"
-        publishDir "${params.outdir}/trimmed/adapter_trimmed", mode: 'copy',
+        publishDir "${params.outdir}/trimmed/adapter_trimmed", mode: params.publish_dir_mode,
                 saveAs: {filename ->
                     if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
-                    else "$filename" }
+                    else if (params.save_trimmed) "$filename"
+                    else null
+                }
 
         input:
         set val(sample_name), file(reads) from read_files_trimming
 
         output:
-        set val(sample_name), file("*.fastq.gz") into trimmed_reads_cutG
+        set val(sample_name), file("*.fastq.gz") into trimmed_reads_trim_5g
         file "*.output.txt" into cutadapt_results
 
         script:
-        prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
         // Cut Both EcoP and Linker
-        if (params.cutEcop && params.cutLinker){
+        if (params.trim_ecop && params.trim_linker){
             """
-            cutadapt -a ${params.ecoSite}...${params.linkerSeq} \\
+            cutadapt -a ^${params.ecoSite}...${params.linkerSeq} \\
             --match-read-wildcards \\
-            -m 15 -M 45  \\
-            -o "$prefix".trimmed.fastq.gz \\
+            --minimum-length 15 --maximum-length 40 \\
+            --discard-untrimmed \\
+            --quality-cutoff 30 \\
+            --cores=${task.cpus} \\
+            -o "$sample_name".adapter_trimmed.fastq.gz \\
             $reads \\
-            > "$prefix"_adapter_trimming.output.txt
+            > "$sample_name"_adapter_trimming.output.txt
             """
         }
 
         // Cut only EcoP site
-        else if (params.cutEcop && !params.cutLinker){
+        else if (params.trim_ecop && !params.trim_linker){
             """
             mkdir trimmed
             cutadapt -g ^${params.ecoSite} \\
             -e 0 \\
             --match-read-wildcards \\
+            --minimum-length 20 --maximum-length 40 \\
             --discard-untrimmed \\
-            -o "$prefix".trimmed.fastq.gz \\
+            --quality-cutoff 30 \\
+            --cores=${task.cpus} \\
+            -o "$sample_name".adapter_trimmed.fastq.gz \\
             $reads \\
-            > "$prefix"_adapter_trimming.output.txt
+            > "$sample_name"_adapter_trimming.output.txt
             """
         }
 
         // Cut only Linker
-        else if (!params.cutEcop && params.cutLinker){
+        else if (!params.trim_ecop && params.trim_linker){
             """
             mkdir trimmed
             cutadapt -a ${params.linkerSeq}\$ \\
             -e 0 \\
             --match-read-wildcards \\
-            -m 15 -M 45 \\
-            -o "$prefix".trimmed.fastq.gz \\
+            --minimum-length 20 --maximum-length 40 \\
+            --discard-untrimmed \\
+            --quality-cutoff 30 \\
+            --cores=${task.cpus} \\
+            -o "$sample_name".adapter_trimmed.fastq.gz \\
             $reads \\
-            > "$prefix"_adapter_trimming.output.txt
+            > "$sample_name"_adapter_trimming.output.txt
             """
         }
-
-
     }
-  }
-  else{
-    read_files_trimming.set{ trimmed_reads_cutG }
+} else {
+    read_files_trimming.set{ trimmed_reads_trim_5g }
     cutadapt_results = Channel.empty()
-  }
+}
 
+/**
+ * STEP 4 - Remove added G from 5-end
+ */
+if (params.trim_5g && !params.skip_trimming){
+    process trim_5g{
+    tag "$sample_name"
+    publishDir "${params.outdir}/trimmed/g_trimmed", mode: params.publish_dir_mode,
+            saveAs: {filename ->
+                if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
+                else if (params.save_trimmed) "$filename"
+                else null
+            }
 
-  /**
-   * STEP 4 - Remove added G from 5-end
-   */
-  if (params.cutG){
-      process cut_5G{
+        input:
+        set val(sample_name), file(reads) from trimmed_reads_trim_5g
+
+        output:
+        set val(sample_name), file("*.fastq.gz") into processed_reads
+
+        script:
+        """
+        cutadapt -g ^G \\
+        -e 0 --match-read-wildcards \\
+        --cores=${task.cpus} \\
+        -o "$sample_name".g_trimmed.fastq.gz \\
+        $reads \\
+        > "$sample_name".g_trimming.output.txt
+        """
+    }
+}
+else {
+    trimmed_reads_trim_5g.set{processed_reads}
+}
+/**
+ * STEP 5 - Remove artifacts
+ */
+
+if (params.trim_artifacts && !params.skip_trimming){
+    process trim_artifacts {
         tag "$sample_name"
+        publishDir "${params.outdir}/trimmed/artifacts_trimmed", mode: params.publish_dir_mode,
+        saveAs: {filename ->
+            if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
+            else if (params.save_trimmed) "$filename"
+            else null
+        }
 
-          input:
-          set val(sample_name), file(reads) from trimmed_reads_cutG
+        input:
+        set val(sample_name), file(reads) from processed_reads
+        file artifacts_5end from ch_5end_artifacts.collect()
+        file artifacts_3end from ch_3end_artifacts.collect()
 
-          output:
-          set val(sample_name), file("*.fastq.gz") into processed_reads
+        output:
+        set val(sample_name), file("*.fastq.gz") into further_processed_reads_sortmerna
+        file  "*.output.txt" into artifact_cutting_results
 
-          script:
-          prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?$/
-          """
-          cutadapt -g ^G \\
-          -e 0 --match-read-wildcards \\
-          -o "$prefix".G_trimmed.fastq.gz \\
-          $reads
-          """
-      }
-  }
-  else {
-      trimmed_reads_cutG.set{processed_reads}
-  }
-  /**
-   * STEP 5 - Remove artifacts
-   */
-if (params.cutArtifacts){
-  process cut_artifacts {
-    tag "$sample_name"
-    publishDir "${params.outdir}/trimmed/artifacst_trimmed", mode: 'copy',
-      saveAs: {filename ->
-          if (filename.indexOf(".fastq.gz") == -1)    "logs/$filename"
-          else "$filename" }
-
-                  input:
-                  set val(sample_name), file(reads) from processed_reads
-                  file artifacts5end from ch_5end_artifacts.collect()
-                  file artifacts3end from ch_3end_artifacts.collect()
-
-                  output:
-                  set val(sample_name), file("*.fastq.gz") into further_processed_reads
-                  file  "*.output.txt" into artifact_cutting_results
-
-                  script:
-                  prefix = reads.baseName.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?(\.trimmed)?(\.processed)?$/
-                  """
-                  cutadapt -a file:$artifacts3end \\
-                  -g file:$artifacts5end -e 0.1 --discard-trimmed \\
-                  --match-read-wildcards -m 15 -O 19 \\
-                  --cores=${task.cpus} \\
-                  -o "$prefix".artifact_trimmed.fastq.gz \\
-                  $reads \\
-                  > ${reads.baseName}.artifact_trimming.output.txt
-                  """
-  }
-  further_processed_reads.into { further_processed_reads_star;further_processed_reads_bowtie; further_processed_reads_fastqc }
-}
-else{
-  processed_reads.into{further_processed_reads_star; further_processed_reads_bowtie; further_processed_reads_fastqc}
-  artifact_cutting_results = Channel.empty()
-}
-
-// Post trimming QC, only needed if some trimming has been done
-  process trimmed_fastqc {
-      tag "$sample_name"
-      publishDir "${params.outdir}/trimmed/fastqc", mode: 'copy',
-              saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
-
-      input:
-      set val(sample_name), file(reads) from further_processed_reads_fastqc
-
-      output:
-      set val(sample_name), file("*_fastqc.{zip,html}") into trimmed_fastqc_results
-
-      when:
-        params.trimming || params.cutG || params.cutArtifacts
-      script:
-      """
-      fastqc -q $reads
-      """
-  }
-
-/**
- * STEP 7 - STAR alignment
- */
-further_processed_reads_star = further_processed_reads_star.dump(tag:"star")
-if (params.aligner == 'star') {
-process star {
-    label 'high_memory'
-    tag "$sample_name"
-    publishDir "${params.outdir}/STAR", mode: 'copy',
-            saveAs: {filename ->
-                if (filename.indexOf(".bam") == -1) "logs/$filename"
-                else  filename }
-
-    input:
-    set val(sample_name), file(reads) from further_processed_reads_star
-    file index from star_index.collect()
-    file gtf from gtf_star.collect()
-
-    output:
-    set val(sample_name), file("*.bam") into star_aligned
-    file "*.out" into star_alignment_logs
-    file "*SJ.out.tab"
-
-
-    script:
-
-    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.processed)?(\.further_processed)?$/
-
-    """
-    STAR --genomeDir $index \\
-        --sjdbGTFfile $gtf \\
-        --readFilesIn $reads \\
-        --runThreadN ${task.cpus} \\
-        --outSAMtype BAM SortedByCoordinate \\
-        --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0 \\
-        --outFilterMismatchNmax 1 \\
-        --readFilesCommand zcat \\
-        --runDirPerm All_RWX \\
-        --outFileNamePrefix $prefix \\
-        --outFilterMatchNmin ${params.min_aln_length}
-    """
-
-}
-
-star_aligned.into { bam_stats; bam_aligned }
+        script:
+        """
+        cutadapt -a file:$artifacts_3end \\
+        -g file:$artifacts_5end -e 0.1 --discard-trimmed \\
+        --match-read-wildcards -m 15 -O 19 \\
+        --cores=${task.cpus} \\
+        -o "$sample_name".artifacts_trimmed.fastq.gz \\
+        $reads \\
+        > ${reads.baseName}.artifacts_trimming.output.txt
+        """
+    }
 } else{
-    star_alignment_logs = Channel.empty()
-}
-if (params.aligner == 'bowtie'){
-process bowtie {
-    label 'high_memory'
-    tag "$sample_name"
-    publishDir "${params.outdir}/bowtie", mode: 'copy',
-            saveAs: {filename ->
-                if (filename.indexOf(".bam") == -1) "logs/$filename"
-                else  filename }
-
-    input:
-    set val(sample_name), file(reads) from further_processed_reads_bowtie
-    file index_array from bowtie_index.collect()
-
-    output:
-    set val(sample_name), file("*.bam") into bam_stats, bam_aligned
-    file "*.out" into bowtie_alignment_logs
-
-
-    script:
-
-    prefix = reads[0].toString() - ~/(.trimmed)?(\.fq)?(\.fastq)?(\.gz)?(\.processed)?(\.further_processed)?$/
-    index = index_array[0].baseName - ~/.\d$/
-    """
-    bowtie --sam \\
-        -m 1 \\
-        --best \\
-        --strata \\
-        -k 1 \\
-        --tryhard \\
-        --threads ${task.cpus} \\
-        --phred33-quals \\
-        --chunkmbs 64 \\
-        --seedmms 2 \\
-        --seedlen 28 \\
-        --maqerr 70  \\
-        ${index}  \\
-        -q ${reads} \\
-        --un ${reads.baseName}.unAl > ${sample_name}.sam 2> ${sample_name}.out
-
-        samtools sort -@ ${task.cpus} -o ${sample_name}.bam ${sample_name}.sam
-    """
-
-}
-}else{
-    bowtie_alignment_logs= Channel.empty()
+    processed_reads.set{further_processed_reads_sortmerna}
+    artifact_cutting_results = Channel.empty()
 }
 
-process samtools_stats {
-    tag "$sample_name"
-    label 'process_medium'
-    // if (params.save_align_intermeds) {
-    //     publishDir "${params.outdir}/STAR", mode: 'copy',
-    //         saveAs: { filename ->
-    //                       if (filename.endsWith(".flagstat")) "samtools_stats/$filename"
-    //                       else if (filename.endsWith(".idxstats")) "samtools_stats/$filename"
-    //                       else if (filename.endsWith(".stats")) "samtools_stats/$filename"
-    //                       else filename
-    //                 }
-    // }
-
-    input:
-    set val(sample_name), file(bam_count) from bam_stats
-
-    output:
-    file "*.{flagstat,idxstats,stats}" into bam_flagstat_mqc
-
-    script:
-    """
-    samtools idxstats $bam_count > ${bam_count}.idxstats
-    samtools stats $bam_count > ${bam_count}.stats
-    """
-}
-
-/**
- * STEP 8 - Get CTSS files
- */
-process get_ctss {
-    tag "$sample_name"
-    publishDir "${params.outdir}/ctss", mode: 'copy'
-
-    input:
-    set val(sample_name), file(bam_count) from bam_aligned
-
-    output:
-    set val(sample_name), file("*.ctss.bed") into ctss_counts
-
-    script:
-    """
-    bash make_ctss.sh $bam_count
-    """
-}
-
-/**
- * STEP 9 - Cluster CTSS files
- */
-
-process cluster_ctss {
-    tag "${ctss.simpleName}"
-    publishDir "${params.outdir}/ctss/clusters", mode: 'copy'
-
-    input:
-    set val(sample_name), file(ctss) from ctss_counts
-
-    output:
-    file "*.bed" into ctss_clusters
-
-    shell:
-    '''
-    bash process_ctss.sh !{ctss}
-
-    paraclu !{params.min_cluster} "!{ctss.baseName}_pos_4Ps" > "!{ctss.baseName}pos_clustered"
-    paraclu !{params.min_cluster} "!{ctss.baseName}_neg_4Ps" > "!{ctss.baseName}neg_clustered"
-
-    paraclu-cut.sh  "!{ctss.baseName}pos_clustered" >  "!{ctss.baseName}pos_clustered_simplified"
-    paraclu-cut.sh  "!{ctss.baseName}neg_clustered" >  "!{ctss.baseName}neg_clustered_simplified"
-
-
-    cat "!{ctss.baseName}pos_clustered_simplified" "!{ctss.baseName}neg_clustered_simplified" >  "!{ctss.baseName}_clustered_simplified"
-    awk -F '\t' '{print $1"\t"$3"\t"$4"\t"$1":"$3".."$4","$2"\t"$6"\t"$2}' "!{ctss.baseName}_clustered_simplified" >  "!{ctss.baseName}_clustered_simplified.bed"
-    '''
-}
-
-process ctss_qc {
-     tag "$clusters"
-     publishDir "${params.outdir}/rseqc" , mode: 'copy',
-         saveAs: {filename ->
-                  if (filename.indexOf("read_distribution.txt") > 0) "read_distribution/$filename"
-                  else filename
-         }
-
-     input:
-     file clusters from ctss_clusters
-     file gtf from bed_rseqc.collect()
-     file fasta from fasta_rseqc.collect()
-
-     output:
-     file "*.txt" into rseqc_results
-
-     shell:
-     '''
-     cat !{fasta} |  awk '$0 ~ ">" {if (NR > 1) {print c;} c=0;printf substr($0,2,100) "\t"; } $0 !~ ">" {c+=length($0);} END { print c; }' > chrom_sizes.tmp
-     bedtools bedtobam -i !{clusters} -g chrom_sizes.tmp > !{clusters.baseName}.bam
-     read_distribution.py -i !{clusters.baseName}.bam -r !{gtf} > !{clusters.baseName}.read_distribution.txt
-     '''
- }
 /*
- * STEP 10 - MultiQC
+ * STEP 6 - SortMeRNA - remove rRNA sequences on request
+ */
+if (params.remove_ribo_RNA) {
+    process sortmerna {
+        label 'high_memory'
+        tag "$sample_name"
+        publishDir "${params.outdir}/SortMeRNA", mode: params.publish_dir_mode,
+        saveAs: {filename ->
+            if (filename.indexOf("_rRNA_report.txt") > 0) "logs/$filename"
+            else if (params.save_nonrRNA_reads) "reads/$filename"
+            else null
+        }
+        input:
+        set val(sample_name), file(reads) from further_processed_reads_sortmerna
+        file(fasta) from fasta_sortmerna.collect()
+
+        output:
+        set val(sample_name), file("*.fq.gz") into further_processed_reads_alignment, further_processed_reads_fastqc;
+        file "*_rRNA_report.txt" into sortmerna_logs
+
+        script:
+        //concatenate reference files: ${db_fasta},${db_name}:${db_fasta},${db_name}:...
+        def Refs = ""
+        for (i=0; i<fasta.size(); i++) { Refs+= " -ref ${fasta[i]}" }
+        """
+        sortmerna ${Refs} \\
+            --reads ${reads} \\
+            --num_alignments 1 \\
+            --threads ${task.cpus} \\
+            --workdir . \\
+            --fastx \\
+            --aligned rRNA-reads \\
+            --other non-rRNA-reads \\
+            -v
+        gzip --force < non-rRNA-reads.fastq > ${sample_name}.fq.gz
+        mv rRNA-reads.log ${sample_name}_rRNA_report.txt
+        """
+        }
+} else {
+    further_processed_reads_sortmerna.into { further_processed_reads_alignment; further_processed_reads_fastqc }
+    sortmerna_logs = Channel.empty()
+}
+// Post trimming QC, only needed if some trimming has been done
+if(!params.skip_trimming_fastqc){
+    process trimmed_fastqc {
+        tag "$sample_name"
+        publishDir "${params.outdir}/trimmed/fastqc", mode: params.publish_dir_mode,
+        saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
+
+        input:
+        set val(sample_name), file(reads) from further_processed_reads_fastqc
+
+        output:
+        path "*_fastqc.{zip,html}" into trimmed_fastqc_results
+
+        when:
+        (params.trim_ecop || params.trim_linker || params.trim_5g || params.trim_artifacts) && !params.skip_trimming
+        script:
+        """
+        fastqc -q $reads
+        """
+    }
+} else {
+    trimmed_fastqc_results = Channel.empty()
+}
+/**
+ * STEP 7 - STAR/bowtie alignment
+ */
+if(!params.skip_alignment){
+    if (params.aligner == 'star') {
+        process star {
+            label 'high_memory'
+            tag "$sample_name"
+            publishDir "${params.outdir}/STAR", mode: params.publish_dir_mode,
+                    saveAs: {filename ->
+                        if (filename.indexOf(".bam") == -1) "logs/$filename"
+                        else  filename }
+
+            input:
+            set val(sample_name), file(reads) from further_processed_reads_alignment
+            file index from star_index.collect()
+            file gtf from gtf_star.collect()
+
+            output:
+            set val(sample_name), file("*.bam") into star_aligned
+            file "*.out" into star_alignment_logs
+            file "*SJ.out.tab"
+
+            script:
+            """
+            STAR --genomeDir $index \\
+                --sjdbGTFfile $gtf \\
+                --readFilesIn $reads \\
+                --runThreadN ${task.cpus} \\
+                --outSAMtype BAM SortedByCoordinate \\
+                --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0 \\
+                --seedSearchStartLmax 20 \\
+                --outFilterMismatchNmax 1 \\
+                --readFilesCommand zcat \\
+                --runDirPerm All_RWX \\
+                --outFileNamePrefix $sample_name \\
+                --outFilterMultimapNmax 1
+            """
+        }
+        star_aligned.into { bam_stats; bam_aligned }
+    } else{
+        star_alignment_logs = Channel.empty()
+    }
+    if (params.aligner == 'bowtie1'){
+    process bowtie {
+        label 'high_memory'
+        tag "$sample_name"
+        publishDir "${params.outdir}/bowtie", mode: params.publish_dir_mode,
+                saveAs: {filename ->
+                    if (filename.indexOf(".bam") == -1) "logs/$filename"
+                    else  filename }
+
+        input:
+        set val(sample_name), file(reads) from further_processed_reads_alignment
+        file index_array from bowtie_index.collect()
+
+        output:
+        set val(sample_name), file("*.bam") into bam_stats, bam_aligned
+        file "*.out" into bowtie_alignment_logs
+
+        script:
+        index = index_array[0].baseName - ~/.\d$/
+        """
+        bowtie --sam \\
+            -m 1 \\
+            --best \\
+            --strata \\
+            -k 1 \\
+            --tryhard \\
+            --threads ${task.cpus} \\
+            --phred33-quals \\
+            --chunkmbs 64 \\
+            --seedmms 2 \\
+            --seedlen 20 \\
+            --maqerr 70  \\
+            ${index}  \\
+            -q ${reads} \\
+            --un ${reads.baseName}.unAl > ${sample_name}.sam 2> ${sample_name}.out
+            samtools sort -@ ${task.cpus} -o ${sample_name}.bam ${sample_name}.sam
+        """
+    }
+    }else{
+        bowtie_alignment_logs= Channel.empty()
+    }
+} else {
+    further_processed_reads_sortmerna.into{bam_stats; bam_aligned}
+    star_alignment_logs = Channel.empty()
+    bowtie_alignment_logs = Channel.empty()
+
+}
+if(!params.skip_samtools_stats && !params.skip_samtools_stats){
+    process samtools_stats {
+        tag "$sample_name"
+        label 'process_medium'
+
+        input:
+        set val(sample_name), file(bam_count) from bam_stats
+
+        output:
+        file "*.{flagstat,idxstats,stats}" into bam_flagstat_mqc
+
+        script:
+        """
+        samtools idxstats $bam_count > ${bam_count}.idxstats
+        """
+    }
+} else {
+    bam_flagstat_mqc = Channel.empty()
+}
+
+
+if(!params.skip_ctss_generation){
+    /**
+     * STEP 8 - group CAGE tags
+     */
+    process get_ctss {
+        tag "$sample_name"
+        publishDir "${params.outdir}/ctss", mode: params.publish_dir_mode
+        publishDir "${params.outdir}/ctss", mode: params.publish_dir_mode,
+                saveAs: {filename ->
+                    if (filename.indexOf(".bed") != -1) "bed/$filename"
+                    else if (filename.indexOf(".bw") != -1) "bigwig/$filename"
+                    else  filename }
+
+        input:
+        set val(sample_name), file(bam_count) from bam_aligned
+
+        output:
+        set val(sample_name), file("*.ctss.bed") into (ctss_samples,ctss_bw)
+        file("*.ctss.bed") into (ctss_counts, ctss_counts_qc)
+
+        shell:
+        '''
+        make_ctss.sh -q 20 -i !{bam_count.baseName} -n !{sample_name}
+        '''
+    }
+    if(params.bigwig){
+        process make_bigwig{
+            tag "$sample_name"
+            publishDir "${params.outdir}/ctss/bigwig", mode: params.publish_dir_mode
+
+            input:
+            set val(sample_name), file(ctss_file) from ctss_bw
+            file chrom_sizes from chrom_sizes_bw
+
+            output:
+            file("*.ctss.bw")
+            script:
+            """
+                bedtools genomecov -bg -i ${sample_name}.ctss.bed -g ${chrom_sizes} > ${sample_name}.bedgraph
+                sort -k1,1 -k2,2n ${sample_name}.bedgraph > ${sample_name}_sorted.bedgraph
+                bedGraphToBigWig ${sample_name}_sorted.bedgraph ${chrom_sizes} ${sample_name}.ctss.bw
+            """
+        }
+    }
+    /**
+     * STEP 9 - Cluster CTSS files
+     */
+    ctss_counts = ctss_counts.collect().dump(tag:"ctss_counts")
+    process cluster_ctss {
+        label "high_memory"
+        publishDir "${params.outdir}/ctss/clusters", mode: params.publish_dir_mode
+
+        input:
+        file ctss from ctss_counts.collect()
+
+        output:
+        file "*.bed" into ctss_clusters
+
+
+        shell:
+        '''
+        process_ctss.sh -t !{params.tpm_cluster_threshold} !{ctss}
+
+        paraclu !{params.min_cluster} "ctss_all_pos_4Ps" > "ctss_all_pos_clustered"
+        paraclu !{params.min_cluster} "ctss_all_neg_4Ps" > "ctss_allneg_clustered"
+
+        paraclu-cut.sh  "ctss_all_pos_clustered" >  "ctss_all_pos_clustered_simplified"
+        paraclu-cut.sh  "ctss_all_neg_clustered" >  "ctss_all_neg_clustered_simplified"
+
+        cat "ctss_all_pos_clustered_simplified" "ctss_all_neg_clustered_simplified" >  "ctss_all_clustered_simplified"
+        awk -F '\t' '{print $1"\t"$3"\t"$4"\t"$1":"$3".."$4","$2"\t"$6"\t"$2}' "ctss_all_clustered_simplified" >  "ctss_all_clustered_simplified.bed"
+        '''
+    }
+
+    /*
+    * STEP 10 - Generate count files
+    */
+    process generate_counts {
+        tag "${sample_name}"
+        
+        input:
+        set val(sample_name), file(ctss) from ctss_samples
+        file clusters from ctss_clusters.collect()
+
+        output:
+        file "*.txt" into count_files
+        file "*.bed" into count_qc
+
+        shell:
+        '''
+        #intersect ctss files with generated clusters
+        intersectBed -a !{clusters} -b !{ctss} -loj -s > !{ctss}_counts_tmp
+
+        echo !{sample_name} > !{ctss}_counts.txt
+
+        bedtools groupby -i !{ctss}_counts_tmp -g 1,2,3,4,6 -c 11 -o sum > !{ctss}_counts.bed
+        awk -v OFS='\t' '{if($6=="-1") $6=0; print $6 }' !{ctss}_counts.bed >> !{ctss}_counts.txt
+        '''
+        }
+
+    /*
+     * STEP 11 - Generate count matrix
+     */
+    process generate_count_matrix {
+        publishDir "${params.outdir}/ctss/", mode: params.publish_dir_mode
+
+        input:
+        file counts from count_files.collect()
+        file clusters from ctss_clusters.collect()
+
+        output:
+        file "*.tsv" into count_matrix
+
+        shell:
+        '''
+        awk '{ print $4}' !{clusters} > coordinates
+        paste -d "\t" coordinates !{counts} >> count_table.tsv
+        '''
+    }
+
+    /**
+     * STEP 12 - QC for clustered ctss
+     */
+    if(!params.skip_ctss_qc){
+        process ctss_qc {
+            tag "$clusters"
+            publishDir "${params.outdir}/rseqc" , mode: params.publish_dir_mode,
+            saveAs: {filename ->
+                        if (filename.indexOf("read_distribution.txt") > 0) "read_distribution/$filename"
+                        else filename
+                    }
+
+            input:
+            file clusters from ctss_counts_qc
+            file gtf from bed_rseqc.collect()
+            file chrom_sizes from chrom_sizes_ctss
+
+            output:
+            file "*.txt" into rseqc_results
+
+            shell:
+            '''
+            bedtools bedtobam -i !{clusters} -g !{chrom_sizes} > !{clusters.baseName}.bam
+            read_distribution.py -i !{clusters.baseName}.bam -r !{gtf} > !{clusters.baseName}.read_distribution.txt
+            '''
+        }
+    } else {
+        rseqc_results = Channel.empty()
+    }
+
+} else {
+    count_qc = Channel.empty()
+    rseqc_results = Channel.empty()
+}
+/*
+ * STEP 13 - MultiQC
  */
 process multiqc {
-    publishDir "${params.outdir}/MultiQC", mode: 'copy'
+    publishDir "${params.outdir}/MultiQC", mode: params.publish_dir_mode
 
     input:
     file multiqc_config from ch_multiqc_config
     file (mqc_custom_config) from ch_multiqc_custom_config.collect().ifEmpty([])
     file ('software_versions/*') from ch_software_versions_yaml.collect()
-    file ('fastqc/*') from ch_fastqc_results.collect().ifEmpty([])
+    file ('fastqc/*') from fastqc_results.collect().ifEmpty([])
     file ('trimmed/*') from cutadapt_results.collect().ifEmpty([])
     file ('artifacts_trimmed/*') from  artifact_cutting_results.collect().ifEmpty([])
     file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])
+    file ('sortmerna/*') from sortmerna_logs.collect().ifEmpty([])
     file ('alignment/*') from star_alignment_logs.collect().ifEmpty([])
     file ('alignment/*') from bowtie_alignment_logs.collect().ifEmpty([])
     file ('alignment/samtools_stats/*') from bam_flagstat_mqc.collect().ifEmpty([])
@@ -760,19 +948,19 @@ process multiqc {
     custom_config_file = params.multiqc_config ? "--config $mqc_custom_config" : ''
 
     """
-    multiqc -f $rtitle $rfilename $custom_config_file \\
-    -m custom_content -m fastqc -m star -m cutadapt -m rseqc -m samtools -m bowtie1 .
+    multiqc . -f $rtitle $rfilename $custom_config_file
     """
 }
 
 /*
- * STEP 11 - Output Description HTML
+ * STEP 14 - Output Description HTML
  */
 process output_documentation {
-    publishDir "${params.outdir}/pipeline_info", mode: 'copy'
+    publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode
 
     input:
     file output_docs from ch_output_docs
+    file images from ch_output_docs_images
 
     output:
     file "results_description.html"
@@ -816,7 +1004,6 @@ workflow.onComplete {
     email_fields['summary']['Nextflow Build'] = workflow.nextflow.build
     email_fields['summary']['Nextflow Compile Timestamp'] = workflow.nextflow.timestamp
 
-    // TODO nf-core: If not using MultiQC, strip out this code (including params.max_multiqc_email_size)
     // On success try attach the multiqc report
     def mqc_report = null
     try {
@@ -863,7 +1050,11 @@ workflow.onComplete {
             log.info "[nf-core/cageseq] Sent summary e-mail to $email_address (sendmail)"
         } catch (all) {
             // Catch failures and try with plaintext
-            [ 'mail', '-s', subject, email_address ].execute() << email_txt
+            def mail_cmd = [ 'mail', '-s', subject, '--content-type=text/html', email_address ]
+            if ( mqc_report.size() <= params.max_multiqc_email_size.toBytes() ) {
+                mail_cmd += [ '-A', mqc_report ]
+            }
+            mail_cmd.execute() << email_html
             log.info "[nf-core/cageseq] Sent summary e-mail to $email_address (mail)"
         }
     }
