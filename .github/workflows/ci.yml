@@ -22,7 +22,7 @@ jobs:
         # Nextflow versions: check pipeline minimum and current latest
         nxf_ver: ['19.10.0', '']
         aligner: ["--aligner 'bowtie1'", "--aligner 'star'"]
-        options: ['--trimming false','--cutEcoP false','--cutLinker false','--cutG false','--cutArtifacts false', '--star_index false','--bowtie_index false']
+        options: ['--trimming false','--cutEcoP false','--cutLinker false','--cutG false','--cutArtifacts false', '--bigwig']
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v2
@@ -50,8 +50,5 @@ jobs:
           sudo mv nextflow /usr/local/bin/
 
       - name: Run pipeline with test data
-        # TODO nf-core: You can customise CI pipeline run tests as required
-        # For example: adding multiple test runs with different parameters
-        # Remember that you can parallelise this by using strategy.matrix
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile test,docker
