@@ -19,6 +19,8 @@ and processes data using the following steps:
 
 For further reading and documentation see the [FastQC help pages](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/).
 
+This step can be skipped via `--skip_initial_fastqc`.
+
   > **NB:** The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They may contain adapter sequence and potentially regions with low quality. To see how your reads look after trimming, look at the FastQC reports in the `trim_galore` directory.
 
 * `fastqc/`
@@ -34,7 +36,7 @@ high-throughput sequencing reads.
 
 By default this pipeline trims the cut enzyme binding site at the 5'-end and
 linkers at the 3'-end (can be disabled by setting `--trim_ecop` or `--trim_linkers to false`).
-Furthermore, to combat the leading-G-bias of CAGE-seq, G's at the 5'-end are removed. Additional artifacts can be removed via the `--trim_artifacts` parameter.
+Furthermore, to combat the leading-G-bias of CAGE-seq, G's at the 5'-end are removed. Additional artifacts generated in the sequencing process, can be removed via the `--trim_artifacts` parameter.
 
 All the following trimming process are skipped if `--skip_trimming` is set to true and the output below is only available if '--save_trimmed' is set to true.
 
@@ -90,21 +92,22 @@ good samples should have most reads as _aligned_ and few _Not aligned_ reads.
 
 ## 5. CTSS generation
 
-The custom script `bin/make_ctss.sh` generates a bed file for each sample with
-unclustered cage defined transcription start sites (CTSS).
+The custom script `bin/make_ctss.sh` generates a bed file (and a bigWig file with `--bigwig`) for each sample with the 1bp unclustered cage tags.
 
 **Output directory: `results/ctss`**
 
 * `Sample.ctss.bed`
-  * A BED6 file with the cage defined transcription start sites
+  * A BED6 file with the mapped cage tags
+* if `--bigwig`:
+  * `Sample.ctss.bw`
+    * A bigWig file with the mapped cage tags
 
 ## 4. CTSS clustering
 
 ### paraclu
 
 [paraclu](http://cbrc3.cbrc.jp/~martin/paraclu/) finds clusters in data
-attached to sequences. It is applied on the pool of all ctss bed files to
-cluster and returns a bed file with the clustered CTSSs.
+attached to sequences. It is applied on the pool of all ctss bed files to cluster and returns a bed file with the clustered cage-defined transcription start sites (CTSS).
 
 **Output directory: `results/ctss/clusters`**
 
@@ -113,8 +116,8 @@ cluster and returns a bed file with the clustered CTSSs.
 
 ## 6. Count table generation
 
-The ctss files are intersected with the clusteres identified by paraclu and
-summarized in a count table.
+The cage tags are intersected with the clusteres identified by
+ paraclu and summarized in a count table.
 
 **Output directory: `results/ctss/`**
 
@@ -129,15 +132,13 @@ RSeQC is a package of scripts designed to evaluate the quality of RNA seq data. 
 
 This pipeline only runs the read destribution RSeQC scripts on the CTSS clusters. The results are summarised within the MultiQC report.
 
-**Output directory: `results/rseqc`**
-
-#### Read distribution
-
 [read_distribution.py](http://rseqc.sourceforge.net/#read-distribution-py)
 calculates how mapped reads are distributed over genomic features.
 
 ![Read distribution](images/rseqc_read_distribution_plot.png)
-**Output: `Sample_read_distribution.txt`**
+**Output directory : `results/rseqc/read_distribution/`**
+ * Sample_read_distribution.txt:
+   * text file with the raw data describing the distribution of the mapped reads.
 
 ### MultiQC
 

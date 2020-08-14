@@ -12,18 +12,10 @@ Nextflow CAGE-seq analysis pipeline, part of the nf-core community
 
 ## Introduction
 
-___
-UNDER DEVELOPMENT
-
-This pipeline is currenlty under development. The workflow is not yet finished.
-___
-
 **nf-core/cageseq** is a bioinformatics analysis pipeline used for CAGE-seq sequencing data.
 
-The pipeline takes raw demultiplexed reads and includes steps for adapter and artefact trimming
-([cutadapt](https://cutadapt.readthedocs.io/en/stable/guide.html)), rRNA removal ([SortMeRNA](https://github.com/biocore/sortmerna), alignment to
-a reference genome ([STAR](https://github.com/alexdobin/STAR) or
-[bowtie](http://bowtie-bio.sourceforge.net/index.shtml)) and CAGE tag counting
+The pipeline takes raw demultiplexed fastq-files as inputs and includes steps for linker and artefact trimming
+([cutadapt](https://cutadapt.readthedocs.io/en/stable/guide.html)), rRNA removal ([SortMeRNA](https://github.com/biocore/sortmerna), alignment to a reference genome ([STAR](https://github.com/alexdobin/STAR) or [bowtie1](http://bowtie-bio.sourceforge.net/index.shtml)) and CAGE tag counting
 and clustering ([paraclu](http://cbrc3.cbrc.jp/~martin/paraclu/)).
 Additionally, several quality control steps
 ([FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/),
@@ -57,7 +49,7 @@ See [usage docs](docs/usage.md) for all of the available options when running th
 
 ## Documentation
 
-The nf-core/cageseq pipeline comes with documentation about the pipeline which you can read at [https://nf-core/cageseq/docs](https://nf-core/cageseq/docs) or find in the [`docs/` directory](docs).
+The nf-core/cageseq pipeline comes with documentation about the pipeline which you can read at [https://nf-co.re/cageseq/usage](https://nf-co.re/cageseq/usage) and [https://nf-co.re/cageseq/output](https://nf-co.re/cageseq/output) or find in the [`docs/` directory](docs).
 
 ## Credits
 
