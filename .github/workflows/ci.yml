@@ -21,8 +21,8 @@ jobs:
       matrix:
         # Nextflow versions: check pipeline minimum and current latest
         nxf_ver: ['19.10.0', '']
-        aligner: ["--aligner 'bowtie1'", "--aligner 'star'"]
-        options: ['--trimming false','--cutEcoP false','--cutLinker false','--cutG false','--cutArtifacts false', '--bigwig']
+        aligner: ["--aligner bowtie1", "--aligner star"]
+        options: ['--trimming false','--cutEcoP false','--cutLinker false','--cutG false','--cutArtifacts false', '--bigwig', '--remove_ribo_RNA']
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v2

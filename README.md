@@ -1,7 +1,5 @@
 # ![nf-core/cageseq](docs/images/nf-core-cageseq_logo.png)
 
-Nextflow CAGE-seq analysis pipeline, part of the nf-core community
-
 [![GitHub Actions CI Status](https://github.com/nf-core/cageseq/workflows/cageseq%20CI/badge.svg)](https://github.com/nf-core/cageseq/actions)
 [![GitHub Actions Linting Status](https://github.com/nf-core/cageseq/workflows/cageseq%20linting/badge.svg)](https://github.com/nf-core/cageseq/actions)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-brightgreen.svg)](https://www.nextflow.io/)
