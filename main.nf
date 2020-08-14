@@ -327,32 +327,35 @@ process get_software_versions {
     scrape_software_versions.py &> software_versions_mqc.yaml
     """
 }
-process convert_gtf {
-    tag "$gtf"
+if(!params.skip_ctss_qc){
+    process convert_gtf {
+        tag "$gtf"
 
-    input:
-    file gtf from gtf_rseqc
+        input:
+        file gtf from gtf_rseqc
 
-    output:
-    file "${gtf.baseName}.bed" into bed_rseqc
+        output:
+        file "${gtf.baseName}.bed" into bed_rseqc
 
-    script:
-    """
-    gtf2bed.pl $gtf > ${gtf.baseName}.bed
-    """
+        script:
+        """
+        gtf2bed.pl $gtf > ${gtf.baseName}.bed
+        """
+    }
 }
-process get_chrom_sizes{
-  input:
-  file fasta from fasta_rseqc.collect()
-  output:
-  file "*.txt" into (chrom_sizes_ctss,chrom_sizes_bw)
+if(!params.skip_ctss_generation){
+    process get_chrom_sizes{
+      input:
+      file fasta from fasta_rseqc.collect()
+      output:
+      file "*.txt" into (chrom_sizes_ctss,chrom_sizes_bw)
 
-  shell:
-  '''
-  cat !{fasta} |  awk '$0 ~ ">" {if (NR > 1) {print c;} c=0;printf substr($0,2,100) "\t"; } $0 !~ ">" {c+=length($0);} END { print c; }' > chrom_sizes.txt
-  '''
+      shell:
+      '''
+      cat !{fasta} |  awk '$0 ~ ">" {if (NR > 1) {print c;} c=0;printf substr($0,2,100) "\t"; } $0 !~ ">" {c+=length($0);} END { print c; }' > chrom_sizes.txt
+      '''
+    }
 }
-
 /*
  * STEP 1 - FastQC
  */
@@ -568,7 +571,7 @@ if (params.trim_artifacts && !params.skip_trimming){
         file artifacts_3end from ch_3end_artifacts.collect()
 
         output:
-        set val(sample_name), file("*.fastq.gz") into further_processed_reads
+        set val(sample_name), file("*.fastq.gz") into further_processed_reads_sortmerna
         file  "*.output.txt" into artifact_cutting_results
 
         script:
@@ -583,9 +586,7 @@ if (params.trim_artifacts && !params.skip_trimming){
         > ${reads.baseName}.artifacts_trimming.output.txt
         """
     }
-    further_processed_reads.set{further_processed_reads_sortmerna}
-}
-else{
+} else{
     processed_reads.set{further_processed_reads_sortmerna}
     artifact_cutting_results = Channel.empty()
 }
@@ -677,7 +678,7 @@ if(!params.skip_alignment){
 
             output:
             set val(sample_name), file("*.bam") into star_aligned
-            file "*.out" into alignment_logs
+            file "*.out" into star_alignment_logs
             file "*SJ.out.tab"
 
 
@@ -704,7 +705,7 @@ if(!params.skip_alignment){
 
         star_aligned.into { bam_stats; bam_aligned }
     } else{
-        alignment_logs = Channel.empty()
+        star_alignment_logs = Channel.empty()
     }
     if (params.aligner == 'bowtie1'){
     process bowtie {
@@ -721,7 +722,7 @@ if(!params.skip_alignment){
 
         output:
         set val(sample_name), file("*.bam") into bam_stats, bam_aligned
-        file "*.out" into alignment_logs
+        file "*.out" into bowtie_alignment_logs
 
 
         script:
@@ -750,14 +751,15 @@ if(!params.skip_alignment){
 
     }
     }else{
-        alignment_logs= Channel.empty()
+        bowtie_alignment_logs= Channel.empty()
     }
 } else {
-  further_processed_reads_sortmerna.set{further_processed_reads_alignment}
-  alignment_logs = Channel.empty()
+  further_processed_reads_sortmerna.into{bam_stats; bam_aligned}
+  star_alignment_logs = Channel.empty()
+  bowtie_alignment_logs = Channel.empty()
 
 }
-if(!params.skip_samtools_stats){
+if(!params.skip_samtools_stats && !params.skip_samtools_stats){
     process samtools_stats {
         tag "$sample_name"
         label 'process_medium'
@@ -949,7 +951,8 @@ process multiqc {
     file ('artifacts_trimmed/*') from  artifact_cutting_results.collect().ifEmpty([])
     file ('trimmed/fastqc/*') from trimmed_fastqc_results.collect().ifEmpty([])
     file ('sortmerna/*') from sortmerna_logs.collect().ifEmpty([])
-    file ('alignment/*') from alignment_logs.collect().ifEmpty([])
+    file ('alignment/*') from star_alignment_logs.collect().ifEmpty([])
+    file ('alignment/*') from bowtie_alignment_logs.collect().ifEmpty([])
     file ('alignment/samtools_stats/*') from bam_flagstat_mqc.collect().ifEmpty([])
     file ('rseqc/*') from rseqc_results.collect().ifEmpty([])
     file workflow_summary from ch_workflow_summary.collectFile(name: "workflow_summary_mqc.yaml")
