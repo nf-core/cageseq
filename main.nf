@@ -764,7 +764,7 @@ if(!params.skip_samtools_stats && !params.skip_samtools_stats){
 
 if(!params.skip_ctss_generation){
     /**
-     * STEP 8 - Get CTSS files
+     * STEP 8 - group CAGE tags
      */
     process get_ctss {
         tag "$sample_name"
