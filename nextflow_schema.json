@@ -120,7 +120,7 @@
                     "fa_icon": "fab fa-black-tie",
                     "description": "Path to bowtie index directory."
                 },
-                "saveReference": {
+                "save_reference": {
                     "type": "boolean",
                     "fa_icon": "far fa-save",
                     "description": "All generated reference files will be saved to the results folder if this flag is set."
@@ -158,13 +158,13 @@
                     "fa_icon": "fas fa-cut",
                     "description": "Artifacts, generated in the sequencing process, are cut if this flag is not set to false."
                 },
-                "ecoSite": {
+                "eco_site": {
                     "type": "string",
                     "default": "CAGCAG",
                     "description": "Sequence of the ecoP15 site at the 5' end",
                     "fa_icon": "far fa-hand-scissors"
                 },
-                "linkerSeq": {
+                "linker_seq": {
                     "type": "string",
                     "default": "TCGTATGCCGTCTTC",
                     "fa_icon": "fas fa-link",
@@ -191,11 +191,11 @@
             "default": "",
             "fa_icon": "far fa-trash-alt",
             "properties": {
-                "remove_ribo_RNA": {
+                "remove_ribo_rna": {
                     "type": "boolean",
                     "fa_icon": "far fa-trash-alt"
                 },
-                "save_nonrRNA_reads": {
+                "save_non_ribo_rna_reads": {
                     "type": "boolean",
                     "fa_icon": "far fa-save"
                 },
