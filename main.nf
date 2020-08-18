@@ -500,9 +500,9 @@ if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
                 --discard-untrimmed \\
                 --quality-cutoff 30 \\
                 --cores=$task.cpus \\
-                -o "$name".adapter_trimmed.fastq.gz \\
+                -o "${name}".adapter_trimmed.fastq.gz \\
                 $reads \\
-                > "$name"_adapter_trimming.output.txt
+                > "${name}"_adapter_trimming.output.txt
             """
         }
 
@@ -517,9 +517,9 @@ if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
                 --discard-untrimmed \\
                 --quality-cutoff 30 \\
                 --cores=$task.cpus \\
-                -o "$name".adapter_trimmed.fastq.gz \\
+                -o "${name}".adapter_trimmed.fastq.gz \\
                 $reads \\
-                > "$name"_adapter_trimming.output.txt
+                > "${name}"_adapter_trimming.output.txt
             """
         }
 
@@ -534,9 +534,9 @@ if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
                 --discard-untrimmed \\
                 --quality-cutoff 30 \\
                 --cores=$task.cpus \\
-                -o "$name".adapter_trimmed.fastq.gz \\
+                -o "${name}".adapter_trimmed.fastq.gz \\
                 $reads \\
-                > "$name"_adapter_trimming.output.txt
+                > "${name}"_adapter_trimming.output.txt
             """
         }
     }
@@ -569,9 +569,9 @@ if (params.trim_5g && !params.skip_trimming){
         cutadapt -g ^G \\
         -e 0 --match-read-wildcards \\
         --cores=$task.cpus \\
-        -o "$name".g_trimmed.fastq.gz \\
+        -o "${name}".g_trimmed.fastq.gz \\
         $reads \\
-        > "$name".g_trimming.output.txt
+        > "${name}".g_trimming.output.txt
         """
     }
 }
@@ -607,7 +607,7 @@ if (params.trim_artifacts && !params.skip_trimming){
             -g file:$artifacts_5end -e 0.1 --discard-trimmed \\
             --match-read-wildcards -m 15 -O 19 \\
             --cores=$task.cpus \\
-            -o "$name".artifacts_trimmed.fastq.gz \\
+            -o "${name}".artifacts_trimmed.fastq.gz \\
             $reads \\
             > ${reads.baseName}.artifacts_trimming.output.txt
         """
@@ -653,8 +653,8 @@ if (params.remove_ribo_rna) {
             --aligned rRNA-reads \\
             --other non-rRNA-reads \\
             -v
-        gzip --force < non-rRNA-reads.fastq > $name.fq.gz
-        mv rRNA-reads.log $name_rRNA_report.txt
+        gzip --force < non-rRNA-reads.fastq > ${name}.fq.gz
+        mv rRNA-reads.log ${name}_rRNA_report.txt
         """
         }
 } else {
@@ -762,8 +762,8 @@ if(!params.skip_alignment){
                 --maqerr 70  \\
                 ${index}  \\
                 -q ${reads} \\
-                --un ${reads.baseName}.unAl > $name.sam 2> $name.out
-                samtools sort -@ $task.cpus -o $name.bam $name.sam
+                --un ${reads.baseName}.unAl > ${name}.sam 2> ${name}.out
+                samtools sort -@ $task.cpus -o ${name}.bam ${name}.sam
             """
         }
     }else{
@@ -834,9 +834,9 @@ if(!params.skip_ctss_generation){
 
             script:
             """
-            bedtools genomecov -bg -i $name.ctss.bed -g ${chrom_sizes} > $name.bedgraph
-            sort -k1,1 -k2,2n $name.bedgraph > $name_sorted.bedgraph
-            bedGraphToBigWig $name_sorted.bedgraph ${chrom_sizes} $name.ctss.bw
+            bedtools genomecov -bg -i ${name}.ctss.bed -g ${chrom_sizes} > ${name}.bedgraph
+            sort -k1,1 -k2,2n ${name}.bedgraph > ${name}_sorted.bedgraph
+            bedGraphToBigWig ${name}_sorted.bedgraph ${chrom_sizes} ${name}.ctss.bw
             """
         }
     }
