@@ -92,5 +92,5 @@ jobs:
 
       - name: Run pipeline with test data
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,docker ${{matrix.alginer}} ${{matrix.parameters}}
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker ${{matrix.aligner}} ${{matrix.parameters}}
       
