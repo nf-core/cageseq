@@ -861,8 +861,8 @@ if(!params.skip_ctss_generation){
         paraclu !{params.min_cluster} "ctss_all_pos_4Ps" > "ctss_all_pos_clustered"
         paraclu !{params.min_cluster} "ctss_all_neg_4Ps" > "ctss_allneg_clustered"
 
-        paraclu-cut.sh  "ctss_all_pos_clustered" >  "ctss_all_pos_clustered_simplified"
-        paraclu-cut.sh  "ctss_all_neg_clustered" >  "ctss_all_neg_clustered_simplified"
+        paraclu-cut  "ctss_all_pos_clustered" >  "ctss_all_pos_clustered_simplified"
+        paraclu-cut  "ctss_all_neg_clustered" >  "ctss_all_neg_clustered_simplified"
 
         cat "ctss_all_pos_clustered_simplified" "ctss_all_neg_clustered_simplified" >  "ctss_all_clustered_simplified"
         awk -F '\t' '{print $1"\t"$3"\t"$4"\t"$1":"$3".."$4","$2"\t"$6"\t"$2}' "ctss_all_clustered_simplified" >  "ctss_all_clustered_simplified.bed"
