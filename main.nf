@@ -642,7 +642,7 @@ if (params.remove_ribo_rna) {
         script:
         //concatenate reference files: ${db_fasta},${db_name}:${db_fasta},${db_name}:...
         def Refs = ""
-        for (i=0; i<fasta.size(); i++) { Refs+= " -ref ${fasta[i]}" }
+        for (i=0; i<fasta.size(); i++) { Refs+= " --ref ${fasta[i]}" }
         """
         sortmerna ${Refs} \\
             --reads ${reads} \\
