@@ -228,7 +228,6 @@ summary['Input']                          = params.input
 if (params.skip_initial_fastqc)  {
     summary['Skip Initial FastQC']        = 'Yes'
 }
-summary['Data Type']                      = params.single_end ? 'Single-End' : 'Paired-End'
 if (params.artifacts_5end){
     summary["5' artifacts"]               = params.artifacts_5end
 }
