@@ -548,7 +548,7 @@ if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
  * STEP 4 - Remove added G from 5-end
  */
 if (params.trim_5g && !params.skip_trimming){
-    process trim_5g{
+    process trim_5g {
         tag "$name"
         publishDir "${params.outdir}/trimmed/g_trimmed", mode: params.publish_dir_mode,
                 saveAs: {filename ->
