@@ -21,62 +21,62 @@ def helpMessage() {
     nextflow run nf-core/cageseq --input '*_R1.fastq.gz' -profile docker
 
     Mandatory arguments:
-        --input [file]                  Path to input data (must be surrounded with quotes)
-        -profile [str]                  Configuration profile to use. Can use multiple (comma separated)
-                                        Available: docker, singularity, conda, test, awsbatch, <institute> and more
+        --input [file]                    Path to input data (must be surrounded with quotes)
+        -profile [str]                    Configuration profile to use. Can use multiple (comma separated)
+                                            Available: docker, singularity, conda, test, awsbatch, <institute> and more
 
     Trimming:
-        --save_trimmed [bool]           Set to true to Save trimmed FastQ files
-        --trim_ecop [bool]              Set to false to not trim the EcoP site
-        --trim_linker [bool]            Set to false to not trim the linker
-        --trim_5g [bool]                Set to false to not trim the additonal G at the 5' end
-        --trim_artifacts [bool]         Set to false to not trim artifacts
-        --artifacts_5end [file]         Path to 5 end artifact file, if not given the pipeline will use a default file with all possible artifacts
-        --artifacts_3end [file]         Path to 3 end artifact file, if not given the pipeline will use a default file with all possible artifacts
+        --save_trimmed [bool]             Set to true to Save trimmed FastQ files
+        --trim_ecop [bool]                Set to false to not trim the EcoP site
+        --trim_linker [bool]              Set to false to not trim the linker
+        --trim_5g [bool]                  Set to false to not trim the additonal G at the 5' end
+        --trim_artifacts [bool]           Set to false to not trim artifacts
+        --artifacts_5end [file]           Path to 5 end artifact file, if not given the pipeline will use a default file with all possible artifacts
+        --artifacts_3end [file]           Path to 3 end artifact file, if not given the pipeline will use a default file with all possible artifacts
 
-    References                          If not specified in the configuration file or you wish to overwrite any of the references
-        --fasta [file]                  Path to fasta reference
-        --genome [str]                  Name of iGenomes reference
-        --gtf [file]                    Path to gtf file
+    References                            If not specified in the configuration file or you wish to overwrite any of the references
+        --fasta [file]                    Path to fasta reference
+        --genome [str]                    Name of iGenomes reference
+        --gtf [file]                      Path to gtf file
 
     Ribosomal RNA removal:
-        --remove_ribo_rna               Removes ribosomal RNA using SortMeRNA
-        --save_non_ribo_rna_reads            Save FastQ file intermediates after removing rRNA
-        --rRNA_database_manifest        Path to file that contains file paths for rRNA databases, optional
+        --remove_ribo_rna [bool]          Removes ribosomal RNA using SortMeRNA
+        --save_non_ribo_reads [bool]      Save FastQ file intermediates after removing rRNA
+        --ribo_database_manifest [string] Path to file that contains file paths for rRNA databases, optional
 
     Alignment:
-        --aligner [str]                 Specifies the aligner to use (available are: 'star', 'bowtie1')
-        --star_index [file]             Path to STAR index, set to false if igenomes should be used
-        --bowtie_index [file]           Path to bowtie index, set to false if igenomes should be used
+        --aligner [str]                   Specifies the aligner to use (available are: 'star', 'bowtie1')
+        --star_index [file]               Path to STAR index, set to false if igenomes should be used
+        --bowtie_index [file]             Path to bowtie index, set to false if igenomes should be used
 
     Clustering:
-        --min_cluster [int]             Minimum amount of reads to build a cluster with paraclu
-        --tpm_cluster_threshold [int]   Threshold for expression count of ctss considered in paraclu clustering
+        --min_cluster [int]               Minimum amount of reads to build a cluster with paraclu
+        --tpm_cluster_threshold [int]     Threshold for expression count of ctss considered in paraclu clustering
 
     Output:
-        --bigwig [bool]                 Set this option to get besides ctss files in bed-format also in the bigwig-format
+        --bigwig [bool]                   Set this option to get besides ctss files in bed-format also in the bigwig-format
 
     Skipping options:
-        --skip_initial_fastqc [bool]    Skip FastQC run on input reads
-        --skip_trimming [bool]          Skip all trimming steps
-        --skip_trimming_fastqc [bool]   Skip FastQC run on trimmed reads
-        --skip_alignment [bool]         Skip alignment step
-        --skip_samtools_stats [bool]    Skip samtools stats QC step of aligned reads
-        --skip_ctss_generation [bool]   Skip steps generating CTSS files including clustering, bed/bigwig and count table output generation
-        --skip_ctss_qc [bool]           Skip running RSeQC's read distribution QC step on the clustered CTSS
+        --skip_initial_fastqc [bool]      Skip FastQC run on input reads
+        --skip_trimming [bool]            Skip all trimming steps
+        --skip_trimming_fastqc [bool]     Skip FastQC run on trimmed reads
+        --skip_alignment [bool]           Skip alignment step
+        --skip_samtools_stats [bool]      Skip samtools stats QC step of aligned reads
+        --skip_ctss_generation [bool]     Skip steps generating CTSS files including clustering, bed/bigwig and count table output generation
+        --skip_ctss_qc [bool]             Skip running RSeQC's read distribution QC step on the clustered CTSS
 
     Other options:
-        --outdir [file]                 The output directory where the results will be saved
-        --publish_dir_mode [str]        Mode for publishing results in the output directory. Available: symlink, rellink, link, copy, copyNoFollow, move (Default: copy)
-        --email [email]                 Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
-        --email_on_fail [email]         Same as --email, except only send mail if the workflow is not successful
-        --max_multiqc_email_size [str]  Threshold size for MultiQC report to be attached in notification email. If file generated by pipeline exceeds the threshold, it will not be attached (Default: 25MB)
-        -name [str]                     Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
+        --outdir [file]                   The output directory where the results will be saved
+        --publish_dir_mode [str]          Mode for publishing results in the output directory. Available: symlink, rellink, link, copy, copyNoFollow, move (Default: copy)
+        --email [email]                   Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
+        --email_on_fail [email]           Same as --email, except only send mail if the workflow is not successful
+        --max_multiqc_email_size [str]    Threshold size for MultiQC report to be attached in notification email. If file generated by pipeline exceeds the threshold, it will not be attached (Default: 25MB)
+        -name [str]                       Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
 
     AWSBatch options:
-        --awsqueue [str]                The AWSBatch JobQueue that needs to be set when running on AWSBatch
-        --awsregion [str]               The AWS Region for your AWS Batch job to run on
-        --awscli [str]                  Path to the AWS CLI tool
+        --awsqueue [str]                  The AWSBatch JobQueue that needs to be set when running on AWSBatch
+        --awsregion [str]                 The AWS Region for your AWS Batch job to run on
+        --awscli [str]                    Path to the AWS CLI tool
     """.stripIndent()
 }
 
@@ -104,10 +104,10 @@ params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : fals
 // Get rRNA databases
 // Default is set to bundled DB list in `assets/rrna-db-defaults.txt`
 
-rRNA_database = file(params.rRNA_database_manifest)
-if (rRNA_database.isEmpty()) {exit 1, "File ${rRNA_database.getName()} is empty!"}
+ribo_database = file(params.ribo_database_manifest)
+if (ribo_database.isEmpty()) {exit 1, "File ${ribo_database.getName()} is empty!"}
 Channel
-    .from( rRNA_database.readLines() )
+    .from( ribo_database.readLines() )
     .map { row -> file(row) }
     .set { fasta_sortmerna }
 
@@ -566,11 +566,11 @@ if (params.trim_5g && !params.skip_trimming){
         script:
         """
         cutadapt -g ^G \\
-        -e 0 --match-read-wildcards \\
-        --cores=$task.cpus \\
-        -o "${name}".g_trimmed.fastq.gz \\
-        $reads \\
-        > "${name}".g_trimming.output.txt
+            -e 0 --match-read-wildcards \\
+            --cores=$task.cpus \\
+            -o "${name}".g_trimmed.fastq.gz \\
+            $reads \\
+            > "${name}".g_trimming.output.txt
         """
     }
 }
@@ -626,7 +626,7 @@ if (params.remove_ribo_rna) {
         publishDir "${params.outdir}/SortMeRNA", mode: params.publish_dir_mode,
         saveAs: {filename ->
             if (filename.indexOf("_rRNA_report.txt") > 0) "logs/$filename"
-            else if (params.save_non_ribo_rna_reads) "reads/$filename"
+            else if (params.save_non_ribo_reads) "reads/$filename"
             else null
         }
 

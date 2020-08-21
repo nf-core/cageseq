@@ -188,11 +188,11 @@
                     "type": "boolean",
                     "fa_icon": "far fa-trash-alt"
                 },
-                "save_non_ribo_rna_reads": {
+                "save_non_ribo_reads": {
                     "type": "boolean",
                     "fa_icon": "far fa-save"
                 },
-                "rRNA_database_manifest": {
+                "ribo_database_manifest": {
                     "type": "string",
                     "default": "$baseDir/assets/rrna-db-defaults.txt",
                     "fa_icon": "fas fa-database"
@@ -290,7 +290,7 @@
                         "link",
                         "copy",
                         "copyNoFollow",
-                        "mov"
+                        "move"
                     ]
                 },
                 "name": {
