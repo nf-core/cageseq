@@ -10,11 +10,6 @@ RUN conda env create --quiet -f /environment.yml && conda clean -a
 ENV PATH /opt/conda/envs/nf-core-cageseq-1.0.0/bin:$PATH
 # Dump the details of the installed packages to a file for posterity
 RUN conda env export --name nf-core-cageseq-1.0.0 > nf-core-cageseq-1.0.0.yml
-# Setup paraclu
-RUN apt-get update; apt-get install -y build-essential g++
-RUN wget http://cbrc3.cbrc.jp/~martin/paraclu/paraclu-9.zip && \
-    unzip paraclu-9.zip; cd paraclu-9; make
-ENV PATH /paraclu-9:$PATH
 
 # Instruct R processes to use these empty files instead of clashing with a local version
 RUN touch .Rprofile

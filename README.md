@@ -51,7 +51,7 @@ The nf-core/cageseq pipeline comes with documentation about the pipeline which y
 
 ## Credits
 
-nf-core/cageseq was originally written by Kevin Menden and Tristan Kast and updated by Matthias Hörtenhuber.
+nf-core/cageseq was originally written by Kevin Menden ([@KevinMenden](https://github.com/KevinMenden)) and Tristan Kast ([@TrisKast](https://github.com/TrisKast)) and updated by Matthias Hörtenhuber ([@mashehu](https://github.com/mashehu)).
 
 ## Contributions and Support
 

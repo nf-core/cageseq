@@ -21,13 +21,6 @@
                     "help_text": "Use this to specify the location of your input FastQ files. For example:\n\n```bash\n--input 'path/to/data/sample_*_{1,2}.fastq'\n```\n\nPlease note the following requirements:\n\n1. The path must be enclosed in quotes\n2. The path must have at least one `*` wildcard character\n3. When using the pipeline with paired end data, the path must use `{1,2}` notation to specify read pairs.\n\nIf left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`",
                     "default": "data/*R1.fastq.gz"
                 },
-                "single_end": {
-                    "type": "boolean",
-                    "description": "Specifies that the input is single-end reads.",
-                    "fa_icon": "fas fa-align-center",
-                    "help_text": "By default, the pipeline expects paired-end data. If you have single-end data, you need to specify `--single_end` on the command line when you launch the pipeline. A normal glob pattern, enclosed in quotation marks, can then be used for `--input`. For example:\n\n```bash\n--single_end --input '*.fastq'\n```\n\nIt is not possible to run a mixture of single-end and paired-end files in one run.",
-                    "default": true
-                },
                 "outdir": {
                     "type": "string",
                     "description": "The output directory where the results will be saved.",
@@ -120,7 +113,7 @@
                     "fa_icon": "fab fa-black-tie",
                     "description": "Path to bowtie index directory."
                 },
-                "saveReference": {
+                "save_reference": {
                     "type": "boolean",
                     "fa_icon": "far fa-save",
                     "description": "All generated reference files will be saved to the results folder if this flag is set."
@@ -158,13 +151,13 @@
                     "fa_icon": "fas fa-cut",
                     "description": "Artifacts, generated in the sequencing process, are cut if this flag is not set to false."
                 },
-                "ecoSite": {
+                "eco_site": {
                     "type": "string",
                     "default": "CAGCAG",
                     "description": "Sequence of the ecoP15 site at the 5' end",
                     "fa_icon": "far fa-hand-scissors"
                 },
-                "linkerSeq": {
+                "linker_seq": {
                     "type": "string",
                     "default": "TCGTATGCCGTCTTC",
                     "fa_icon": "fas fa-link",
@@ -191,15 +184,15 @@
             "default": "",
             "fa_icon": "far fa-trash-alt",
             "properties": {
-                "remove_ribo_RNA": {
+                "remove_ribo_rna": {
                     "type": "boolean",
                     "fa_icon": "far fa-trash-alt"
                 },
-                "save_nonrRNA_reads": {
+                "save_non_ribo_reads": {
                     "type": "boolean",
                     "fa_icon": "far fa-save"
                 },
-                "rRNA_database_manifest": {
+                "ribo_database_manifest": {
                     "type": "string",
                     "default": "$baseDir/assets/rrna-db-defaults.txt",
                     "fa_icon": "fas fa-database"
@@ -297,7 +290,7 @@
                         "link",
                         "copy",
                         "copyNoFollow",
-                        "mov"
+                        "move"
                     ]
                 },
                 "name": {
