@@ -64,9 +64,8 @@ The MultiQC report shows the overall percentage of rRNA in the sample in the gen
 
 **Output directory : `results/SortMeRNA/`**
 
- * `logs/`
-    * ribosomal RNA mapping reports (describes which parameters were used)
-
+* `logs/`
+  * ribosomal RNA mapping reports (describes which parameters were used)
 
 ## 4. Alignment
 
