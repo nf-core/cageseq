@@ -37,7 +37,7 @@ def helpMessage() {
     References                            If not specified in the configuration file or you wish to overwrite any of the references
         --fasta [file]                    Path to fasta reference
         --genome [str]                    Name of iGenomes reference
-        --gtf [file]                      Path to gtf file
+        --gtf [file]                      Path to gtf file, used to generate the STAR index, for STAR alignment and for the clustering QC
 
     Ribosomal RNA removal:
         --remove_ribo_rna [bool]          Removes ribosomal RNA using SortMeRNA
@@ -50,11 +50,11 @@ def helpMessage() {
         --bowtie_index [file]             Path to bowtie index, set to false if igenomes should be used
 
     Clustering:
-        --min_cluster [int]               Minimum amount of reads to build a cluster with paraclu
-        --tpm_cluster_threshold [int]     Threshold for expression count of ctss considered in paraclu clustering
+        --min_cluster [int]               Minimum amount of reads to build a cluster with paraclu. Default ${params.min_cluster}
+        --tpm_cluster_threshold [int]     --tpm_cluster_threshold [int] Threshold for expression count of ctss considered in paraclu clustering. Default: ${params.tpm_cluster_threshold}
 
     Output:
-        --bigwig [bool]                   Set this option to get besides ctss files in bed-format also in the bigwig-format
+        --bigwig [bool]                    Set this option to get ctss files in bigwig-format, in addition to the default in bed-format
 
     Skipping options:
         --skip_initial_fastqc [bool]      Skip FastQC run on input reads
@@ -149,9 +149,9 @@ if( params.gtf ){
     Channel
         .fromPath(params.gtf, checkIfExists: true)
         .ifEmpty { exit 1, "GTF annotation file not found: ${params.gtf}" }
-        .into { gtf_makeSTARindex; gtf_star; gtf_rseqc}
+        .into { gtf_make_STAR_index; gtf_star; gtf_rseqc}
 } else {
-    exit 1, "No GTF annotation specified!"
+    exit 1, "No GTF annotation specified! Needed for STAR and clustering QC."
 }
 
 if( params.artifacts_5end ){
@@ -428,7 +428,7 @@ if(params.aligner == 'star' && !params.star_index && params.fasta && !params.ski
 
         input:
         file fasta from fasta_star_index
-        file gtf from gtf_makeSTARindex.collect()
+        file gtf from gtf_make_STAR_index.collect()
 
         output:
         file "star" into star_index
