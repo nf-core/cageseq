@@ -12,7 +12,7 @@
 
 **nf-core/cageseq** is a bioinformatics analysis pipeline used for CAGE-seq sequencing data.
 
-The pipeline takes raw demultiplexed fastq-files as inputs and includes steps for linker and artefact trimming
+The pipeline takes raw demultiplexed fastq-files as input and includes steps for linker and artefact trimming
 ([cutadapt](https://cutadapt.readthedocs.io/en/stable/guide.html)), rRNA removal ([SortMeRNA](https://github.com/biocore/sortmerna), alignment to a reference genome ([STAR](https://github.com/alexdobin/STAR) or [bowtie1](http://bowtie-bio.sourceforge.net/index.shtml)) and CAGE tag counting
 and clustering ([paraclu](http://cbrc3.cbrc.jp/~martin/paraclu/)).
 Additionally, several quality control steps

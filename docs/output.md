@@ -17,11 +17,12 @@ For further reading and documentation see the [FastQC help pages](http://www.bio
 
 This step can be skipped via `--skip_initial_fastqc`.
 
-  > **NB:** The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They may contain adapter sequence and potentially regions with low quality. To see how your reads look after trimming, look at the FastQC reports in the `trim_galore` directory.
+  > **NB:** The FastQC plots displayed in the MultiQC report shows _untrimmed_ as reads. They may contain adapter sequence and potentially regions with low quality. In parallel it also shows the FastQC results for the trimmed reads (marked with the suffix `.g`) To see how your reads look after trimming, look at the FastQC reports in the `trimmed/` directory.
 
-* `fastqc/`
-  * `*_fastqc.html`: FastQC report containing quality metrics for your untrimmed raw fastq files.
-* `fastqc/zips/`
+**Output directory : `results/fastqc`**
+
+* `*_fastqc.html`: FastQC report containing quality metrics for your untrimmed raw fastq files.
+* `zips/`
   * `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
 
 ## 2. Trimming
@@ -34,24 +35,24 @@ By default this pipeline trims the cut enzyme binding site at the 5'-end and
 linkers at the 3'-end (can be disabled by setting `--trim_ecop` or `--trim_linkers to false`).
 Furthermore, to combat the leading-G-bias of CAGE-seq, G's at the 5'-end are removed. Additional artifacts generated in the sequencing process, can be removed via the `--trim_artifacts` parameter.
 
-All the following trimming process are skipped if `--skip_trimming` is set to true and the output below is only available if '--save_trimmed' is set to true.
+All the following trimming process are skipped if `--skip_trimming` is supplied and the fastq files below are only available if '--save_trimmed' is supplied.
 
 **Output directory: `results/trimmed`**
 
 * `adapter_trimmed/sample.adapter_trimmed.fastq.gz`
   * FastQ file after removal of linkers and EcoP15 site.
 * `adapter_trimmed/logs/`
-  * Trimming report (describes which parameters that were used)
+  * Trimming report (describes which parameters were used)
 * if `--trim_5g`:
   * `g_trimmed/sample.g_trimmed.fastq.gz`
     * 5' G-corrected FastQ file
   * `g_trimmed/logs/`
-    * Trimming report (describes which parameters that were used)
+    * Trimming report (describes which parameters were used)
 * if `--trim_artifacts`:
   * `artifacts_trimmed/sample.artifact_trimmed.fastq.gz`
     * FastQ file after artifact removal
   * `artifacts_trimmed/logs/`
-    * Trimming report (describes which parameters that were used)
+    * Trimming report (describes which parameters were used)
 
 ## 3. Ribomosal RNA removal
 
@@ -61,7 +62,12 @@ The MultiQC report shows the overall percentage of rRNA in the sample in the gen
 
 ![SortMeRNA](images/sortmerna-detailed_plot.png)
 
-## 3. Alignment
+**Output directory : `results/SortMeRNA/`**
+
+* `logs/`
+  * ribosomal RNA mapping reports (describes which parameters were used)
+
+## 4. Alignment
 
 The reads are aligned either with STAR or with bowtie, set via `--aligner`.
 
@@ -103,7 +109,7 @@ good samples should have most reads as _aligned_ and few _Not aligned_ reads.
 * `logs/Sample.out`
   * The bowtie alignment report, contains mapping results summary
 
-## 4. CAGE tag grouping
+## 5. CAGE tag grouping
 
 The custom script `bin/make_ctss.sh` generates a bed file (and a bigWig file with `--bigwig`) for each sample with the summed up 1bp unclustered cage tags.
 
@@ -115,7 +121,7 @@ The custom script `bin/make_ctss.sh` generates a bed file (and a bigWig file wit
   * `Sample.ctss.bw`
     * A bigWig file with the mapped cage tags
 
-## 5. CTSS clustering
+## 6. CTSS clustering
 
 ### paraclu
 
@@ -130,9 +136,9 @@ attached to sequences. It is applied on the pool of all ctss bed files to cluste
 * `ctss_all_clustered_simplified.bed`
   * A BED6 file with the clustered CTSSs and their pooled counts
 
-## 6. Count table generation
+## 7. Count table generation
 
-The cage tags are intersected with the clusteres identified by
+The cage tags are intersected with the clusters identified by
  paraclu and summarized in a count table.
 
 **Output directory: `results/ctss/`**
@@ -140,7 +146,7 @@ The cage tags are intersected with the clusteres identified by
 * `count_table.tsv`:
   * Each column of the count table stands for one sample and each row for one tag cluster. The first row of this table is the header with sample names and the first column contains the tag cluster coordinates.
 
-## 7. QC of results
+## 8. QC of results
 
 ### RSeQC
 

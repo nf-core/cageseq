@@ -82,7 +82,7 @@
                     "type": "string",
                     "fa_icon": "fas fa-font",
                     "description": "Path to FASTA genome file.",
-                    "help_text": "If you have no genome reference available, the pipeline can build one using a FASTA file. This requires additional time and resources, so it's better to use a pre-build index if possible."
+                    "help_text": "This parameter is mandatory if `--genome` is not specified. If you don't have a bowtie1 or STAR index available, they will be generated for you. Combine with `--save_reference` to save indices for future runs."
                 },
                 "igenomes_base": {
                     "type": "string",
@@ -139,7 +139,7 @@
                 "trim_linker": {
                     "type": "boolean",
                     "fa_icon": "fas fa-cut",
-                    "description": "Select to cut the linker at the 3' end?"
+                    "description": "Select to cut the linker at the 3' end"
                 },
                 "trim_5g": {
                     "type": "boolean",
@@ -186,16 +186,20 @@
             "properties": {
                 "remove_ribo_rna": {
                     "type": "boolean",
-                    "fa_icon": "far fa-trash-alt"
+                    "fa_icon": "far fa-trash-alt",
+                    "description": "Select to remove ribosoamal reads with SortMeRNA"
                 },
                 "save_non_ribo_reads": {
                     "type": "boolean",
-                    "fa_icon": "far fa-save"
+                    "fa_icon": "far fa-save",
+                    "description": "Select to save the ribosomal-free reads"
                 },
                 "ribo_database_manifest": {
                     "type": "string",
                     "default": "$baseDir/assets/rrna-db-defaults.txt",
-                    "fa_icon": "fas fa-database"
+                    "fa_icon": "fas fa-database",
+                    "description": "Path to SortMeRNA database file",
+                    "help_text": "The SortMeRNA database file should be a .txt file with a URL/path to a ribisomal fasta file. "
                 }
             }
         },
@@ -209,13 +213,13 @@
                 "min_cluster": {
                     "type": "integer",
                     "fa_icon": "fas fa-sort-amount-down",
-                    "default": "30",
-                    "description": "minimum cluster size"
+                    "default": 30,
+                    "description": "Minimum cluster size"
                 },
                 "tpm_cluster_threshold": {
                     "type": "number",
                     "fa_icon": "fas fa-chart-bar",
-                    "description": "minimum tags per million a cluster has to have",
+                    "description": "Minimum tags per million a cluster has to have",
                     "default": 0.2
                 }
             }

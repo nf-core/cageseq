@@ -37,7 +37,7 @@ def helpMessage() {
     References                            If not specified in the configuration file or you wish to overwrite any of the references
         --fasta [file]                    Path to fasta reference
         --genome [str]                    Name of iGenomes reference
-        --gtf [file]                      Path to gtf file
+        --gtf [file]                      Path to gtf file, used to generate the STAR index, for STAR alignment and for the clustering QC
 
     Ribosomal RNA removal:
         --remove_ribo_rna [bool]          Removes ribosomal RNA using SortMeRNA
@@ -50,11 +50,11 @@ def helpMessage() {
         --bowtie_index [file]             Path to bowtie index, set to false if igenomes should be used
 
     Clustering:
-        --min_cluster [int]               Minimum amount of reads to build a cluster with paraclu
-        --tpm_cluster_threshold [int]     Threshold for expression count of ctss considered in paraclu clustering
+        --min_cluster [int]               Minimum amount of reads to build a cluster with paraclu. Default ${params.min_cluster}
+        --tpm_cluster_threshold [int]     --tpm_cluster_threshold [int] Threshold for expression count of ctss considered in paraclu clustering. Default: ${params.tpm_cluster_threshold}
 
     Output:
-        --bigwig [bool]                   Set this option to get besides ctss files in bed-format also in the bigwig-format
+        --bigwig [bool]                    Set this option to get ctss files in bigwig-format, in addition to the default in bed-format
 
     Skipping options:
         --skip_initial_fastqc [bool]      Skip FastQC run on input reads
@@ -96,9 +96,8 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
 }
 
 params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
-params.bowtie_index = params.genome ? params.genomes[ params.genome ].bowtie ?: false : false
+params.bowtie_index = params.genome ? params.genomes[ params.genome ].bowtie1 ?: false : false
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
-if (params.fasta) { ch_fasta = file(params.fasta, checkIfExists: true) }
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 
 // Get rRNA databases
@@ -124,7 +123,7 @@ if( params.star_index && params.aligner == 'star' ){
 else if( params.bowtie_index && params.aligner == 'bowtie1' ){
     bowtie_index = Channel
         .fromPath(params.bowtie_index, checkIfExists: true)
-        .ifEmpty { exit 1, "STAR index not found: ${params.bowtie_index}" }
+        .ifEmpty { exit 1, "bowtie index not found: ${params.bowtie_index}" }
 }
 else if ( params.fasta ){
     Channel
@@ -150,9 +149,9 @@ if( params.gtf ){
     Channel
         .fromPath(params.gtf, checkIfExists: true)
         .ifEmpty { exit 1, "GTF annotation file not found: ${params.gtf}" }
-        .into { gtf_makeSTARindex; gtf_star; gtf_rseqc}
+        .into { gtf_make_STAR_index; gtf_star; gtf_rseqc}
 } else {
-    exit 1, "No GTF annotation specified!"
+    exit 1, "No GTF annotation specified! Needed for STAR and clustering QC."
 }
 
 if( params.artifacts_5end ){
@@ -421,7 +420,7 @@ if(!params.skip_initial_fastqc){
  */
 
 if(params.aligner == 'star' && !params.star_index && params.fasta && !params.skip_alignment){
-    process makeSTARindex {
+    process make_STAR_index {
         label 'process_high'
         tag "${fasta.baseName}"
         publishDir path: { params.save_reference ? "${params.outdir}/reference_genome" : params.outdir },
@@ -429,7 +428,7 @@ if(params.aligner == 'star' && !params.star_index && params.fasta && !params.ski
 
         input:
         file fasta from fasta_star_index
-        file gtf from gtf_makeSTARindex.collect()
+        file gtf from gtf_make_STAR_index.collect()
 
         output:
         file "star" into star_index
@@ -450,7 +449,8 @@ if(params.aligner == 'star' && !params.star_index && params.fasta && !params.ski
 }
 
 if(params.aligner == 'bowtie1' && !params.bowtie_index && params.fasta && !params.skip_alignment){
-    process makeBowtieindex {
+    process make_bowtie_index {
+        label 'process_high'
         tag "${fasta.baseName}"
         publishDir path: { params.save_reference ? "${params.outdir}/reference_genome" : params.outdir },
                 saveAs: { params.save_reference ? it : null }, mode: params.publish_dir_mode
@@ -661,7 +661,7 @@ if (params.remove_ribo_rna) {
     sortmerna_logs = Channel.empty()
 }
 // Post trimming QC, only needed if some trimming has been done
-if(!params.skip_trimming_fastqc){
+if(!params.skip_trimming_fastqc || (!params.skip_trimming || params.remove_ribo_rna)){
     process trimmed_fastqc {
         tag "$name"
         publishDir "${params.outdir}/trimmed/fastqc", mode: params.publish_dir_mode,
@@ -873,7 +873,7 @@ if(!params.skip_ctss_generation){
     */
     process generate_counts {
         tag "$name"
-        
+
         input:
         set val(name), file(ctss) from ctss_samples
         file clusters from ctss_clusters.collect()
@@ -908,7 +908,8 @@ if(!params.skip_ctss_generation){
 
         shell:
         '''
-        awk '{ print $4}' !{clusters} > coordinates
+        echo 'coordinates' > coordinates
+        awk '{ print $4}' !{clusters} >> coordinates
         paste -d "\t" coordinates !{counts} >> count_table.tsv
         '''
     }
