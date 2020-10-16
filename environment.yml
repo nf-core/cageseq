@@ -1,20 +1,23 @@
 # You can use this file to create a conda environment for this pipeline:
 #   conda env create -f environment.yml
-name: nf-core-cageseq-1.0dev
+name: nf-core-cageseq-1.0.0
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-- bedtools=2.27.1
-- cutadapt=2.1
-- fastqc=0.11.8
-- numpy=1.16.2
-- pandas=0.24.2
-- r-markdown=0.9
-- samtools=1.9
-- star=2.7.0f
-- multiqc=1.7
-- unzip=6.0
-
-
+  - conda-forge::python=3.7.3
+  - conda-forge::markdown=3.1.1
+  - conda-forge::pymdown-extensions=6.0
+  - conda-forge::pygments=2.5.2
+  - bioconda::bedtools=2.29.2
+  - bioconda::bowtie=1.2.3
+  - bioconda::cutadapt=2.10
+  - bioconda::fastqc=0.11.9
+  - bioconda::multiqc=1.9
+  - bioconda::paraclu=9
+  - bioconda::rseqc=3.0.1
+  - bioconda::samtools=1.10
+  - bioconda::star=2.6.1d # Don't upgrade me - 2.7X indices incompatible with iGenomes.
+  - bioconda::sortmerna=4.2.0
+  - bioconda::ucsc-bedgraphtobigwig=357

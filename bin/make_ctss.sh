@@ -1,49 +1,34 @@
-#!/bin/sh
+#!/bin/bash
 
-if [ $# -eq 0 ]                  
-then
- cat <<EOF
-Usage is : $0 -q <mapping quality cutoff> <map1.bam> <map2.bam> ... 
-EOF
- exit 1;
-fi
-
-QCUT= 
-
-while getopts q: opt
+while getopts :i:q:n: opt
 do
 case ${opt} in
 q) QCUT=${OPTARG};;
-*) usage;;
+i) VAR=${OPTARG};;
+n) NAME=${OPTARG};;
+*) echo: "Usage is : $0 -q <mapping quality cutoff> -i <map1.bam> -n <sample_name">&2
+    exit 1;;
 esac
 done
 
-if [ "${QCUT}" = "" ]; then QCUT=10; fi
+if [ "${QCUT}" = "" ]; then QCUT=20; fi
 
-for var in "$@"
-do
-if [[ $var =~ bam$ ]]; then
-foo=$var
-file=${foo##*/}
-base=${file%%.*}
-echo working on: $base
+#convert sam to bam and bam to bed
+TMPFILE="/tmp/$(basename "$0").$RANDOM.txt"
+samtools view  -F 4 -u -q $QCUT -b "$VAR.bam" |  bamToBed -i stdin > "$TMPFILE"
 
-TMPFILE="/tmp/$(basename $0).$RANDOM.txt"
-   samtools view  -F 4 -u -q $QCUT -b $var |  bamToBed -i stdin > $TMPFILE
-   cat  ${TMPFILE} \
-| awk 'BEGIN{OFS="\t"}{if($6=="+"){print $1,$2,$5}}' \
+ #generate ctss on the positive strand
+awk 'BEGIN{OFS="\t"}{if($6=="+"){print $1,$2,$5}}' "${TMPFILE}" \
 | sort -k1,1 -k2,2n \
 | groupBy -i stdin -g 1,2 -c 3 -o count \
-| awk -v x="$base" 'BEGIN{OFS="\t"}{print $1,$2,$2+1,  x  ,$3,"+"}' >> $var.ctss.bed
+| awk -v x="$NAME" 'BEGIN{OFS="\t"}{print $1,$2,$2+1,  x  ,$3,"+"}' >> "$NAME".pos_ctss.bed
 
-cat  ${TMPFILE} \
-| awk 'BEGIN{OFS="\t"}{if($6=="-"){print $1,$3,$5}}' \
+#generate ctss on the negative strand
+awk 'BEGIN{OFS="\t"}{if($6=="-"){print $1,$3,$5}}' "${TMPFILE}" \
 | sort -k1,1 -k2,2n \
 | groupBy -i stdin -g 1,2 -c 3 -o count \
-| awk -v x="$base" 'BEGIN{OFS="\t"}{print $1,$2-1,$2, x  ,$3,"-"}' >> $var.ctss.bed
+| awk -v x="$NAME" 'BEGIN{OFS="\t"}{print $1,$2-1,$2, x  ,$3,"-"}' >> "$NAME".neg_ctss.bed
 
-rm $TMPFILE
-fi
-done
+cat "$NAME".pos_ctss.bed "$NAME".neg_ctss.bed > "$NAME".ctss.bed
 
-
+rm "$TMPFILE"
