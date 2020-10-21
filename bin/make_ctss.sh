@@ -29,6 +29,6 @@ awk 'BEGIN{OFS="\t"}{if($6=="-"){print $1,$3,$5}}' "${TMPFILE}" \
 | groupBy -i stdin -g 1,2 -c 3 -o count \
 | awk -v x="$NAME" 'BEGIN{OFS="\t"}{print $1,$2-1,$2, x  ,$3,"-"}' >> "$NAME".neg_ctss.bed
 
-cat "$NAME".pos_ctss.bed "$NAME".neg_ctss.bed > "$NAME".ctss.bed
+cat "$NAME".pos_ctss.bed "$NAME".neg_ctss.bed | sort -k1,1 -k2,2n > "$NAME".ctss.bed
 
 rm "$TMPFILE"
