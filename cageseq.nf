@@ -92,16 +92,16 @@ ch_output_docs_images = file("$baseDir/docs/images/", checkIfExists: true)
 /*
  * Create a channel for input read files
  */
-if (params.input_paths) {
-ch_reads = Channel
-    .from(params.input_paths)
-    .map { row -> [ row[0].replaceAll("\\s","_"), file(row[1])] }
-    .ifEmpty { exit 1, "params.input was empty - no input files supplied" }
-} else {
-ch_reads = Channel
-    .fromFilePairs( params.input , size: 1)
-    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\n" }
-}
+// if (params.input_paths) {
+// ch_reads = Channel
+//     .from(params.input_paths)
+//     .map { row -> [ row[0].replaceAll("\\s","_"), file(row[1])] }
+//     .ifEmpty { exit 1, "params.input was empty - no input files supplied" }
+// } else {
+// ch_reads = Channel
+//     .fromFilePairs( params.input , size: 1)
+//     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\n" }
+// }
 
 
 /////////////////////////////
@@ -120,7 +120,9 @@ include { FASTQC } from './modules/nf-core/software/fastqc/main' addParams( opti
 include { GET_CHROM_SIZES } from './modules/local/process/get_chrom_sizes' addParams( options: publish_genome_options )
 include { GTF2BED } from './modules/local/process/gtf2bed' addParams( options: genome_options )
 include { GET_SOFTWARE_VERSIONS } from './modules/local/process/get_software_versions'
-log.info "got here"
+
+// Include subworkflows
+include { INPUT_CHECK } from './modules/local/subworkflow/input_check' addParams( options: [:] )
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input not specified!'}
@@ -132,8 +134,21 @@ if (params.gtf) { ch_gtf = file(params.gtf) } else { exit 1, "No GTF annotation 
 ///////////////////////
 
 workflow CAGESEQ {
+
+    /*
+     * SUBWORKFLOW: Read in samplesheet, validate and stage input files
+    */
+    INPUT_CHECK( ch_input )
+    .map {
+        meta, bam -> meta.id = meta.id.split('_')[0..-2].join('_')
+        [ meta, bam ]
+    }
+    .groupTuple(by: [0])
+    .map { it -> [ it[0], it[1].flatten() ] }
+    .set { ch_fastq }
+
     // FASTQC
-    FASTQC( ch_input )
+    FASTQC( ch_fastq )
     fastqc_html = FASTQC.out.html
     fastqc_zip = FASTQC.out.zip
     fastqc_version = FASTQC.out.version
