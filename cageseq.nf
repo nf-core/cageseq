@@ -89,20 +89,6 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ch_output_docs = file("$baseDir/docs/output.md", checkIfExists: true)
 ch_output_docs_images = file("$baseDir/docs/images/", checkIfExists: true)
 
-/*
- * Create a channel for input read files
- */
-// if (params.input_paths) {
-// ch_reads = Channel
-//     .from(params.input_paths)
-//     .map { row -> [ row[0].replaceAll("\\s","_"), file(row[1])] }
-//     .ifEmpty { exit 1, "params.input was empty - no input files supplied" }
-// } else {
-// ch_reads = Channel
-//     .fromFilePairs( params.input , size: 1)
-//     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\n" }
-// }
-
 
 /////////////////////////////
 /* Include process modules */
@@ -114,15 +100,23 @@ def modules = params.modules.clone()
 def fastqc_options = modules['fastqc']
 def publish_genome_options = params.save_reference ? [publish_dir: 'genome'] : [publish_files: false]
 def genome_options = publish_genome_options
+def star_align_options = modules['star_align']
+def star_genomegenerate_options = modules['star_genomegenerate']
+def bowtie_align_options = modules['bowtie_align']
+def bowtie_index_options = modules['bowtie_index']
 
 // Include the modules
-include { FASTQC } from './modules/nf-core/software/fastqc/main' addParams( options: fastqc_options )
-include { GET_CHROM_SIZES } from './modules/local/process/get_chrom_sizes' addParams( options: publish_genome_options )
-include { GTF2BED } from './modules/local/process/gtf2bed' addParams( options: genome_options )
-include { GET_SOFTWARE_VERSIONS } from './modules/local/process/get_software_versions'
+include { FASTQC } from './modules/nf-core/software/fastqc/main'                        addParams( options: fastqc_options )
+include { GET_CHROM_SIZES } from './modules/local/process/get_chrom_sizes'              addParams( options: publish_genome_options )
+include { GTF2BED } from './modules/local/process/gtf2bed'                              addParams( options: genome_options )
+include { GET_SOFTWARE_VERSIONS } from './modules/local/process/get_software_versions'  addParams( options: [:] )
 
 // Include subworkflows
-include { INPUT_CHECK } from './modules/local/subworkflow/input_check' addParams( options: [:] )
+include { INPUT_CHECK }             from './modules/local/subworkflow/input_check'                  addParams( options: [:] )
+include { TRIMMING_PREPROCESSING }  from './modules/local/subworkflow/trimming'                     addParams( options: [:] )
+include { ALIGN_STAR }              from './modules/local/subworkflow/align_star'                   addParams( align_options: star_align_options, index_options: star_genomegenerate_options)
+include { ALIGN_BOWTIE }            from './modules/local/subworkflow/align_bowtie'                addParams( align_options: bowtie_align_options, index_options: bowtie_index_options)
+
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input not specified!'}
@@ -153,22 +147,39 @@ workflow CAGESEQ {
     fastqc_zip = FASTQC.out.zip
     fastqc_version = FASTQC.out.version
 
-    // Convert GTF
-    ch_gene_bed = GTF2BED( ch_gtf )
+    // // Convert GTF to Bed format
+    GTF2BED( ch_gtf )
 
-    // Get chrom sizes
+    // // Get chromosome sizes
     GET_CHROM_SIZES( ch_fasta )
     
-    // Make star index
-    // Make bowtie index
+    // // Trim adapters
+    TRIMMING_PREPROCESSING( 
+        ch_fastq,
+        ch_5end_artifacts,
+        ch_3end_artifacts
+        )
+    
+    // Align with STAR
+    if (params.aligner == 'star'){
+        ALIGN_STAR(
+            TRIMMING_PREPROCESSING.out.reads,
+            params.star_index,
+            ch_fasta,
+            ch_gtf
+            )
+    }
+    // Align with bowtie1
+    else if (params.aligner == 'bowtie1'){
+        log.info "Bowtie alignment"
+        ALIGN_BOWTIE(
+            TRIMMING_PREPROCESSING.out.reads,
+            params.bowtie_index,
+            ch_fasta,
+            ch_gtf
+        )
+    }
 
-    // Trim adapters
-    // --> adapters, artifacts, 5'G
-    // remove ribo RNA
-
-    // STAR
-
-    // BOWTIE
 
     //get CTSS
     // make bigwig
@@ -182,4 +193,5 @@ workflow CAGESEQ {
     ch_software_versions = Channel.empty()
     ch_software_versions = ch_software_versions.mix(FASTQC.out.version.first().ifEmpty(null))
     GET_SOFTWARE_VERSIONS ( ch_software_versions.map { it }.collect())
+
 }
