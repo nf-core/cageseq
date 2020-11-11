@@ -25,9 +25,17 @@ params.bowtie_index = params.genome ? params.genomes[ params.genome ].bowtie1 ?:
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 
-// Validatre inputs
 
+// Get rRNA databases
+// Default is set to bundled DB list in `assets/rrna-db-defaults.txt`
+ribo_database = file(params.ribo_database_manifest)
+if (ribo_database.isEmpty()) {exit 1, "File ${ribo_database.getName()} is empty!"}
+Channel
+    .from( ribo_database.readLines() )
+    .map { row -> file(row) }
+    .set { fasta_sortmerna }
 
+// Input validation
 // Aligners and corresponding indices
 // Check correct aligner
 if (params.aligner != 'star' && params.aligner != 'bowtie1') {
@@ -106,22 +114,23 @@ def bowtie_align_options = modules['bowtie_align']
 def bowtie_index_options = modules['bowtie_index']
 
 // Include the modules
-include { FASTQC } from './modules/nf-core/software/fastqc/main'                        addParams( options: fastqc_options )
-include { GET_CHROM_SIZES } from './modules/local/process/get_chrom_sizes'              addParams( options: publish_genome_options )
-include { GTF2BED } from './modules/local/process/gtf2bed'                              addParams( options: genome_options )
-include { GET_SOFTWARE_VERSIONS } from './modules/local/process/get_software_versions'  addParams( options: [:] )
+include { FASTQC } from                 './modules/nf-core/software/fastqc/main'                        addParams( options: fastqc_options )
+include { GET_CHROM_SIZES } from        './modules/local/process/get_chrom_sizes'                       addParams( options: publish_genome_options )
+include { GTF2BED } from                './modules/local/process/gtf2bed'                               addParams( options: genome_options )
+include { GET_SOFTWARE_VERSIONS } from  './modules/local/process/get_software_versions'                 addParams( options: [:] )
+include { SORTMERNA } from              './modules/local/process/sortmerna'                             addParams( options: [:] )
 
 // Include subworkflows
-include { INPUT_CHECK }             from './modules/local/subworkflow/input_check'                  addParams( options: [:] )
-include { TRIMMING_PREPROCESSING }  from './modules/local/subworkflow/trimming'                     addParams( options: [:] )
-include { ALIGN_STAR }              from './modules/local/subworkflow/align_star'                   addParams( align_options: star_align_options, index_options: star_genomegenerate_options)
-include { ALIGN_BOWTIE }            from './modules/local/subworkflow/align_bowtie'                addParams( align_options: bowtie_align_options, index_options: bowtie_index_options)
+include { INPUT_CHECK }             from './modules/local/subworkflow/input_check'                      addParams( options: [:] )
+include { TRIMMING_PREPROCESSING }  from './modules/local/subworkflow/trimming'                         addParams( options: [:] )
+include { ALIGN_STAR }              from './modules/local/subworkflow/align_star'                       addParams( align_options: star_align_options, index_options: star_genomegenerate_options)
+include { ALIGN_BOWTIE }            from './modules/local/subworkflow/align_bowtie'                     addParams( align_options: bowtie_align_options, index_options: bowtie_index_options)
 
 
 // Check mandatory parameters
-if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input not specified!'}
-if (params.fasta) { ch_fasta = file(params.fasta) } else { exit 1, 'Genome fasta file not specified!'}
-if (params.gtf) { ch_gtf = file(params.gtf) } else { exit 1, "No GTF annotation specified!"}
+if (params.input)   { ch_input = file(params.input) }   else { exit 1, 'Input not specified!'}
+if (params.fasta)   { ch_fasta = file(params.fasta) }   else { exit 1, 'Genome fasta file not specified!'}
+if (params.gtf)     { ch_gtf = file(params.gtf) }       else { exit 1, "No GTF annotation specified!"}
 
 ///////////////////////
 /* CAGE-seq workflow */
@@ -147,23 +156,31 @@ workflow CAGESEQ {
     fastqc_zip = FASTQC.out.zip
     fastqc_version = FASTQC.out.version
 
-    // // Convert GTF to Bed format
+    // Convert GTF to Bed format
     GTF2BED( ch_gtf )
 
-    // // Get chromosome sizes
+    // Get chromosome sizes
     GET_CHROM_SIZES( ch_fasta )
     
-    // // Trim adapters
+    // Trim adapters
     TRIMMING_PREPROCESSING( 
         ch_fastq,
         ch_5end_artifacts,
         ch_3end_artifacts
         )
     
+    ch_reads = TRIMMING_PREPROCESSING.out.reads
+    
+    // Removal ribosomal RNA
+    if (params.remove_ribo_rna) {
+        SORTMERNA( ch_reads, fasta_sortmerna )
+        ch_reads = SORTMERNA.out.reads
+    }
+    
     // Align with STAR
     if (params.aligner == 'star'){
         ALIGN_STAR(
-            TRIMMING_PREPROCESSING.out.reads,
+            ch_reads,
             params.star_index,
             ch_fasta,
             ch_gtf
@@ -171,9 +188,8 @@ workflow CAGESEQ {
     }
     // Align with bowtie1
     else if (params.aligner == 'bowtie1'){
-        log.info "Bowtie alignment"
         ALIGN_BOWTIE(
-            TRIMMING_PREPROCESSING.out.reads,
+            ch_reads,
             params.bowtie_index,
             ch_fasta,
             ch_gtf
