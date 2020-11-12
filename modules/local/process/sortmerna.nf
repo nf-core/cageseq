@@ -32,7 +32,6 @@ process SORTMERNA {
     fasta = fasta.collect()
     def Refs = ""
     for (i=0; i<fasta.size(); i++) { Refs+= " --ref ${fasta[i]}" }
-
     def software   = getSoftwareName(task.process)
     def prefix     = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """

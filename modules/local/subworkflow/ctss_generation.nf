@@ -40,14 +40,16 @@ workflow CTSS_GENERATION {
     GENERATE_COUNT_MATRIX( CTSS_CREATE.out.ctss, PARACLU_CLUSTER.out.cluster )
 
     // CTSS QC
+    ch_ctss_qc = Channel.empty()
     if (!params.skip_ctss_qc){
         CTSS_QC( CTSS_CREATE.out.ctss, gtf_bed, chrom_sizes)
+        ch_ctss_qc = CTSS_QC.out.rseqc
     }
 
     emit:
     ctss            =       CTSS_CREATE.out.ctss
     cluster         =       PARACLU_CLUSTER.out.cluster
-    ctss_qc         =       CTSS_QC.out.rseqc
+    ctss_qc         =       ch_ctss_qc
     //count_matrix    =       GENERATE_COUNT_MATRIX.out.count_table
 
 }

@@ -119,6 +119,7 @@ include { GET_CHROM_SIZES } from        './modules/local/process/get_chrom_sizes
 include { GTF2BED } from                './modules/local/process/gtf2bed'                               addParams( options: genome_options )
 include { GET_SOFTWARE_VERSIONS } from  './modules/local/process/get_software_versions'                 addParams( options: [:] )
 include { SORTMERNA } from              './modules/local/process/sortmerna'                             addParams( options: [:] )
+include { MULTIQC } from                './modules/local/process/multiqc'                               addParams( options: [:] )
 
 // Include subworkflows
 include { INPUT_CHECK }             from './modules/local/subworkflow/input_check'                      addParams( options: [:] )
@@ -172,9 +173,11 @@ workflow CAGESEQ {
     ch_reads = TRIMMING_PREPROCESSING.out.reads
     
     // Removal ribosomal RNA
+    ch_sortmerna_multiqc = Channel.empty()
     if (params.remove_ribo_rna) {
         SORTMERNA( ch_reads, fasta_sortmerna )
         ch_reads = SORTMERNA.out.reads
+        ch_sortmerna_multiqc = SORTMERNA.out.log
     }
     
     // Align with STAR
@@ -210,6 +213,14 @@ workflow CAGESEQ {
     // Get software versions
     ch_software_versions = Channel.empty()
     ch_software_versions = ch_software_versions.mix(FASTQC.out.version.first().ifEmpty(null))
+    //ch_software_versions = ch_software_versions.mix(SORTMERNA.out.version.first().ifEmpty(null))
     GET_SOFTWARE_VERSIONS ( ch_software_versions.map { it }.collect())
+
+    // MultiQC
+    MULTIQC(
+        GET_SOFTWARE_VERSIONS.out.yaml.collect(),
+        FASTQC.out.zip.collect{it[1]}.ifEmpty([])
+
+    )
 
 }
