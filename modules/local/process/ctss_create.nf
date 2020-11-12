@@ -23,12 +23,10 @@ process CTSS_CREATE {
     
     output:
     tuple val(meta), path("*.ctss.bed")         , emit: ctss
-    path "*.bam"                                , emit: test
 
     script:
     def prefix     = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    cp ${bam} test.bam
     make_ctss.sh -q 20 -i ${bam.baseName} -n ${meta.id}
     """
 }

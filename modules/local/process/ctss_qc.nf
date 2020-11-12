@@ -30,7 +30,7 @@ process CTSS_QC {
     def prefix     = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     gtfbed.collect()
     """
-    bedtools bedtobam -i $clusters -g $chrom_sizes > ${clusters.baseName}.bam
-    read_distribution.py -i ${clusters.baseName}.bam -r $gtf > ${clusters.baseName}.read_distribution.txt
+    bedtools bedtobam -i $ctss -g $chrom_sizes > ${ctss.baseName}.bam
+    read_distribution.py -i ${ctss.baseName}.bam -r $gtfbed > ${ctss.baseName}.read_distribution.txt
     """
 }

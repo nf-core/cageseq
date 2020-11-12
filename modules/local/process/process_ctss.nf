@@ -26,8 +26,6 @@ process CTSS_PROCESS {
 
     script:
     """
-    cp ${bam} test.bam
     process_ctss.sh -t ${params.tpm_cluster_threshold} ${ctss}
-
     """
 }

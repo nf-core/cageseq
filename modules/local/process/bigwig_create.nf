@@ -11,11 +11,11 @@ process BIGWIG_CREATE {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:meta.id) }
 
-    conda (params.enable_conda ? "bioconda::bedtools=2.26.0gx" : null)
+    conda (params.enable_conda ? "bioconda::mulled-v2-0706fce4651afdd140e6493139959dc8d83d2674" : null)
     if (workflow.containerEngine == 'singularity' && !params.pull_docker_container) {
-        container "https://depot.galaxyproject.org/singularity/quay.io/biocontainers/bedtools:2.26.0gx--he513fc3_4"
+        container "https://depot.galaxyproject.org/singularity/quay.io/biocontainers/mulled-v2-0706fce4651afdd140e6493139959dc8d83d2674:379771e663a512eeb057976c09bef0978a8c85cc-0"
     } else {
-        container "quay.io/biocontainers/bedtools:2.26.0gx--he513fc3_4"
+        container "quay.io/biocontainers/mulled-v2-0706fce4651afdd140e6493139959dc8d83d2674:379771e663a512eeb057976c09bef0978a8c85cc-0"
     }
 
     input:
