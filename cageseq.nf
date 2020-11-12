@@ -125,7 +125,7 @@ include { INPUT_CHECK }             from './modules/local/subworkflow/input_chec
 include { TRIMMING_PREPROCESSING }  from './modules/local/subworkflow/trimming'                         addParams( options: [:] )
 include { ALIGN_STAR }              from './modules/local/subworkflow/align_star'                       addParams( align_options: star_align_options, index_options: star_genomegenerate_options)
 include { ALIGN_BOWTIE }            from './modules/local/subworkflow/align_bowtie'                     addParams( align_options: bowtie_align_options, index_options: bowtie_index_options)
-
+include { CTSS_GENERATION }         from './modules/local/subworkflow/ctss_generation'                  addParams( options: [:] )
 
 // Check mandatory parameters
 if (params.input)   { ch_input = file(params.input) }   else { exit 1, 'Input not specified!'}
@@ -185,6 +185,7 @@ workflow CAGESEQ {
             ch_fasta,
             ch_gtf
             )
+        ch_bam = ALIGN_STAR.out.bam
     }
     // Align with bowtie1
     else if (params.aligner == 'bowtie1'){
@@ -194,16 +195,17 @@ workflow CAGESEQ {
             ch_fasta,
             ch_gtf
         )
+        ch_bam = ALIGN_BOWTIE.out.bam
     }
 
-
-    //get CTSS
-    // make bigwig
-    //cluster ctss
-    //egnerate counts
-    // generate count matrix
-    // ctss qc
-
+    // Generate CTSS, make QC, BigWig files and count table
+    if (!params.skip_ctss_generation){
+        CTSS_GENERATION(
+            ch_bam,
+            GET_CHROM_SIZES.out.sizes,
+            GTF2BED.out
+        )
+    }
 
     // Get software versions
     ch_software_versions = Channel.empty()
