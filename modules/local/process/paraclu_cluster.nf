@@ -25,7 +25,6 @@ process PARACLU_CLUSTER {
     tuple val(meta), path("*.bed")         , emit: cluster
 
     script:
-    ctss.collect()
     """
     paraclu ${params.min_cluster} "ctss_all_pos_4Ps" > "ctss_all_pos_clustered"
     paraclu ${params.min_cluster} "ctss_all_neg_4Ps" > "ctss_allneg_clustered"

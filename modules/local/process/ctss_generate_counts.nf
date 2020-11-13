@@ -4,7 +4,7 @@ include { initOptions; saveFiles; getSoftwareName } from './functions'
 params.options = [:]
 def options    = initOptions(params.options)
 
-process GENERATE_COUNT_MATRIX {
+process CTSS_GENERATE_COUNTS {
     tag "$meta.id"
     label 'process_low'
     publishDir "${params.outdir}",
@@ -25,10 +25,8 @@ process GENERATE_COUNT_MATRIX {
     output:
     path("*.txt")           , emit: count_files
     path("*.bed")           , emit: count_qc
-    //path("*.tsv")           , emit: count_table
 
     script:
-    clusters.collect()
     """
     intersectBed -a ${clusters} -b ${ctss} -loj -s > ${ctss}_counts_tmp
 
@@ -36,10 +34,5 @@ process GENERATE_COUNT_MATRIX {
 
     bedtools groupby -i ${ctss}_counts_tmp -g 1,2,3,4,6 -c 11 -o sum > ${ctss}_counts.bed
     awk -v OFS='\t' '{if(\$6=="-1") \$6=0; print \$6 }' ${ctss}_counts.bed >> ${ctss}_counts.txt
-
-    echo 'coordinates' > coordinates
-    awk '{ print \$4}' ${clusters} >> coordinates
-    #paste -d "\t" coordinates ${ctss} >> count_table.tsv
-
     """
 }
