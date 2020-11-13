@@ -115,6 +115,7 @@ def bowtie_index_options = modules['bowtie_index']
 
 // Include the modules
 include { FASTQC } from                 './modules/nf-core/software/fastqc/main'                        addParams( options: fastqc_options )
+include { FASTQC as FASTQC_POST }  from './modules/nf-core/software/fastqc/main'                        addParams( options: fastqc_options )
 include { GET_CHROM_SIZES } from        './modules/local/process/get_chrom_sizes'                       addParams( options: publish_genome_options )
 include { GTF2BED } from                './modules/local/process/gtf2bed'                               addParams( options: genome_options )
 include { GET_SOFTWARE_VERSIONS } from  './modules/local/process/get_software_versions'                 addParams( options: [:] )
@@ -133,9 +134,12 @@ if (params.input)   { ch_input = file(params.input) }   else { exit 1, 'Input no
 if (params.fasta)   { ch_fasta = file(params.fasta) }   else { exit 1, 'Genome fasta file not specified!'}
 if (params.gtf)     { ch_gtf = file(params.gtf) }       else { exit 1, "No GTF annotation specified!"}
 
-///////////////////////
+
+
+
+//=====================================================//
 /* CAGE-seq workflow */
-///////////////////////
+//=====================================================//
 
 workflow CAGESEQ {
 
@@ -178,6 +182,11 @@ workflow CAGESEQ {
         SORTMERNA( ch_reads, fasta_sortmerna )
         ch_reads = SORTMERNA.out.reads
         ch_sortmerna_multiqc = SORTMERNA.out.log
+    }
+
+    // Optional post-preprocessing QC
+    if(!params.skip_trimming_fastqc && !params.skip_trimming){
+        FASTQC_POST( ch_reads )
     }
     
     // Align with STAR
@@ -224,3 +233,4 @@ workflow CAGESEQ {
     )
 
 }
+//====================== end of workflow ==========================//
