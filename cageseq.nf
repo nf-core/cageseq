@@ -25,6 +25,10 @@ params.bowtie_index = params.genome ? params.genomes[ params.genome ].bowtie1 ?:
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 
+// Check mandatory parameters
+if (params.input)   { ch_input = file(params.input) }   else { exit 1, 'Input not specified!'}
+if (params.fasta)   { ch_fasta = file(params.fasta) }   else { exit 1, 'Genome fasta file not specified!'}
+if (params.gtf)     { ch_gtf = file(params.gtf) }       else { exit 1, "No GTF annotation specified!"}
 
 // Get rRNA databases
 // Default is set to bundled DB list in `assets/rrna-db-defaults.txt`
@@ -79,18 +83,6 @@ else {
 }
 
 
-// Check AWS batch settings
-if (workflow.profile.contains('awsbatch')) {
-    // AWSBatch sanity checking
-    if (!params.awsqueue || !params.awsregion) exit 1, "Specify correct --awsqueue and --awsregion parameters on AWSBatch!"
-    // Check outdir paths to be S3 buckets if running on AWSBatch
-    // related: https://github.com/nextflow-io/nextflow/issues/813
-    if (!params.outdir.startsWith('s3:')) exit 1, "Outdir not on S3 - specify S3 Bucket to run on AWSBatch!"
-    // Prevent trace files to be stored on S3 since S3 does not support rolling files.
-    if (params.tracedir.startsWith('s3:')) exit 1, "Specify a local tracedir or run without trace! S3 cannot be used for tracefiles."
-}
-
-
 // Stage config files
 ch_multiqc_config = file("$baseDir/assets/multiqc_config.yaml", checkIfExists: true)
 ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
@@ -129,10 +121,7 @@ include { ALIGN_STAR }              from './modules/local/subworkflow/align_star
 include { ALIGN_BOWTIE }            from './modules/local/subworkflow/align_bowtie'                     addParams( align_options: bowtie_align_options, index_options: bowtie_index_options)
 include { CTSS_GENERATION }         from './modules/local/subworkflow/ctss_generation'                  addParams( options: [:] )
 
-// Check mandatory parameters
-if (params.input)   { ch_input = file(params.input) }   else { exit 1, 'Input not specified!'}
-if (params.fasta)   { ch_fasta = file(params.fasta) }   else { exit 1, 'Genome fasta file not specified!'}
-if (params.gtf)     { ch_gtf = file(params.gtf) }       else { exit 1, "No GTF annotation specified!"}
+
 
 
 
