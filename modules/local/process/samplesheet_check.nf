@@ -36,7 +36,6 @@ def get_samplesheet_paths(LinkedHashMap row) {
     def meta = [:]
     meta.id           = row.sample
     meta.single_end   = row.single_end.toBoolean()
-    meta.strandedness = row.strandedness
 
     def array = []
     if (meta.single_end) {
