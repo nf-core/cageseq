@@ -18,12 +18,17 @@ workflow TRIMMING_PREPROCESSING {
     artefacts_3p    // channel: path
 
     main:
-    trim_reads = reads
+    trim_reads          =   reads
+    cutadapt_log        =   Channel.empty()
+    cutadapt_version    =   Channel.empty()
+    
+
     if (!params.skip_trimming) {
         // Trim adapters, eco-site and linker sequences
         CUTADAPT_TRIMMING( trim_reads )
         cutadapt_version = CUTADAPT_TRIMMING.out.version
         trim_reads = CUTADAPT_TRIMMING.out.reads
+        cutadapt_log = CUTADAPT_TRIMMING.out.log
         
         // Trim Gs at 5'-site
         if (params.trim_5g) {
@@ -41,4 +46,5 @@ workflow TRIMMING_PREPROCESSING {
     emit:
     reads = trim_reads // channel: [ val(meta), [ reads ] ]
     cutadapt_version     //    path: *.version.txt
+    cutadapt_log
 }

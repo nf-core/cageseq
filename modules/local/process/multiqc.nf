@@ -19,8 +19,13 @@ process MULTIQC {
 
     input:
     path software_versions
-    path ('fastqc/*')
-    //path ('sortmerna/*')
+    path('fastqc/*')
+    // path('cutadapt/*')
+    // path ('sortmerna/*')
+    // path('fastqc/*')
+    path('star/*')
+    // path('bowtie/*')
+    // path('ctss/*')
  
 
     

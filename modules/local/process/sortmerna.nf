@@ -37,13 +37,9 @@ process SORTMERNA {
     """
     sortmerna ${Refs} \\
     --reads ${reads} \\
-    --num_alignments 1 \\
     --threads $task.cpus \\
-    --workdir . \\
-    --fastx \\
-    --aligned rRNA-reads \\
-    --other non-rRNA-reads \\
-    -v
+    $options.args
+    
     mv non-rRNA-reads.fastq ${prefix}.no_rRNA.fastq
     gzip ${prefix}.no_rRNA.fastq
     mv rRNA-reads.log ${prefix}_rRNA_report.txt

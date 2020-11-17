@@ -104,6 +104,7 @@ def star_align_options = modules['star_align']
 def star_genomegenerate_options = modules['star_genomegenerate']
 def bowtie_align_options = modules['bowtie_align']
 def bowtie_index_options = modules['bowtie_index']
+def sortmerna_options = modules['sortmerna']
 
 // Include the modules
 include { FASTQC } from                 './modules/nf-core/software/fastqc/main'                        addParams( options: fastqc_options )
@@ -111,7 +112,7 @@ include { FASTQC as FASTQC_POST }  from './modules/nf-core/software/fastqc/main'
 include { GET_CHROM_SIZES } from        './modules/local/process/get_chrom_sizes'                       addParams( options: publish_genome_options )
 include { GTF2BED } from                './modules/local/process/gtf2bed'                               addParams( options: genome_options )
 include { GET_SOFTWARE_VERSIONS } from  './modules/local/process/get_software_versions'                 addParams( options: [:] )
-include { SORTMERNA } from              './modules/local/process/sortmerna'                             addParams( options: [:] )
+include { SORTMERNA } from              './modules/local/process/sortmerna'                             addParams( options: sortmerna_options )
 include { MULTIQC } from                './modules/local/process/multiqc'                               addParams( options: [:] )
 
 // Include subworkflows
@@ -150,6 +151,11 @@ workflow CAGESEQ {
     fastqc_zip = FASTQC.out.zip
     fastqc_version = FASTQC.out.version
 
+    // Channel for software version
+    ch_software_versions = Channel.empty()
+    ch_software_versions = ch_software_versions.mix(FASTQC.out.version.first().ifEmpty(null))
+
+
     // Convert GTF to Bed format
     GTF2BED( ch_gtf )
 
@@ -157,11 +163,16 @@ workflow CAGESEQ {
     GET_CHROM_SIZES( ch_fasta )
     
     // Trim adapters
+    ch_cutadapt_multiqc = Channel.empty()
     TRIMMING_PREPROCESSING( 
         ch_fastq,
         ch_5end_artifacts,
         ch_3end_artifacts
         )
+    if (!params.skip_trimming){
+        ch_software_versions = ch_software_versions.mix(TRIMMING_PREPROCESSING.out.cutadapt_version.first().ifEmpty(null))
+        ch_cutadapt_multiqc = TRIMMING_PREPROCESSING.out.log
+    }
     
     ch_reads = TRIMMING_PREPROCESSING.out.reads
     
@@ -169,16 +180,25 @@ workflow CAGESEQ {
     ch_sortmerna_multiqc = Channel.empty()
     if (params.remove_ribo_rna) {
         SORTMERNA( ch_reads, fasta_sortmerna )
+
         ch_reads = SORTMERNA.out.reads
         ch_sortmerna_multiqc = SORTMERNA.out.log
+        ch_software_versions = ch_software_versions.mix(SORTMERNA.out.version.first().ifEmpty(null))
     }
 
     // Optional post-preprocessing QC
+    ch_fastqc_post_multiqc = Channel.empty()
     if(!params.skip_trimming_fastqc && !params.skip_trimming){
         FASTQC_POST( ch_reads )
+        ch_fastqc_post_multiqc = FASTQC_POST.out.zip
     }
     
     // Align with STAR
+    ch_samtools_stats    = Channel.empty()
+    ch_samtools_flagstat = Channel.empty()
+    ch_samtools_idxstats = Channel.empty()
+    ch_star_multiqc      = Channel.empty()
+    ch_bowtie_multiqc    = Channel.empty()
     if (params.aligner == 'star'){
         ALIGN_STAR(
             ch_reads,
@@ -187,6 +207,13 @@ workflow CAGESEQ {
             ch_gtf
             )
         ch_bam = ALIGN_STAR.out.bam
+
+        ch_samtools_stats    = ALIGN_STAR.out.stats
+        ch_samtools_flagstat = ALIGN_STAR.out.flagstat
+        ch_samtools_idxstats = ALIGN_STAR.out.idxstats
+        ch_star_multiqc      = ALIGN_STAR.out.log_final
+        ch_software_versions = ch_software_versions.mix(ALIGN_STAR.out.star_version.first().ifEmpty(null))
+        ch_software_versions = ch_software_versions.mix(ALIGN_STAR.out.samtools_version.first().ifEmpty(null))
     }
     // Align with bowtie1
     else if (params.aligner == 'bowtie1'){
@@ -197,29 +224,38 @@ workflow CAGESEQ {
             ch_gtf
         )
         ch_bam = ALIGN_BOWTIE.out.bam
+        // ch_software_versions = ch_software_versions.mix(ALIGN_BOWTIE.out.bowtie_version.first().ifEmpty(null))
+        ch_software_versions = ch_software_versions.mix(ALIGN_BOWTIE.out.samtools_version.first().ifEmpty(null))
+        ch_bowtie_multiqc = ALIGN_BOWTIE.out.log_out
     }
 
     // Generate CTSS, make QC, BigWig files and count table
+    ch_ctss_multiqc = Channel.empty()
     if (!params.skip_ctss_generation){
         CTSS_GENERATION(
             ch_bam,
             GET_CHROM_SIZES.out.sizes,
             GTF2BED.out
         )
+        ch_ctss_multiqc = CTSS_GENERATION.out.ctss_qc
     }
 
     // Get software versions
-    ch_software_versions = Channel.empty()
-    ch_software_versions = ch_software_versions.mix(FASTQC.out.version.first().ifEmpty(null))
-    //ch_software_versions = ch_software_versions.mix(SORTMERNA.out.version.first().ifEmpty(null))
     GET_SOFTWARE_VERSIONS ( ch_software_versions.map { it }.collect())
 
     // MultiQC
     MULTIQC(
         GET_SOFTWARE_VERSIONS.out.yaml.collect(),
-        FASTQC.out.zip.collect{it[1]}.ifEmpty([])
-
+        FASTQC.out.zip.collect{it[1]}.ifEmpty([]),
+        // ch_cutadapt_multiqc.collect()
+        // ch_sortmerna_multiqc.collect{it[1]}.ifEmpty([])
+        // ch_fastqc_post_multiqc.collect{it[1]}.ifEmpty([]),
+        ch_star_multiqc.collect{it[1]}.ifEmpty([])
+        // ch_bowtie_multiqc.collect{it[1]}.ifEmpty([]),
+        // ch_ctss_multiqc.collect{it[1]}.ifEmpty([])
     )
+
+    multiqc_report = MULTIQC.out.report.toList()
 
 }
 //====================== end of workflow ==========================//

@@ -35,18 +35,8 @@ process BOWTIE_ALIGN {
     index_array = index.collect()
     index = index_array[0].baseName - ~/.\d$/
     """
-    bowtie --sam \\
-    -m 1 \\
-    --best \\
-    --strata \\
-    -k 1 \\
-    --tryhard \\
+    bowtie $options.args  \\
     --threads $task.cpus \\
-    --phred33-quals \\
-    --chunkmbs 64 \\
-    --seedmms 2 \\
-    --seedlen 20 \\
-    --maqerr 70  \\
     ${index}  \\
     -q ${reads} \\
     --un ${prefix}.unAl > ${prefix}.sam 2> ${prefix}.out
