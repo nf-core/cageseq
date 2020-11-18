@@ -36,8 +36,8 @@ workflow CTSS_GENERATION {
     }
 
     //process CTSS files for paraclu and run clustering
-    CTSS_PROCESS( CTSS_CREATE.out.ctss )
-    PARACLU_CLUSTER( CTSS_PROCESS.out.ctss.collect() )
+    CTSS_PROCESS( CTSS_CREATE.out.ctss.collect{it[1]} )
+    PARACLU_CLUSTER( CTSS_PROCESS.out.ctss )
 
     // Generate the count files and count matrix
     CTSS_GENERATE_COUNTS( CTSS_CREATE.out.ctss, PARACLU_CLUSTER.out.cluster.collect() )

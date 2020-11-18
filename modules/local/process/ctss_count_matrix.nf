@@ -5,11 +5,10 @@ params.options = [:]
 def options    = initOptions(params.options)
 
 process CTSS_COUNT_MATRIX {
-    tag "$meta.id"
     label 'process_low'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:meta.id) }
+        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:'') }
 
 
     conda     (params.enable_conda ? "conda-forge::sed=4.7" : null)
@@ -17,7 +16,7 @@ process CTSS_COUNT_MATRIX {
 
     input:
     path(counts)
-    tuple val(meta), path(clusters)
+    path(clusters)
     
     output:
     path("*.tsv")           , emit: count_table

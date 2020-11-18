@@ -98,6 +98,7 @@ ch_output_docs_images = file("$baseDir/docs/images/", checkIfExists: true)
 def modules = params.modules.clone()
 
 def fastqc_options = modules['fastqc']
+def fastqc_post_options = modules['fastqc_post']
 def publish_genome_options = params.save_reference ? [publish_dir: 'genome'] : [publish_files: false]
 def genome_options = publish_genome_options
 def star_align_options = modules['star_align']
@@ -108,7 +109,7 @@ def sortmerna_options = modules['sortmerna']
 
 // Include the modules
 include { FASTQC } from                 './modules/nf-core/software/fastqc/main'                        addParams( options: fastqc_options )
-include { FASTQC as FASTQC_POST }  from './modules/nf-core/software/fastqc/main'                        addParams( options: fastqc_options )
+include { FASTQC as FASTQC_POST }  from './modules/nf-core/software/fastqc/main'                        addParams( options: fastqc_post_options )
 include { GET_CHROM_SIZES } from        './modules/local/process/get_chrom_sizes'                       addParams( options: publish_genome_options )
 include { GTF2BED } from                './modules/local/process/gtf2bed'                               addParams( options: genome_options )
 include { GET_SOFTWARE_VERSIONS } from  './modules/local/process/get_software_versions'                 addParams( options: [:] )
@@ -171,7 +172,7 @@ workflow CAGESEQ {
         )
     if (!params.skip_trimming){
         ch_software_versions = ch_software_versions.mix(TRIMMING_PREPROCESSING.out.cutadapt_version.first().ifEmpty(null))
-        ch_cutadapt_multiqc = TRIMMING_PREPROCESSING.out.log
+        ch_cutadapt_multiqc = TRIMMING_PREPROCESSING.out.cutadapt_log
     }
     
     ch_reads = TRIMMING_PREPROCESSING.out.reads
@@ -247,12 +248,12 @@ workflow CAGESEQ {
     MULTIQC(
         GET_SOFTWARE_VERSIONS.out.yaml.collect(),
         FASTQC.out.zip.collect{it[1]}.ifEmpty([]),
-        // ch_cutadapt_multiqc.collect()
-        // ch_sortmerna_multiqc.collect{it[1]}.ifEmpty([])
-        // ch_fastqc_post_multiqc.collect{it[1]}.ifEmpty([]),
-        ch_star_multiqc.collect{it[1]}.ifEmpty([])
-        // ch_bowtie_multiqc.collect{it[1]}.ifEmpty([]),
-        // ch_ctss_multiqc.collect{it[1]}.ifEmpty([])
+        ch_cutadapt_multiqc.collect{it[1]}.ifEmpty([]),
+        ch_sortmerna_multiqc.collect{it[1]}.ifEmpty([]),
+        ch_fastqc_post_multiqc.collect{it[1]}.ifEmpty([]),
+        ch_star_multiqc.collect{it[1]}.ifEmpty([]),
+        ch_bowtie_multiqc.collect{it[1]}.ifEmpty([]),
+        ch_ctss_multiqc.collect{it[1]}.ifEmpty([])
     )
 
     multiqc_report = MULTIQC.out.report.toList()

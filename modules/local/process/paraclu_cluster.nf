@@ -5,11 +5,10 @@ params.options = [:]
 def options    = initOptions(params.options)
 
 process PARACLU_CLUSTER {
-    tag "$meta.id"
     label 'process_low'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:meta.id) }
+        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:'') }
 
     conda (params.enable_conda ? "bioconda::paraclu" : null)
     if (workflow.containerEngine == 'singularity' && !params.pull_docker_container) {
@@ -19,12 +18,13 @@ process PARACLU_CLUSTER {
     }
 
     input:
-    tuple val(meta), path(ctss)
+    path(ctss)
     
     output:
-    tuple val(meta), path("*.bed")         , emit: cluster
+    path('*.bed')                            , emit: cluster
 
     script:
+
     """
     paraclu ${params.min_cluster} "ctss_all_pos_4Ps" > "ctss_all_pos_clustered"
     paraclu ${params.min_cluster} "ctss_all_neg_4Ps" > "ctss_allneg_clustered"

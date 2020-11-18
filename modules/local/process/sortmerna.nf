@@ -25,7 +25,7 @@ process SORTMERNA {
     
     output:
     tuple val(meta), path("*.fastq.gz")         , emit: reads
-    path "*report.txt"                          , emit: log
+    tuple val(meta), path ("*report.txt")       , emit: log
     path  "*.version.txt"                       , emit: version
 
     script:

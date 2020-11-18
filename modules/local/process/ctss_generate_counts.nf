@@ -5,7 +5,7 @@ params.options = [:]
 def options    = initOptions(params.options)
 
 process CTSS_GENERATE_COUNTS {
-    tag "$meta.id"
+    //tag "$meta.id"
     label 'process_low'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
@@ -20,7 +20,7 @@ process CTSS_GENERATE_COUNTS {
 
     input:
     tuple val(meta), path(ctss)
-    tuple val(meta_clusters), path(clusters)
+    path(clusters)
     
     output:
     path("*.txt")           , emit: count_files
