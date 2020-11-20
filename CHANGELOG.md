@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Update template to nf-core/tools `1.12`
 
+### `Fixed`
+
+* clusters on the negative strand were not included in the final output file
+* bigwig export needs sorted input
+
 ## v1.0.0 (Gold Lion) - [2020-10-16]
 
 Initial release of nf-core/cageseq, created with the [nf-core](https://nf-co.re/) template.
