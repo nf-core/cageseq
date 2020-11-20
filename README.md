@@ -28,12 +28,12 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 1. Install [`nextflow`](https://nf-co.re/usage/installation)
 
-2. Install either [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
+2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) or [`Podman`](https://podman.io/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
 
 3. Download the pipeline and test it on a minimal dataset with a single command:
 
     ```bash
-    nextflow run nf-core/cageseq -profile test,<docker/singularity/conda/institute>
+    nextflow run nf-core/cageseq -profile test,<docker/singularity/podman/conda/institute>
     ```
 
     > Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
@@ -41,14 +41,14 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 4. Start running your own analysis!
 
 ```bash
-nextflow run nf-core/cageseq -profile <docker/singularity/conda/institute> --input '*_R1.fastq.gz' --aligner <'star'/'bowtie1'> --genome GRCh38
+nextflow run nf-core/cageseq -profile <docker/singularity/podman/conda/institute> --input '*_R1.fastq.gz' --aligner <'star'/'bowtie1'> --genome GRCh38
 ```
 
-See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
+See [usage docs](https://nf-co.re/cageseq/usage) for all of the available options when running the pipeline.
 
 ## Documentation
 
-The nf-core/cageseq pipeline comes with documentation about the pipeline which you can read at [https://nf-co.re/cageseq/usage](https://nf-co.re/cageseq/usage) and [https://nf-co.re/cageseq/output](https://nf-co.re/cageseq/output) or find in the [`docs/` directory](docs).
+The nf-core/cageseq pipeline comes with documentation about the pipeline: [usage](https://nf-co.re/cageseq/usage) and [output](https://nf-co.re/cageseq/output).
 
 ## Credits
 
