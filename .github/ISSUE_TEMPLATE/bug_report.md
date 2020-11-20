@@ -37,7 +37,7 @@ Steps to reproduce the behaviour:
 
 ## Nextflow Installation
 
-- Version: <!-- [e.g. 19.10.0] -->
+- Version: <!-- [e.g. 20.04.0] -->
 
 ## Container engine
 
