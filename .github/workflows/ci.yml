@@ -73,16 +73,16 @@ jobs:
       - name: Check if Dockerfile or Conda environment changed
         uses: technote-space/get-diff-action@v4
         with:
-          PREFIX_FILTER: |
+          FILES: |
             Dockerfile
             environment.yml
 
       - name: Build new docker image
-        if: env.GIT_DIFF
+        if: env.MATCHED_FILES
         run: docker build --no-cache . -t nfcore/cageseq:1.0.0
 
       - name: Pull docker image
-        if: ${{ !env.GIT_DIFF }}
+        if: ${{ !env.MATCHED_FILES }}
         run: |
           docker pull nfcore/cageseq:dev
           docker tag nfcore/cageseq:dev nfcore/cageseq:1.0.0
