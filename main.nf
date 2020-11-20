@@ -858,7 +858,7 @@ if(!params.skip_ctss_generation){
         process_ctss.sh -t !{params.tpm_cluster_threshold} !{ctss}
 
         paraclu !{params.min_cluster} "ctss_all_pos_4Ps" > "ctss_all_pos_clustered"
-        paraclu !{params.min_cluster} "ctss_all_neg_4Ps" > "ctss_allneg_clustered"
+        paraclu !{params.min_cluster} "ctss_all_neg_4Ps" > "ctss_all_neg_clustered"
 
         paraclu-cut  "ctss_all_pos_clustered" >  "ctss_all_pos_clustered_simplified"
         paraclu-cut  "ctss_all_neg_clustered" >  "ctss_all_neg_clustered_simplified"
