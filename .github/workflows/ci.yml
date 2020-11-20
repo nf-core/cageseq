@@ -34,13 +34,13 @@ jobs:
 
       - name: Build new docker image
         if: env.MATCHED_FILES
-        run: docker build --no-cache . -t nfcore/cageseq:1.0.0
+        run: docker build --no-cache . -t nfcore/cageseq:dev
 
       - name: Pull docker image
         if: ${{ !env.MATCHED_FILES }}
         run: |
           docker pull nfcore/cageseq:dev
-          docker tag nfcore/cageseq:dev nfcore/cageseq:1.0.0
+          docker tag nfcore/cageseq:dev nfcore/cageseq:dev
 
       - name: Install Nextflow
         env:
@@ -79,13 +79,13 @@ jobs:
 
       - name: Build new docker image
         if: env.MATCHED_FILES
-        run: docker build --no-cache . -t nfcore/cageseq:1.0.0
+        run: docker build --no-cache . -t nfcore/cageseq:dev
 
       - name: Pull docker image
         if: ${{ !env.MATCHED_FILES }}
         run: |
           docker pull nfcore/cageseq:dev
-          docker tag nfcore/cageseq:dev nfcore/cageseq:1.0.0
+          docker tag nfcore/cageseq:dev nfcore/cageseq:dev
 
       - name: Install Nextflow
         run: |
