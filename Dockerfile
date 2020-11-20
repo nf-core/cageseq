@@ -1,4 +1,4 @@
-FROM nfcore/base:1.10.2
+FROM nfcore/base:1.12
 LABEL authors="Kevin Menden, Tristan Kast, Matthias Hörtenhuber" \
       description="Docker image containing all software requirements for the nf-core/cageseq pipeline"
 
