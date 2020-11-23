@@ -63,6 +63,16 @@
                     "default": "15",
                     "fa_icon": "fas fa-ruler",
                     "description": "Minimum number of aligned basepairs of a read to be kept"
+                },
+                "star_ignore_sjdbgtf": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-ban",
+                    "description": "When using pre-built STAR indices do not re-extract and use splice junctions from the GTF file."
+                },
+                "seq_center": {
+                    "type": "string",
+                    "description": "Sequencing center information to be added to read group of BAM files.",
+                    "fa_icon": "fas fa-synagogue"
                 }
             }
         },
@@ -353,6 +363,12 @@
                     "fa_icon": "fas fa-network-wired",
                     "description": "Arguments passed to Nextflow clusterOptions.",
                     "default": "false"
+                },
+                "enable_conda": {
+                    "type": "boolean",
+                    "description": "Run this workflow with Conda. You can also use '-profile conda' instead of providing this parameter.",
+                    "hidden": true,
+                    "fa_icon": "fas fa-bacon"
                 }
             }
         },
