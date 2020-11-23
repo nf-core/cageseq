@@ -11,12 +11,11 @@ process BOWTIE_ALIGN {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:meta.id) }
 
-    // Note: 2.7X indices incompatible with AWS iGenomes.
-    conda (params.enable_conda ? "bioconda::bowtie=1.2.3" : null)
+    conda (params.enable_conda ? "bioconda::bowtie=1.3.0" : null)
     if (workflow.containerEngine == 'singularity' && !params.pull_docker_container) {
-        container "https://depot.galaxyproject.org/singularity/bowtie:1.2.3--py36hf1ae8f4_2"
+        container "https://depot.galaxyproject.org/singularity/bowtie:1.3.0--py38hed8969a_1"
     } else {
-        container "quay.io/biocontainers/bowtie:1.2.3--py36hf1ae8f4_2"
+        container "quay.io/biocontainers/bowtie:1.3.0--py38hed8969a_1"
     }
 
     input:
