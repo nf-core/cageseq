@@ -165,13 +165,13 @@
                 },
                 "artifacts_5end": {
                     "type": "string",
-                    "default": "$baseDir/assets/artifacts_5end.fasta",
+                    "default": "$projectDir/assets/artifacts_5end.fasta",
                     "fa_icon": "far fa-hand-scissors",
                     "description": "Path to 5' end artifacts"
                 },
                 "artifacts_3end": {
                     "type": "string",
-                    "default": "$baseDir/assets/artifacts_3end.fasta",
+                    "default": "$projectDir/assets/artifacts_3end.fasta",
                     "fa_icon": "far fa-hand-scissors",
                     "description": "Path to 3' end artifacts"
                 }
@@ -196,7 +196,7 @@
                 },
                 "ribo_database_manifest": {
                     "type": "string",
-                    "default": "$baseDir/assets/rrna-db-defaults.txt",
+                    "default": "$projectDir/assets/rrna-db-defaults.txt",
                     "fa_icon": "fas fa-database",
                     "description": "Path to SortMeRNA database file",
                     "help_text": "The SortMeRNA database file should be a .txt file with a URL/path to a ribisomal fasta file. "
