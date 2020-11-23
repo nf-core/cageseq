@@ -18,13 +18,13 @@ process CTSS_PROCESS {
     }
 
     input:
-    path(ctss)
+    path(ctss_input)
     
     output:
     path("*")                           , emit: ctss
 
     script:
     """
-    process_ctss.sh -t ${params.tpm_cluster_threshold} ${ctss}
+    process_ctss.sh -t ${params.tpm_cluster_threshold} ${ctss_input}
     """
 }
