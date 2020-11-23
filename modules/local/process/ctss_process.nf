@@ -21,7 +21,7 @@ process CTSS_PROCESS {
     path(ctss_input)
     
     output:
-    path("*")                           , emit: ctss
+    path("*"), emit: ctss
 
     script:
     """
