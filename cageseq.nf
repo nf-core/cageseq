@@ -225,7 +225,7 @@ workflow CAGESEQ {
             ch_gtf
         )
         ch_bam = ALIGN_BOWTIE.out.bam
-        // ch_software_versions = ch_software_versions.mix(ALIGN_BOWTIE.out.bowtie_version.first().ifEmpty(null))
+        ch_software_versions = ch_software_versions.mix(ALIGN_BOWTIE.out.bowtie_version.first().ifEmpty(null))
         ch_software_versions = ch_software_versions.mix(ALIGN_BOWTIE.out.samtools_version.first().ifEmpty(null))
         ch_bowtie_multiqc = ALIGN_BOWTIE.out.log_out
     }

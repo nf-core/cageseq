@@ -30,6 +30,6 @@ process BOWTIE_SAMTOOLS {
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
     samtools sort $options.args -@ $task.cpus -o ${prefix}.bam -T $prefix $sam
-    echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//' > ${software}.version.txt
+    echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//' > samtools.version.txt
     """
 }
