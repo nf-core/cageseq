@@ -54,6 +54,8 @@ report_section_order:
 
 export_plots: true
 
+remove_sections:
+    - samtools-stats-alignment
 
 # See https://github.com/ewels/MultiQC_TestData/blob/master/data/custom_content/with_config/table_headerconfig/multiqc_config.yaml
 custom_data:
