@@ -28,6 +28,9 @@ process MULTIQC {
     path('bowtie/*')
     path fail_mapping_summary
     path('ctss/*')
+    path ('samtools/stats/*')
+    path ('samtools/flagstat/*')
+    path ('samtools/idxstats/*')
  
 
     

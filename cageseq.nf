@@ -235,7 +235,11 @@ workflow CAGESEQ {
             ch_fasta,
             ch_gtf
         )
-        ch_genome_bam = ALIGN_BOWTIE.out.bam
+        ch_genome_bam           = ALIGN_BOWTIE.out.bam
+        ch_genome_bai           = ALIGN_BOWTIE.out.bai
+        ch_samtools_stats       = ALIGN_BOWTIE.out.stats
+        ch_samtools_flagstat    = ALIGN_BOWTIE.out.flagstat
+        ch_samtools_idxstats    = ALIGN_BOWTIE.out.idxstats
         ch_software_versions = ch_software_versions.mix(ALIGN_BOWTIE.out.bowtie_version.first().ifEmpty(null))
         ch_software_versions = ch_software_versions.mix(ALIGN_BOWTIE.out.samtools_version.first().ifEmpty(null))
         ch_bowtie_multiqc = ALIGN_BOWTIE.out.log_out
@@ -303,7 +307,10 @@ workflow CAGESEQ {
         ch_star_multiqc.collect{it[1]}.ifEmpty([]),
         ch_bowtie_multiqc.collect{it[1]}.ifEmpty([]),
         ch_fail_mapping_multiqc.ifEmpty([]),
-        ch_ctss_multiqc.collect{it[1]}.ifEmpty([])
+        ch_ctss_multiqc.collect{it[1]}.ifEmpty([]),
+        ch_samtools_stats.collect{it[1]}.ifEmpty([]),
+        ch_samtools_flagstat.collect{it[1]}.ifEmpty([]),
+        ch_samtools_idxstats.collect{it[1]}.ifEmpty([])
     )
 
     multiqc_report = MULTIQC.out.report.toList()

@@ -29,7 +29,7 @@ process SAMTOOLS_SORT {
     def software = getSoftwareName(task.process)
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    samtools sort $options.args -@ $task.cpus -o ${prefix}.bam -T $prefix $bam
+    samtools sort $options.args -@ $task.cpus -o ${prefix}.sorted.bam -T $prefix $bam
     echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//' > ${software}.version.txt
     """
 }

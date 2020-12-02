@@ -32,11 +32,11 @@ module_order:
         path_filters_exclude:
             - '*post_fastqc.zip'
     - cutadapt:
-        name: 'cutadapt (library)'
+        name: 'cutadapt'
         info: 'This section of the report shows the length of trimmed reads by cutadapt.'
     - sortmerna
     - fastqc:
-        name: 'FastQC (library; trimmed)'
+        name: 'FastQC (trimmed)'
         anchor: 'fastqc_post_trimming'
         info: 'This section of the report shows FastQC results after adapter trimming.'
         path_filters:

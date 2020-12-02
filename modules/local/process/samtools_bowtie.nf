@@ -4,7 +4,7 @@ include { initOptions; saveFiles; getSoftwareName } from './functions'
 params.options = [:]
 def options    = initOptions(params.options)
 
-process BOWTIE_SAMTOOLS {
+process SAMTOOLS_BOWTIE {
     tag "$meta.id"
     label 'process_medium'
     publishDir "${params.outdir}",
@@ -29,7 +29,7 @@ process BOWTIE_SAMTOOLS {
     def software = getSoftwareName(task.process)
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    samtools sort $options.args -@ $task.cpus -o ${prefix}.bam -T $prefix $sam
+    samtools view -bS -o ${prefix}.bam $sam
     echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//' > samtools.version.txt
     """
 }
