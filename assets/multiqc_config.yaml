@@ -14,42 +14,31 @@ run_modules:
     - samtools
     - bowtie1
 
-# Order of modules in the report
-top_modules:
-    - 'fastqc'
-    - 'cutadapt'
-    - 'sortmerna'
-    - 'star'
-    - 'bowtie1'
-    - 'samtools'
-    - 'rseqc'
-
 # remove from file name in report
 extra_fn_clean_trim:
     - '.adapter_trimmed.g'
     - '.adapter_trimmed.g_trimmed_fastqc'
 
+# Define module order
 module_order:
     - fastqc:
         name: 'FastQC (raw)'
+        anchor: 'fastqc_raw'
         info: 'This section of the report shows FastQC results before adapter trimming.'
         path_filters:
-            - '*_fastqc.zip'
+            - './fastqc/*.zip'
         path_filters_exclude:
-            - '*val*_fastqc.zip'
-            - '*trimmed_fastqc.zip'
+            - '*post_fastqc.zip'
     - cutadapt:
         name: 'cutadapt (library)'
         info: 'This section of the report shows the length of trimmed reads by cutadapt.'
-        path_filters:
-            - '*_trimming_report.txt'
     - sortmerna
     - fastqc:
         name: 'FastQC (library; trimmed)'
+        anchor: 'fastqc_post_trimming'
         info: 'This section of the report shows FastQC results after adapter trimming.'
         path_filters:
-            - '*val*_fastqc.zip'
-            - '*trimmed_fastqc.zip'
+            - './fastqc_post/*.zip'
     - star
     - bowtie1
     - samtools

@@ -30,14 +30,17 @@ if (params.input)   { ch_input = file(params.input) }   else { exit 1, 'Input no
 if (params.fasta)   { ch_fasta = file(params.fasta) }   else { exit 1, 'Genome fasta file not specified!'}
 if (params.gtf)     { ch_gtf = file(params.gtf) }       else { exit 1, "No GTF annotation specified!"}
 
-// Get rRNA databases
-// Default is set to bundled DB list in `assets/rrna-db-defaults.txt`
-ribo_database = file(params.ribo_database_manifest)
-if (ribo_database.isEmpty()) {exit 1, "File ${ribo_database.getName()} is empty!"}
-Channel
-    .from( ribo_database.readLines() )
-    .map { row -> file(row) }
-    .set { fasta_sortmerna }
+if (params.remove_ribo_rna){
+    // Get rRNA databases
+    // Default is set to bundled DB list in `assets/rrna-db-defaults.txt`
+    ribo_database = file(params.ribo_database_manifest)
+    if (ribo_database.isEmpty()) {exit 1, "File ${ribo_database.getName()} is empty!"}
+    Channel
+        .from( ribo_database.readLines() )
+        .map { row -> file(row) }
+        .set { fasta_sortmerna }
+}
+
 
 // Input validation
 // Aligners and corresponding indices
@@ -84,7 +87,7 @@ else {
 
 
 // Stage config files
-ch_multiqc_config = file("$baseDir/assets/multiqc_config.yaml", checkIfExists: true)
+ch_multiqc_config = Channel.fromPath("$baseDir/assets/multiqc_config.yaml", checkIfExists: true)
 ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
 ch_output_docs = file("$baseDir/docs/output.md", checkIfExists: true)
 ch_output_docs_images = file("$baseDir/docs/images/", checkIfExists: true)
@@ -246,6 +249,7 @@ workflow CAGESEQ {
 
     // MultiQC
     MULTIQC(
+        ch_multiqc_config,
         GET_SOFTWARE_VERSIONS.out.yaml.collect(),
         FASTQC.out.zip.collect{it[1]}.ifEmpty([]),
         ch_cutadapt_multiqc.collect{it[1]}.ifEmpty([]),
