@@ -26,6 +26,7 @@ process MULTIQC {
     path('fastqc_post/*')
     path('star/*')
     path('bowtie/*')
+    path fail_mapping_summary
     path('ctss/*')
  
 

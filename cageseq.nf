@@ -118,6 +118,7 @@ include { GTF2BED } from                './modules/local/process/gtf2bed'       
 include { GET_SOFTWARE_VERSIONS } from  './modules/local/process/get_software_versions'                 addParams( options: [:] )
 include { SORTMERNA } from              './modules/local/process/sortmerna'                             addParams( options: sortmerna_options )
 include { MULTIQC } from                './modules/local/process/multiqc'                               addParams( options: [:] )
+include { MULTIQC_CUSTOM_FAIL_MAPPED } from './modules/local/process/multiqc_custom_fail_mapped'        addParams( options: [publish_files: false] )
 
 // Include subworkflows
 include { INPUT_CHECK }             from './modules/local/subworkflow/input_check'                      addParams( options: [:] )
@@ -134,6 +135,13 @@ include { CTSS_GENERATION }         from './modules/local/subworkflow/ctss_gener
 //=====================================================//
 /* CAGE-seq workflow */
 //=====================================================//
+
+// Info required for completion email and summary
+def multiqc_report      = []
+def pass_percent_mapped = [:]
+def fail_percent_mapped = [:]
+params.summary_params = [:]
+
 
 workflow CAGESEQ {
 
@@ -210,8 +218,8 @@ workflow CAGESEQ {
             ch_fasta,
             ch_gtf
             )
-        ch_bam = ALIGN_STAR.out.bam
-
+        ch_genome_bam        = ALIGN_STAR.out.bam
+        ch_genome_bai        = ALIGN_STAR.out.bai
         ch_samtools_stats    = ALIGN_STAR.out.stats
         ch_samtools_flagstat = ALIGN_STAR.out.flagstat
         ch_samtools_idxstats = ALIGN_STAR.out.idxstats
@@ -227,17 +235,54 @@ workflow CAGESEQ {
             ch_fasta,
             ch_gtf
         )
-        ch_bam = ALIGN_BOWTIE.out.bam
+        ch_genome_bam = ALIGN_BOWTIE.out.bam
         ch_software_versions = ch_software_versions.mix(ALIGN_BOWTIE.out.bowtie_version.first().ifEmpty(null))
         ch_software_versions = ch_software_versions.mix(ALIGN_BOWTIE.out.samtools_version.first().ifEmpty(null))
         ch_bowtie_multiqc = ALIGN_BOWTIE.out.log_out
+    }
+
+
+       /*
+     * Filter channels to get samples that passed STAR minimum mapping percentage
+     */
+    ch_fail_mapping_multiqc = Channel.empty()
+    if (!params.skip_alignment && params.aligner == 'star') {
+        ch_star_multiqc
+            .map { meta, align_log -> [ meta ] + Checks.get_star_percent_mapped(workflow, params, log, align_log) }
+            .set { ch_percent_mapped }
+
+        ch_genome_bam
+            .join(ch_percent_mapped, by: [0])
+            .map { meta, ofile, mapped, pass -> if (pass) [ meta, ofile ] }
+            .set { ch_genome_bam }
+
+        ch_genome_bai
+            .join(ch_percent_mapped, by: [0])
+            .map { meta, ofile, mapped, pass -> if (pass) [ meta, ofile ] }
+            .set { ch_genome_bai }
+
+        ch_percent_mapped
+            .branch { meta, mapped, pass ->
+                pass: pass
+                    pass_percent_mapped[meta.id] = mapped
+                    return [ "$meta.id\t$mapped" ]
+                fail: !pass
+                    fail_percent_mapped[meta.id] = mapped
+                    return [ "$meta.id\t$mapped" ]
+            }
+            .set { ch_pass_fail_mapped }
+
+        MULTIQC_CUSTOM_FAIL_MAPPED ( 
+            ch_pass_fail_mapped.fail.collect()
+        )
+        .set { ch_fail_mapping_multiqc }
     }
 
     // Generate CTSS, make QC, BigWig files and count table
     ch_ctss_multiqc = Channel.empty()
     if (!params.skip_ctss_generation){
         CTSS_GENERATION(
-            ch_bam,
+            ch_genome_bam,
             GET_CHROM_SIZES.out.sizes,
             GTF2BED.out
         )
@@ -257,10 +302,21 @@ workflow CAGESEQ {
         ch_fastqc_post_multiqc.collect{it[1]}.ifEmpty([]),
         ch_star_multiqc.collect{it[1]}.ifEmpty([]),
         ch_bowtie_multiqc.collect{it[1]}.ifEmpty([]),
+        ch_fail_mapping_multiqc.ifEmpty([]),
         ch_ctss_multiqc.collect{it[1]}.ifEmpty([])
     )
 
     multiqc_report = MULTIQC.out.report.toList()
 
+}
+
+
+////////////////////////////////////////////////////
+/* --              COMPLETION EMAIL            -- */
+////////////////////////////////////////////////////
+
+workflow.onComplete {
+    Completion.email(workflow, params, params.summary_params, baseDir, log, multiqc_report, fail_percent_mapped)
+    Completion.summary(workflow, params, log, fail_percent_mapped, pass_percent_mapped)
 }
 //====================== end of workflow ==========================//
