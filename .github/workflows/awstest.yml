@@ -3,9 +3,7 @@ name: nf-core AWS test
 # It runs the -profile 'test' on AWS batch
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
 
 jobs:
   run-awstest:
@@ -14,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Miniconda
-        uses: goanpeca/setup-miniconda@v1.0.2
+        uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
           python-version: 3.7
