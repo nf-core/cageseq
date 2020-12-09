@@ -11,7 +11,7 @@ You will need to create a samplesheet file with the information about your sampl
 ### Format
 The samplesheet must contain the four columns `group`, `replicate`, `fastq_1` and `fastq_2`. The `group` column specifies the experimental group a sample belongs to. With the `replicate` column, you can indicate replicates. For instance, when having three samples from the same experimental group, they must have the numbers 1, 2 and 3 in their replicate field. The `fastq_1` column defines the location of your FastQ files. Similar, the `fastq_2` file would specifiy the location of the second FastQ file in the case of paired end data. Note however, that this is currently not supported. Below is an example samplesheet:
 
-```
+```bash
 group,replicate,fastq_1,fastq_2
 cage1,1,cagesampleXY.fastq.gz,
 cage2,1,cagesampleAB.fastq.gz,
@@ -23,7 +23,7 @@ cage1,2,cagesample3.fastq.gz,
 
 You can run the pipeline with the following command:
 
-```
+```bash
 nextflow run nf-core/cageseq -profile docker --input samplesheet.csv
 ```
 
