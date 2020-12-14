@@ -61,7 +61,6 @@ By default, the pipeline currently performs the following:
 7. CAGE tag clustering QC ([`RSeQC`](http://rseqc.sourceforge.net/))
 8. Present QC and visualisation for raw read, alignment and clustering results ([`MultiQC`](http://multiqc.info/))
 
-
 ## Documentation
 
 The nf-core/cageseq pipeline comes with documentation about the pipeline: [usage](https://nf-co.re/cageseq/usage) and [output](https://nf-co.re/cageseq/output).
