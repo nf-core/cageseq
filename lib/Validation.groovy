@@ -12,7 +12,8 @@ class Validation {
         def json = new File(json_schema).text
         def Map json_params = (Map) new JsonSlurper().parseText(json).get('definitions')
         def specified_param_keys = params.keySet()
-        def nf_params = ['profile', 'config', 'c', 'q', 'syslog', 'v', 'dockerize']
+        def nf_params = ['profile', 'config', 'c', 'C', 'syslog', 'd', 'dockerize', 
+                        'bg', 'h', 'log', 'quiet', 'q', 'v', 'version']
         def valid_params = []
         def expected_params = []
 
@@ -32,7 +33,7 @@ class Validation {
             }
             // unexpected params
             if (!expected_params.contains(specified_param)){
-                log.warn "Unexpceted parameter specified: ${specified_param}"               
+                log.warn "Unexpected parameter specified: ${specified_param}"               
             }
             
         }
@@ -43,61 +44,15 @@ class Validation {
     * Compare a pair of params (schema, command line) and check whether 
     * they are valid
     */
-     private static boolean validateParamPairOld(given_param, json_param, log){
-        def param_type = json_param.value['type']
-        def valid_param = false
-        def required = json_param.value['required']
-
-        // Check only if required or parameter is given
-        if (required || given_param){
-            def given_param_class = given_param.getClass()
-
-                switch(given_param_class) {
-                    case String:
-                        valid_param = param_type == 'string'
-                        break
-                    case java.lang.Boolean:
-                        valid_param = param_type == 'boolean'
-                        break
-                    case Integer:
-                        valid_param = param_type == 'integer'
-                        break
-                    case nextflow.util.MemoryUnit:
-                        println(given_param)
-                        valid_param = (param_type == 'string' && given_param.toString() ==~ /\d+\.?\s*[KMGT]?B?/)
-                        break
-                    case nextflow.util.Duration:
-                        valid_param = (param_type == 'string' && given_param.toString() ==~ /\d+\.?\s*[mhd]/)
-                        break
-                    case java.math.BigDecimal:
-                        valid_param = param_type == 'number'
-                        break
-                    case java.util.LinkedHashMap:
-                        valid_param = param_type == 'string'
-                }
-
-            if (!valid_param){
-                log.error "ERROR: Parameter ${json_param.key} is wrong type! Expected ${param_type}, found ${given_param.getClass()}, ${given_param}"
-            }
-
-        }
-        return valid_param
-     }
-
-
-
-    /*
-    * Compare a pair of params (schema, command line) and check whether 
-    * they are valid
-    */
      private static boolean validateParamPair(given_param, json_param, log){
         def param_type = json_param.value['type']
         def valid_param = false
         def required = json_param.value['required']
-        
+        def param_enum = json_param.value['enum']
         // Get the expected class
         def schema_param_class = determineDefaultClass(json_param)
 
+        
         // Check only if required or parameter is given
         if (required || given_param){
             def given_param_class = given_param.getClass()
@@ -105,7 +60,6 @@ class Validation {
                 switch(param_type) {
                     case 'string':
                         // memory
-
                         if (schema_param_class == nextflow.util.MemoryUnit || given_param_class == nextflow.util.MemoryUnit){
                             valid_param = given_param.toString() ==~ /\d+\.?\s*[KMGT]?B?/
                         }
@@ -116,6 +70,10 @@ class Validation {
                          // hashmap
                         else if (schema_param_class == LinkedHashMap || given_param_class == LinkedHashMap){
                             valid_param = true // TODO change this later too
+                        }
+                         // enum
+                        else if (param_enum){
+                            valid_param = param_enum.contains(given_param)
                         }
                         // normal string
                         else {
@@ -139,7 +97,10 @@ class Validation {
                 }
 
             if (!valid_param){
-                log.error "ERROR: Parameter ${json_param.key} is wrong type! Expected ${param_type}, found ${schema_param_class}, ${given_param}"
+                log.error "ERROR: Parameter ${json_param.key} is wrong type! Expected ${schema_param_class}, found ${param_type}, ${given_param}"
+                if (param_enum){
+                    log.error "Must be one of: ${param_enum}"
+                }
             }
 
         }
