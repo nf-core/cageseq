@@ -210,7 +210,7 @@ Channel
     .into { ch_read_files_fastqc; read_files_trimming }
 } else {
 Channel
-    .fromFilePairs( params.input )
+    .fromPath( params.input )
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\n" }
     .into { ch_read_files_fastqc; read_files_trimming }
 
