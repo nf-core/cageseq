@@ -10,15 +10,32 @@ class Validation {
 
         def json = new File(json_schema).text
         def Map json_params = (Map) new JsonSlurper().parseText(json).get('definitions')
+        def specified_param_keys = params.keySet()
+        def nf_params = ['profile', 'config', 'c', 'q', 'syslog', 'v', 'dockerize']
+
+        def expected_params = []
 
         // Loop over all parameters in schema and compare to given parameters
         for (group in json_params){
             for (p in group.value['properties']){
                 validateParamPair(params[p.key], p)
+                expected_params.push(p.key)
             }
         }
 
-        // Check for unexpected parameters
+        // Check for nextflow core params and unexpected params
+        for (specified_param in specified_param_keys){
+            // nextflow params
+            if (nf_params.contains(specified_param)){
+                println("That's a nextflow param!")
+            }
+            // unexpected params
+            if (!expected_params.contains(specified_param)){
+                println("UNEXPECTED PARAM")
+                println(specified_param)
+            }
+            
+        }
 
     }
 
