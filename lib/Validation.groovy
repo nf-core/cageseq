@@ -29,11 +29,17 @@ class Validation {
             }
         }
 
+        // Exit if any invalid params where found
+        if (valid_params.contains(false)){
+            System.exit(0)
+        }
+
         // Check for nextflow core params and unexpected params
         for (specified_param in specified_param_keys){
             // nextflow params
             if (nf_params.contains(specified_param)){
-                log.error "ERROR: That's a nextflow param!"
+                log.error "ERROR: You have overwritten the core Nextflow parameter -${specified_param} with --${specified_param}!"
+                System.exit(0)
             }
             // unexpected params
             if (!expected_params.contains(specified_param)){
@@ -52,7 +58,7 @@ class Validation {
     */
      private static boolean validateParamPair(given_param, json_param, log){
         def param_type = json_param.value['type']
-        def valid_param = false
+        def valid_param = true
         def required = json_param.value['required']
         def param_enum = json_param.value['enum']
         def param_pattern = json_param.value['pattern']
