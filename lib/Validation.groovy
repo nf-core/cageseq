@@ -57,7 +57,7 @@ class Validation {
         for (specified_param in specified_param_keys) {
             // nextflow params
             if (nf_params.contains(specified_param)) {
-                log.error "ERROR: You have overwritten the core Nextflow parameter -${specified_param} with --${specified_param}!"
+                log.error "ERROR: You used a core Nextflow option with two hyphens: --${specified_param}! Please resubmit with one."
                 System.exit(0)
             }
             // unexpected params
