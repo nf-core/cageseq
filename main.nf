@@ -25,8 +25,9 @@ if (params.help) {
 ////////////////////////////////////////////////////
 /* --         VALIDATE PARAMETERS              -- */
 ////////////////////////////////////////////////////+
+def unexpectedParams = []
 if (params.validate_schema) {
-    def unexpectedParams = Validation.validateParameters(params, json_schema, log)
+    unexpectedParams = Validation.validateParameters(params, json_schema, log)
 }
 ////////////////////////////////////////////////////
 /* --         PRINT PARAMETER SUMMARY          -- */
@@ -52,6 +53,13 @@ Checks.hostname(workflow, params, log)
 workflow {
     include { CAGESEQ } from './cageseq'
     CAGESEQ ()
+}
+
+workflow.onError {
+    // Print unexpected parameters
+    for (p in unexpectedParams) {
+        log.warn "Unexpected parameter: ${p}"
+    }
 }
 
 /////////////////////////////
