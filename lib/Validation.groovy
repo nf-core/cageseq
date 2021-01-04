@@ -43,7 +43,7 @@ class Validation {
         // Check for nextflow core params and unexpected params
         def json = new File(jsonSchema).text
         def Map schemaParams = (Map) new JsonSlurper().parseText(json).get('definitions')
-        def specified_param_keys = params.keySet()
+        def specifiedParamKeys = params.keySet()
         def nf_params = ['profile', 'config', 'c', 'C', 'syslog', 'd', 'dockerize',
                         'bg', 'h', 'log', 'quiet', 'q', 'v', 'version']
         def unexpectedParams = []
@@ -56,15 +56,15 @@ class Validation {
             }
         }
 
-        for (specified_param in specified_param_keys) {
+        for (specifiedParam in specifiedParamKeys) {
             // nextflow params
-            if (nf_params.contains(specified_param)) {
-                log.error "ERROR: You used a core Nextflow option with two hyphens: --${specified_param}! Please resubmit with one."
+            if (nf_params.contains(specifiedParam)) {
+                log.error "ERROR: You used a core Nextflow option with two hyphens: --${specifiedParam}! Please resubmit with one."
                 System.exit(1)
             }
             // unexpected params
-            if (!expectedParams.contains(specified_param)) {
-                unexpectedParams.push(specified_param)
+            if (!expectedParams.contains(specifiedParam)) {
+                unexpectedParams.push(specifiedParam)
             }
         }
 
