@@ -233,46 +233,20 @@ workflow CAGESEQ {
     }
 
        /*
-     * Filter channels to get samples that passed STAR minimum mapping percentage
+     * Filter channels to get samples that passed STAR/Bowtie1 minimum mapping percentage
      */
     ch_fail_mapping_multiqc = Channel.empty()
-    if (!params.skip_alignment && params.aligner == 'star') {
-        ch_star_multiqc
-            .map { meta, align_log -> [ meta ] + Checks.get_star_percent_mapped(workflow, params, log, align_log) }
-            .set { ch_percent_mapped }
-
-        ch_genome_bam
-            .join(ch_percent_mapped, by: [0])
-            .map { meta, ofile, mapped, pass -> if (pass) [ meta, ofile ] }
-            .set { ch_genome_bam }
-
-        ch_genome_bai
-            .join(ch_percent_mapped, by: [0])
-            .map { meta, ofile, mapped, pass -> if (pass) [ meta, ofile ] }
-            .set { ch_genome_bai }
-
-        ch_percent_mapped
-            .branch { meta, mapped, pass ->
-                pass: pass
-                    pass_percent_mapped[meta.id] = mapped
-                    return [ "$meta.id\t$mapped" ]
-                fail: !pass
-                    fail_percent_mapped[meta.id] = mapped
-                    return [ "$meta.id\t$mapped" ]
-            }
-            .set { ch_pass_fail_mapped }
-
-        MULTIQC_CUSTOM_FAIL_MAPPED (
-            ch_pass_fail_mapped.fail.collect()
-        )
-        .set { ch_fail_mapping_multiqc }
-    }
-
-    // Filter out samples that did not pass Bowtie1 minimum mapping percentage
-    if (!params.skip_alignment && params.aligner == 'bowtie1') {
-        ch_bowtie_multiqc
-            .map { meta, align_log -> [ meta ] + Checks.get_bowtie_percent_mapped(workflow, params, log, align_log) }
-            .set { ch_percent_mapped }
+    if (!params.skip_alignment) {
+        if (params.aligner == 'star') {
+            ch_star_multiqc
+                .map { meta, align_log -> [ meta ] + Checks.get_star_percent_mapped(workflow, params, log, align_log) }
+                .set { ch_percent_mapped }
+        }
+        if (params.aligner == 'bowtie1') {
+            ch_bowtie_multiqc
+                .map { meta, align_log -> [ meta ] + Checks.get_bowtie_percent_mapped(workflow, params, log, align_log) }
+                .set { ch_percent_mapped }
+        }
 
         ch_genome_bam
             .join(ch_percent_mapped, by: [0])

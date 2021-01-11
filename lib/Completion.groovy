@@ -3,8 +3,8 @@
  */
 
 class Completion {
-    static void email(workflow, params, summary_params, baseDir, log, multiqc_report=[], fail_percent_mapped=[:]) {
 
+    static void email(workflow, params, summary_params, baseDir, log, multiqc_report=[], fail_percent_mapped=[:]) {
         // Set up the e-mail variables
         def subject = "[$workflow.manifest.name] Successful: $workflow.runName"
         if (fail_percent_mapped.size() > 0) {
@@ -18,7 +18,7 @@ class Completion {
         for (group in summary_params.keySet()) {
             summary << summary_params[group]
         }
-        
+
         def misc_fields = [:]
         misc_fields['Date Started']              = workflow.start
         misc_fields['Date Completed']            = workflow.complete
@@ -45,7 +45,7 @@ class Completion {
         email_fields['summary']             = summary << misc_fields
         email_fields['fail_percent_mapped'] = fail_percent_mapped.keySet()
         email_fields['min_mapped_reads']    = params.min_mapped_reads
-        
+
         // On success try attach the multiqc report
         def mqc_report = null
         try {
@@ -80,7 +80,7 @@ class Completion {
         def email_html    = html_template.toString()
 
         // Render the sendmail template
-        def max_multiqc_email_size = params.max_multiqc_email_size as nextflow.util.MemoryUnit 
+        def max_multiqc_email_size = params.max_multiqc_email_size as nextflow.util.MemoryUnit
         def smail_fields           = [ email: email_address, subject: subject, email_txt: email_txt, email_html: email_html, baseDir: "$baseDir", mqcFile: mqc_report, mqcMaxSize:  max_multiqc_email_size.toBytes()]
         def sf                     = new File("$baseDir/assets/sendmail_template.txt")
         def sendmail_template      = engine.createTemplate(sf).make(smail_fields)
@@ -110,9 +110,9 @@ class Completion {
         if (!output_d.exists()) {
             output_d.mkdirs()
         }
-        def output_hf = new File(output_d, "pipeline_report.html")
+        def output_hf = new File(output_d, 'pipeline_report.html')
         output_hf.withWriter { w -> w << email_html }
-        def output_tf = new File(output_d, "pipeline_report.txt")
+        def output_tf = new File(output_d, 'pipeline_report.txt')
         output_tf.withWriter { w -> w << email_txt }
     }
 
@@ -127,18 +127,18 @@ class Completion {
                 samp_aln += "    ${samp.value}%: ${samp.key}\n"
                 idx += 1
                 if (idx > 5) {
-                    samp_aln += "    ..see pipeline reports for full list\n"
-                    break;
+                    samp_aln += '    ..see pipeline reports for full list\n'
+                    break
                 }
             }
-            log.info "-${colors.purple}[$workflow.manifest.name]${colors.green} ${pass_percent_mapped.size()}/$total_aln_count samples passed STAR ${params.min_mapped_reads}% mapped threshold:\n${samp_aln}${colors.reset}-"
+            log.info "-${colors.purple}[$workflow.manifest.name]${colors.green} ${pass_percent_mapped.size()}/$total_aln_count samples passed ${params.min_mapped_reads}% mapped threshold:\n${samp_aln}${colors.reset}-"
         }
         if (fail_percent_mapped.size() > 0) {
             def samp_aln = ''
             for (samp in fail_percent_mapped) {
                 samp_aln += "    ${samp.value}%: ${samp.key}\n"
             }
-            log.info "-${colors.purple}[$workflow.manifest.name]${colors.red} ${fail_percent_mapped.size()} samples skipped since they failed STAR ${params.min_mapped_reads}% mapped threshold:\n${samp_aln}${colors.reset}-"
+            log.info "-${colors.purple}[$workflow.manifest.name]${colors.red} ${fail_percent_mapped.size()} samples skipped since they failed ${params.min_mapped_reads}% mapped threshold:\n${samp_aln}${colors.reset}-"
         }
 
         if (workflow.success) {
@@ -152,4 +152,5 @@ class Completion {
             log.info "-${colors.purple}[$workflow.manifest.name]${colors.red} Pipeline completed with errors${colors.reset}-"
         }
     }
+
 }

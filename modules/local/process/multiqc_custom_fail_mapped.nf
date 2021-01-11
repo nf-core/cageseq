@@ -8,24 +8,24 @@ process MULTIQC_CUSTOM_FAIL_MAPPED {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:'') }
 
-    conda     (params.enable_conda ? "conda-forge::sed=4.7" : null)
-    container "biocontainers/biocontainers:v1.2.0_cv1"
-    
+    conda     (params.enable_conda ? 'conda-forge::sed=4.7' : null)
+    container 'biocontainers/biocontainers:v1.2.0_cv1'
+
     input:
     val fail_mapped
-    
+
     output:
-    path "*.tsv"
+    path '*.tsv'
 
     script:
     if (fail_mapped.size() > 0) {
         """
-        echo "Sample\tSTAR uniquely mapped reads (%)" > fail_mapped_samples_mqc.tsv
+        echo "Sample\tSTAR uniquely mapped reads (%)/Bowtie1 at least one alignment (%)" > fail_mapped_samples_mqc.tsv
         echo "${fail_mapped.join('\n')}" >> fail_mapped_samples_mqc.tsv
         """
     } else {
-        """
+        '''
         touch fail_mapped_samples_mqc.tsv
-        """
+        '''
     }
 }
