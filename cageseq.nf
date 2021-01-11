@@ -9,15 +9,13 @@ https://github.com/nf-core/cageseq
 ----------------------------------------------------------------------------------------
 */
 
-
-
 /*
  * SET UP CONFIGURATION VARIABLES
  */
 
 // Check if genome exists in the config file
 if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
-    exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
+    exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(', ')}"
 }
 
 params.star_index = params.genome ? params.genomes[ params.genome ].star ?: false : false
@@ -26,21 +24,20 @@ params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : 
 params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 
 // Check mandatory parameters
-if (params.input)   { ch_input = file(params.input) }   else { exit 1, 'Input not specified!'}
-if (params.fasta)   { ch_fasta = file(params.fasta) }   else { exit 1, 'Genome fasta file not specified!'}
-if (params.gtf)     { ch_gtf = file(params.gtf) }       else { exit 1, "No GTF annotation specified!"}
+if (params.input)   { ch_input = file(params.input) }   else { exit 1, 'Input not specified!' }
+if (params.fasta)   { ch_fasta = file(params.fasta) }   else { exit 1, 'Genome fasta file not specified!' }
+if (params.gtf)     { ch_gtf = file(params.gtf) }       else { exit 1, 'No GTF annotation specified!' }
 
-if (params.remove_ribo_rna){
+if (params.remove_ribo_rna) {
     // Get rRNA databases
     // Default is set to bundled DB list in `assets/rrna-db-defaults.txt`
     ribo_database = file(params.ribo_database_manifest)
-    if (ribo_database.isEmpty()) {exit 1, "File ${ribo_database.getName()} is empty!"}
+    if (ribo_database.isEmpty()) { exit 1, "File ${ribo_database.getName() } is empty!" }
     Channel
         .from( ribo_database.readLines() )
         .map { row -> file(row) }
         .set { fasta_sortmerna }
 }
-
 
 // Input validation
 // Aligners and corresponding indices
@@ -49,25 +46,25 @@ if (params.aligner != 'star' && params.aligner != 'bowtie1') {
     exit 1, "Invalid aligner option: ${params.aligner}. Valid options: 'star', 'bowtie1'"
 }
 // Check alignment indices
-if( params.star_index && params.aligner == 'star' ){
+if ( params.star_index && params.aligner == 'star' ) {
     star_index = Channel
         .fromPath(params.star_index, checkIfExists: true)
         .ifEmpty { exit 1, "STAR index not found: ${params.star_index}" }
 }
-else if( params.bowtie_index && params.aligner == 'bowtie1' ){
+else if ( params.bowtie_index && params.aligner == 'bowtie1' ) {
     bowtie_index = Channel
         .fromPath(params.bowtie_index, checkIfExists: true)
         .ifEmpty { exit 1, "bowtie index not found: ${params.bowtie_index}" }
 }
-else if( params.fasta ) {
+else if ( params.fasta ) {
     ch_fasta = file(params.fasta)
 }
 else {
-    exit 1, "No reference genome specified!"
+    exit 1, 'No reference genome specified!'
 }
 
 // Channels for artifacts 5'-end and 3'-end
-if( params.artifacts_5end ){
+if ( params.artifacts_5end ) {
     ch_5end_artifacts = Channel
         .fromPath(params.artifacts_5end)
 }
@@ -76,7 +73,7 @@ else {
         .fromPath("$baseDir/assets/artifacts_5end.fasta")
 }
 
-if( params.artifacts_3end ){
+if ( params.artifacts_3end ) {
     ch_3end_artifacts = Channel
         .fromPath(params.artifacts_3end)
 }
@@ -85,13 +82,11 @@ else {
         .fromPath("$baseDir/assets/artifacts_3end.fasta")
 }
 
-
 // Stage config files
 ch_multiqc_config = Channel.fromPath("$baseDir/assets/multiqc_config.yaml", checkIfExists: true)
 ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
 ch_output_docs = file("$baseDir/docs/output.md", checkIfExists: true)
 ch_output_docs_images = file("$baseDir/docs/images/", checkIfExists: true)
-
 
 /////////////////////////////
 /* Include process modules */
@@ -127,11 +122,6 @@ include { ALIGN_STAR }              from './modules/local/subworkflow/align_star
 include { ALIGN_BOWTIE }            from './modules/local/subworkflow/align_bowtie'                     addParams( align_options: bowtie_align_options, index_options: bowtie_index_options)
 include { CTSS_GENERATION }         from './modules/local/subworkflow/ctss_generation'                  addParams( options: [:] )
 
-
-
-
-
-
 //=====================================================//
 /* CAGE-seq workflow */
 //=====================================================//
@@ -142,9 +132,7 @@ def pass_percent_mapped = [:]
 def fail_percent_mapped = [:]
 params.summary_params = [:]
 
-
 workflow CAGESEQ {
-
     /*
      * SUBWORKFLOW: Read in samplesheet, validate and stage input files
     */
@@ -167,27 +155,26 @@ workflow CAGESEQ {
     ch_software_versions = Channel.empty()
     ch_software_versions = ch_software_versions.mix(FASTQC.out.version.first().ifEmpty(null))
 
-
     // Convert GTF to Bed format
     GTF2BED( ch_gtf )
 
     // Get chromosome sizes
     GET_CHROM_SIZES( ch_fasta )
-    
+
     // Trim adapters
     ch_cutadapt_multiqc = Channel.empty()
-    TRIMMING_PREPROCESSING( 
+    TRIMMING_PREPROCESSING(
         ch_fastq,
         ch_5end_artifacts,
         ch_3end_artifacts
         )
-    if (!params.skip_trimming){
+    if (!params.skip_trimming) {
         ch_software_versions = ch_software_versions.mix(TRIMMING_PREPROCESSING.out.cutadapt_version.first().ifEmpty(null))
         ch_cutadapt_multiqc = TRIMMING_PREPROCESSING.out.cutadapt_log
     }
-    
+
     ch_reads = TRIMMING_PREPROCESSING.out.reads
-    
+
     // Removal ribosomal RNA
     ch_sortmerna_multiqc = Channel.empty()
     if (params.remove_ribo_rna) {
@@ -200,18 +187,18 @@ workflow CAGESEQ {
 
     // Optional post-preprocessing QC
     ch_fastqc_post_multiqc = Channel.empty()
-    if(!params.skip_trimming_fastqc && !params.skip_trimming){
+    if (!params.skip_trimming_fastqc && !params.skip_trimming) {
         FASTQC_POST( ch_reads )
         ch_fastqc_post_multiqc = FASTQC_POST.out.zip
     }
-    
+
     // Align with STAR
     ch_samtools_stats    = Channel.empty()
     ch_samtools_flagstat = Channel.empty()
     ch_samtools_idxstats = Channel.empty()
     ch_star_multiqc      = Channel.empty()
     ch_bowtie_multiqc    = Channel.empty()
-    if (params.aligner == 'star'){
+    if (params.aligner == 'star') {
         ALIGN_STAR(
             ch_reads,
             params.star_index,
@@ -228,7 +215,7 @@ workflow CAGESEQ {
         ch_software_versions = ch_software_versions.mix(ALIGN_STAR.out.samtools_version.first().ifEmpty(null))
     }
     // Align with bowtie1
-    else if (params.aligner == 'bowtie1'){
+    else if (params.aligner == 'bowtie1') {
         ALIGN_BOWTIE(
             ch_reads,
             params.bowtie_index,
@@ -244,7 +231,6 @@ workflow CAGESEQ {
         ch_software_versions = ch_software_versions.mix(ALIGN_BOWTIE.out.samtools_version.first().ifEmpty(null))
         ch_bowtie_multiqc = ALIGN_BOWTIE.out.log_out
     }
-
 
        /*
      * Filter channels to get samples that passed STAR minimum mapping percentage
@@ -276,7 +262,40 @@ workflow CAGESEQ {
             }
             .set { ch_pass_fail_mapped }
 
-        MULTIQC_CUSTOM_FAIL_MAPPED ( 
+        MULTIQC_CUSTOM_FAIL_MAPPED (
+            ch_pass_fail_mapped.fail.collect()
+        )
+        .set { ch_fail_mapping_multiqc }
+    }
+
+    // Filter out samples that did not pass Bowtie1 minimum mapping percentage
+    if (!params.skip_alignment && params.aligner == 'bowtie1') {
+        ch_bowtie_multiqc
+            .map { meta, align_log -> [ meta ] + Checks.get_bowtie_percent_mapped(workflow, params, log, align_log) }
+            .set { ch_percent_mapped }
+
+        ch_genome_bam
+            .join(ch_percent_mapped, by: [0])
+            .map { meta, ofile, mapped, pass -> if (pass) [ meta, ofile ] }
+            .set { ch_genome_bam }
+
+        ch_genome_bai
+            .join(ch_percent_mapped, by: [0])
+            .map { meta, ofile, mapped, pass -> if (pass) [ meta, ofile ] }
+            .set { ch_genome_bai }
+
+        ch_percent_mapped
+            .branch { meta, mapped, pass ->
+                pass: pass
+                    pass_percent_mapped[meta.id] = mapped
+                    return [ "$meta.id\t$mapped" ]
+                fail: !pass
+                    fail_percent_mapped[meta.id] = mapped
+                    return [ "$meta.id\t$mapped" ]
+            }
+            .set { ch_pass_fail_mapped }
+
+        MULTIQC_CUSTOM_FAIL_MAPPED (
             ch_pass_fail_mapped.fail.collect()
         )
         .set { ch_fail_mapping_multiqc }
@@ -284,7 +303,7 @@ workflow CAGESEQ {
 
     // Generate CTSS, make QC, BigWig files and count table
     ch_ctss_multiqc = Channel.empty()
-    if (!params.skip_ctss_generation){
+    if (!params.skip_ctss_generation) {
         CTSS_GENERATION(
             ch_genome_bam,
             GET_CHROM_SIZES.out.sizes,
@@ -300,23 +319,21 @@ workflow CAGESEQ {
     MULTIQC(
         ch_multiqc_config,
         GET_SOFTWARE_VERSIONS.out.yaml.collect(),
-        FASTQC.out.zip.collect{it[1]}.ifEmpty([]),
-        ch_cutadapt_multiqc.collect{it[1]}.ifEmpty([]),
-        ch_sortmerna_multiqc.collect{it[1]}.ifEmpty([]),
-        ch_fastqc_post_multiqc.collect{it[1]}.ifEmpty([]),
-        ch_star_multiqc.collect{it[1]}.ifEmpty([]),
-        ch_bowtie_multiqc.collect{it[1]}.ifEmpty([]),
+        FASTQC.out.zip.collect { it[1] }.ifEmpty([]),
+        ch_cutadapt_multiqc.collect { it[1] }.ifEmpty([]),
+        ch_sortmerna_multiqc.collect { it[1] }.ifEmpty([]),
+        ch_fastqc_post_multiqc.collect { it[1] }.ifEmpty([]),
+        ch_star_multiqc.collect { it[1] }.ifEmpty([]),
+        ch_bowtie_multiqc.collect { it[1] }.ifEmpty([]),
         ch_fail_mapping_multiqc.ifEmpty([]),
-        ch_ctss_multiqc.collect{it[1]}.ifEmpty([]),
-        ch_samtools_stats.collect{it[1]}.ifEmpty([]),
-        ch_samtools_flagstat.collect{it[1]}.ifEmpty([]),
-        ch_samtools_idxstats.collect{it[1]}.ifEmpty([])
+        ch_ctss_multiqc.collect { it[1] }.ifEmpty([]),
+        ch_samtools_stats.collect { it[1] }.ifEmpty([]),
+        ch_samtools_flagstat.collect { it[1] }.ifEmpty([]),
+        ch_samtools_idxstats.collect { it[1] }.ifEmpty([])
     )
 
     multiqc_report = MULTIQC.out.report.toList()
-
 }
-
 
 ////////////////////////////////////////////////////
 /* --              COMPLETION EMAIL            -- */

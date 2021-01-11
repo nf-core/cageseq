@@ -6,19 +6,19 @@ class Checks {
 
     static void aws_batch(workflow, params) {
         if (workflow.profile.contains('awsbatch')) {
-            assert !params.awsqueue || !params.awsregion : "Specify correct --awsqueue and --awsregion parameters on AWSBatch!"
+            assert !params.awsqueue || !params.awsregion : 'Specify correct --awsqueue and --awsregion parameters on AWSBatch!'
             // Check outdir paths to be S3 buckets if running on AWSBatch
             // related: https://github.com/nextflow-io/nextflow/issues/813
-            assert !params.outdir.startsWith('s3:') : "Outdir not on S3 - specify S3 Bucket to run on AWSBatch!"
+            assert !params.outdir.startsWith('s3:') : 'Outdir not on S3 - specify S3 Bucket to run on AWSBatch!'
             // Prevent trace files to be stored on S3 since S3 does not support rolling files.
-            assert params.tracedir.startsWith('s3:') :  "Specify a local tracedir or run without trace! S3 cannot be used for tracefiles."
+            assert params.tracedir.startsWith('s3:') :  'Specify a local tracedir or run without trace! S3 cannot be used for tracefiles.'
         }
     }
 
     static void hostname(workflow, params, log) {
         Map colors = Headers.log_colours(params.monochrome_logs)
         if (params.hostnames) {
-            def hostname = "hostname".execute().text.trim()
+            def hostname = 'hostname'.execute().text.trim()
             params.hostnames.each { prof, hnames ->
                 hnames.each { hname ->
                     if (hostname.contains(hname) && !workflow.profile.contains(prof)) {
@@ -36,75 +36,75 @@ class Checks {
     // Citation string
     private static String citation(workflow) {
         return "If you use ${workflow.manifest.name} for your analysis please cite:\n\n" +
-               "* The pipeline\n" + 
-               "  https://doi.org/10.5281/zenodo.1400710\n\n" +
-               "* The nf-core framework\n" +
-               "  https://dx.doi.org/10.1038/s41587-020-0439-x\n" +
-               "  https://rdcu.be/b1GjZ\n\n" +
-               "* Software dependencies\n" +
+               '* The pipeline\n' +
+               '  https://doi.org/10.5281/zenodo.1400710\n\n' +
+               '* The nf-core framework\n' +
+               '  https://dx.doi.org/10.1038/s41587-020-0439-x\n' +
+               '  https://rdcu.be/b1GjZ\n\n' +
+               '* Software dependencies\n' +
                "  https://github.com/${workflow.manifest.name}/blob/master/CITATIONS.md"
     }
 
     // Print a warning after SRA download has completed
     static void sra_download(log) {
-        log.warn "=============================================================================\n" +
-                 "  THIS IS AN EXPERIMENTAL FEATURE!\n\n" + 
-                 "  Please double-check the samplesheet that has been auto-created using the\n" +
+        log.warn '=============================================================================\n' +
+                 '  THIS IS AN EXPERIMENTAL FEATURE!\n\n' +
+                 '  Please double-check the samplesheet that has been auto-created using the\n' +
                  "  public database ids provided via the '--public_data_ids' parameter.\n\n" +
                  "  Public databases don't reliably hold information such as experimental group,\n" +
-                 "  replicate identifiers or strandedness information.\n\n" +  
-                 "  All of the sample metadata obtained from the ENA has been appended\n" +
-                 "  as additional columns to help you manually curate the samplesheet before\n" +
-                 "  you run the pipeline.\n" +
-                 "==================================================================================="
+                 '  replicate identifiers or strandedness information.\n\n' +
+                 '  All of the sample metadata obtained from the ENA has been appended\n' +
+                 '  as additional columns to help you manually curate the samplesheet before\n' +
+                 '  you run the pipeline.\n' +
+                 '==================================================================================='
     }
 
     // Print a warning if using GRCh38 assembly from igenomes.config
     static void ncbi_genome_warn(log) {
-        log.warn "=============================================================================\n" +
+        log.warn '=============================================================================\n' +
                  "  When using '--genome GRCh38' the assembly is from the NCBI and NOT Ensembl.\n" +
                  "  Auto-activating '--skip_biotype_qc' parameter to circumvent the issue below:\n" +
-                 "  https://github.com/nf-core/rnaseq/issues/460.\n\n" +
-                 "  If you would like to use the soft-masked Ensembl assembly instead please see:\n" +
-                 "  https://github.com/nf-core/rnaseq/issues/159#issuecomment-501184312\n" +
-                 "==================================================================================="
+                 '  https://github.com/nf-core/rnaseq/issues/460.\n\n' +
+                 '  If you would like to use the soft-masked Ensembl assembly instead please see:\n' +
+                 '  https://github.com/nf-core/rnaseq/issues/159#issuecomment-501184312\n' +
+                 '==================================================================================='
     }
 
     // Print a warning if using a UCSC assembly from igenomes.config
     static void ucsc_genome_warn(log) {
-        log.warn "=============================================================================\n" +
+        log.warn '=============================================================================\n' +
                  "  When using UCSC assemblies the 'gene_biotype' field is absent from the GTF file.\n" +
                  "  Auto-activating '--skip_biotype_qc' parameter to circumvent the issue below:\n" +
-                 "  https://github.com/nf-core/rnaseq/issues/460.\n\n" +
-                 "  If you would like to use the soft-masked Ensembl assembly instead please see:\n" +
-                 "  https://github.com/nf-core/rnaseq/issues/159#issuecomment-501184312\n" +
-                 "==================================================================================="
+                 '  https://github.com/nf-core/rnaseq/issues/460.\n\n' +
+                 '  If you would like to use the soft-masked Ensembl assembly instead please see:\n' +
+                 '  https://github.com/nf-core/rnaseq/issues/159#issuecomment-501184312\n' +
+                 '==================================================================================='
     }
 
     // Print a warning if both GTF and GFF have been provided
     static void gtf_gff_warn(log) {
-        log.warn "=============================================================================\n" +
+        log.warn '=============================================================================\n' +
                  "  Both '--gtf' and '--gff' parameters have been provided.\n" +
-                 "  Using GTF file as priority.\n" +
-                 "==================================================================================="
+                 '  Using GTF file as priority.\n' +
+                 '==================================================================================='
     }
 
     // Print a warning if --skip_alignment has been provided
     static void skip_alignment_warn(log) {
-        log.warn "=============================================================================\n" +
+        log.warn '=============================================================================\n' +
                  "  '--skip_alignment' parameter has been provided.\n" +
-                 "  Skipping alignment, quantification and all downstream QC processes.\n" +
-                 "==================================================================================="
+                 '  Skipping alignment, quantification and all downstream QC processes.\n' +
+                 '==================================================================================='
     }
 
     // Print a warning if using '--aligner star_rsem' and '--with_umi'
     static void rsem_umi_error(log) {
-        log.error "=============================================================================\n" +
+        log.error '=============================================================================\n' +
                   "  When using '--aligner star_rsem', STAR is run by RSEM itself and so it is\n" +
-                  "  not possible to remove UMIs before the quantification.\n\n" +
-                  "  If you would like to remove UMI barcodes using the '--with_umi' option\n" + 
+                  '  not possible to remove UMIs before the quantification.\n\n' +
+                  "  If you would like to remove UMI barcodes using the '--with_umi' option\n" +
                   "  please use either '--aligner star' or '--aligner hisat2'.\n" +
-                  "============================================================================="
+                  '============================================================================='
     }
 
     // Function that parses and returns the alignment rate from the STAR log output
@@ -130,6 +130,28 @@ class Checks {
         return [ percent_aligned, pass ]
     }
 
+    // Function that parses and returns the alignment rate from the bowtie1 log output
+    static ArrayList get_bowtie_percent_mapped(workflow, params, log, align_log) {
+        def percent_aligned = 0
+        def pattern = /# reads with at least one alignment:\s*\d*\s*\((\d*\.\d*)%\)/
+        align_log.eachLine { line ->
+            def matcher = line =~ pattern
+            if (matcher) {
+                percent_aligned = matcher[0][1].toFloat()
+            }
+        }
+        def pass = false
+        def logname = align_log.getBaseName()
+        Map colors = Headers.log_colours(params.monochrome_logs)
+        if (percent_aligned <= params.min_mapped_reads.toFloat()) {
+            log.info "-${colors.purple}[$workflow.manifest.name]${colors.red} [FAIL] BOWTIE ${params.min_mapped_reads}% mapped threshold. IGNORING FOR FURTHER DOWNSTREAM ANALYSIS: ${percent_aligned}% - $logname${colors.reset}."
+        } else {
+            pass = true
+            log.info "-${colors.purple}[$workflow.manifest.name]${colors.green} [PASS] BOWTIE ${params.min_mapped_reads}% mapped threshold: ${percent_aligned}% - $logname${colors.reset}."
+        }
+        return [ percent_aligned, pass ]
+    }
+
     // Function that parses and returns the predicted strandedness from the RSeQC infer_experiment.py output
     static ArrayList get_inferexperiment_strandedness(inferexperiment_file, cutoff=30) {
         def sense        = 0
@@ -148,11 +170,12 @@ class Checks {
             if (pe_antisense_matcher) antisense    = pe_antisense_matcher[0][1].toFloat() * 100
         }
         def strandedness = 'unstranded'
-        if (sense >= 100-cutoff) {
+        if (sense >= 100 - cutoff) {
             strandedness = 'forward'
-        } else if (antisense >= 100-cutoff) {
+        } else if (antisense >= 100 - cutoff) {
             strandedness = 'reverse'
         }
         return [ strandedness, sense, antisense, undetermined ]
     }
+
 }
