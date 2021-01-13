@@ -1,5 +1,6 @@
-@Grab(group='org.everit.json', module='org.everit.json.schema', version='1.5.1')
-@Grab(group='org.json', module='json', version='20201115')
+
+//@Grab(group='org.everit.json', module='org.everit.json.schema', version='1.5.1')
+//@Grab(group='org.json', module='json', version='20201115')
 import org.everit.json.schema.Schema
 import org.everit.json.schema.loader.SchemaLoader
 import org.everit.json.schema.ValidationException
