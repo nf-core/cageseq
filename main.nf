@@ -26,7 +26,7 @@ if (params.help) {
 /* --         VALIDATE PARAMETERS              -- */
 ////////////////////////////////////////////////////+
 def unexpectedParams = []
-if (params.validate_schema) {
+if (params.validate_params) {
     unexpectedParams = Validation.validateParameters(params, json_schema, log)
 }
 ////////////////////////////////////////////////////
