@@ -228,7 +228,6 @@ log.info NfcoreSchema.params_summary_log(workflow, params, json_schema)
 def summary = [:]
 if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 summary['Run Name']         = workflow.runName
-// TODO nf-core: Report custom parameters here
 summary['Input']            = params.input
 summary['Fasta Ref']        = params.fasta
 summary['Data Type']        = params.single_end ? 'Single-End' : 'Paired-End'
