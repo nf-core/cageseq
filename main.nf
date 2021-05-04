@@ -15,36 +15,41 @@ nextflow.enable.dsl = 2
 /* --               PRINT HELP                 -- */
 ////////////////////////////////////////////////////
 
-def json_schema = "$baseDir/nextflow_schema.json"
+log.info Utils.logo(workflow, params.monochrome_logs)
+
+def json_schema = "$projectDir/nextflow_schema.json"
 if (params.help) {
     def command = 'nextflow run nf-core/cageseq --input samplesheet.csv --genome GRCh38 -profile docker'
-    log.info Schema.params_help(workflow, params, json_schema, command)
+    log.info NfcoreSchema.paramsHelp(workflow, params, json_schema, command)
+    log.info Utils.dashedLine(params.monochrome_logs)
     exit 0
 }
+
 
 ////////////////////////////////////////////////////
 /* --         VALIDATE PARAMETERS              -- */
 ////////////////////////////////////////////////////+
 def unexpectedParams = []
 if (params.validate_params) {
-    unexpectedParams = Schema.validateParameters(params, json_schema, log)
+    unexpectedParams = NfcoreSchema.validateParameters(params, json_schema, log)
 }
 ////////////////////////////////////////////////////
 /* --         PRINT PARAMETER SUMMARY          -- */
 ////////////////////////////////////////////////////
 
-def summary_params = Schema.params_summary_map(workflow, params, json_schema)
-log.info Schema.params_summary_log(workflow, params, json_schema)
+def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params, json_schema)
+log.info NfcoreSchema.paramsSummaryLog(workflow, params, json_schema)
+log.info Utils.dashedLine(params.monochrome_logs)
 
 ////////////////////////////////////////////////////
 /* --          PARAMETER CHECKS                -- */
 ////////////////////////////////////////////////////
 
 // Check AWS batch settings
-Checks.aws_batch(workflow, params)
+Checks.awsBatch(workflow, params)
 
 // Check the hostnames against configured profiles
-Checks.hostname(workflow, params, log)
+Checks.hostName(workflow, params, log)
 
 /////////////////////////////
 /* -- RUN MAIN WORKFLOW -- */

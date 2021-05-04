@@ -239,12 +239,12 @@ workflow CAGESEQ {
     if (!params.skip_alignment) {
         if (params.aligner == 'star') {
             ch_star_multiqc
-                .map { meta, align_log -> [ meta ] + Checks.get_star_percent_mapped(workflow, params, log, align_log) }
+                .map { meta, align_log -> [ meta ] + Workflow.getStarPercentMapped(workflow, params, log, align_log) }
                 .set { ch_percent_mapped }
         }
         if (params.aligner == 'bowtie1') {
             ch_bowtie_multiqc
-                .map { meta, align_log -> [ meta ] + Checks.get_bowtie_percent_mapped(workflow, params, log, align_log) }
+                .map { meta, align_log -> [ meta ] + Workflow.getBowtiePercentMapped(workflow, params, log, align_log) }
                 .set { ch_percent_mapped }
         }
 
@@ -314,7 +314,7 @@ workflow CAGESEQ {
 ////////////////////////////////////////////////////
 
 workflow.onComplete {
-    Completion.email(workflow, params, params.summary_params, baseDir, log, multiqc_report, fail_percent_mapped)
+    Completion.email(workflow, params, params.summary_params, projectDir, log, multiqc_report, fail_percent_mapped)
     Completion.summary(workflow, params, log, fail_percent_mapped, pass_percent_mapped)
 }
 //====================== end of workflow ==========================//
