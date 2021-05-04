@@ -8,11 +8,11 @@ params.index_options    = [:]
 params.align_options    = [:]
 params.samtools_options = [:]
 
-include { UNTAR                 } from '../process/untar'                               addParams( options: params.index_options    )
-include { BOWTIE_INDEX          } from '../process/bowtie_index'                        addParams( options: params.index_options    )
-include { BOWTIE_ALIGN          } from '../process/bowtie_align'                        addParams( options: params.align_options    )
-include { SAMTOOLS_BOWTIE       } from '../process/samtools_bowtie'                     addParams( options: params.samtools_options )
-include { BAM_SORT_SAMTOOLS   } from '../../nf-core/subworkflow/bam_sort_samtools'     addParams( options: params.samtools_options )
+include { UNTAR                 }   from '../../modules/local/untar'                                addParams( options: params.index_options    )
+include { BOWTIE_INDEX          }   from '../../modules/local/bowtie_index'                         addParams( options: params.index_options    )
+include { BOWTIE_ALIGN          }   from '../../modules/local/bowtie_align'                         addParams( options: params.align_options    )
+include { SAMTOOLS_BOWTIE       }   from '../../modules/local/samtools_bowtie'                      addParams( options: params.samtools_options )
+include { BAM_SORT_SAMTOOLS   }     from './bam_sort_samtools'                                      addParams( options: params.samtools_options )
 
 workflow ALIGN_BOWTIE {
     take:

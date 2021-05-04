@@ -106,21 +106,21 @@ def bowtie_index_options = modules['bowtie_index']
 def sortmerna_options = modules['sortmerna']
 
 // Include the modules
-include { FASTQC } from                 './modules/nf-core/software/fastqc/main'                        addParams( options: fastqc_options )
-include { FASTQC as FASTQC_POST }  from './modules/nf-core/software/fastqc/main'                        addParams( options: fastqc_post_options )
-include { GET_CHROM_SIZES } from        './modules/local/process/get_chrom_sizes'                       addParams( options: publish_genome_options )
-include { GTF2BED } from                './modules/local/process/gtf2bed'                               addParams( options: genome_options )
-include { GET_SOFTWARE_VERSIONS } from  './modules/local/process/get_software_versions'                 addParams( options: [:] )
-include { SORTMERNA } from              './modules/local/process/sortmerna'                             addParams( options: sortmerna_options )
-include { MULTIQC } from                './modules/local/process/multiqc'                               addParams( options: [:] )
-include { MULTIQC_CUSTOM_FAIL_MAPPED } from './modules/local/process/multiqc_custom_fail_mapped'        addParams( options: [publish_files: false] )
+include { FASTQC }                      from '../modules/nf-core/software/fastqc/main'                   addParams( options: fastqc_options )
+include { FASTQC as FASTQC_POST }       from '../modules/nf-core/software/fastqc/main'                   addParams( options: fastqc_post_options )
+include { GET_CHROM_SIZES }             from '../modules/local/get_chrom_sizes'                          addParams( options: publish_genome_options )
+include { GTF2BED }                     from '../modules/local/gtf2bed'                                  addParams( options: genome_options )
+include { GET_SOFTWARE_VERSIONS }       from '../modules/local/get_software_versions'                    addParams( options: [:] )
+include { SORTMERNA }                   from '../modules/local/sortmerna'                                addParams( options: sortmerna_options )
+include { MULTIQC }                     from '../modules/local/multiqc'                                  addParams( options: [:] )
+include { MULTIQC_CUSTOM_FAIL_MAPPED }  from '../modules/local/multiqc_custom_fail_mapped'               addParams( options: [publish_files: false] )
 
 // Include subworkflows
-include { INPUT_CHECK }             from './modules/local/subworkflow/input_check'                      addParams( options: [:] )
-include { TRIMMING_PREPROCESSING }  from './modules/local/subworkflow/trimming'                         addParams( options: [:] )
-include { ALIGN_STAR }              from './modules/local/subworkflow/align_star'                       addParams( align_options: star_align_options, index_options: star_genomegenerate_options)
-include { ALIGN_BOWTIE }            from './modules/local/subworkflow/align_bowtie'                     addParams( align_options: bowtie_align_options, index_options: bowtie_index_options)
-include { CTSS_GENERATION }         from './modules/local/subworkflow/ctss_generation'                  addParams( options: [:] )
+include { INPUT_CHECK }                 from '../subworkflows/local/input_check'                          addParams( options: [:] )
+include { TRIMMING_PREPROCESSING }      from '../subworkflows/local/trimming'                             addParams( options: [:] )
+include { ALIGN_STAR }                  from '../subworkflows/local/align_star'                           addParams( align_options: star_align_options, index_options: star_genomegenerate_options)
+include { ALIGN_BOWTIE }                from '../subworkflows/local/align_bowtie'                         addParams( align_options: bowtie_align_options, index_options: bowtie_index_options)
+include { CTSS_GENERATION }             from '../subworkflows/local/ctss_generation'                      addParams( options: [:] )
 
 //=====================================================//
 /* CAGE-seq workflow */

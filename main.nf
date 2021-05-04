@@ -51,7 +51,7 @@ Checks.hostname(workflow, params, log)
 /////////////////////////////
 
 workflow {
-    include { CAGESEQ } from './cageseq'
+    include { CAGESEQ } from './workflows/cageseq'
     CAGESEQ ()
 }
 

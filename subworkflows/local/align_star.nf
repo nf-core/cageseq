@@ -8,10 +8,10 @@ params.index_options    = [:]
 params.align_options    = [:]
 params.samtools_options = [:]
 
-include { UNTAR               } from '../process/untar'                                addParams( options: params.index_options    )
-include { STAR_GENOMEGENERATE } from '../../nf-core/software/star/genomegenerate/main' addParams( options: params.index_options    )
-include { STAR_ALIGN          } from '../../nf-core/software/star/align/main'          addParams( options: params.align_options    )
-include { BAM_SORT_SAMTOOLS   } from '../../nf-core/subworkflow/bam_sort_samtools'     addParams( options: params.samtools_options )
+include { UNTAR               } from '../../modules/local/untar'                                addParams( options: params.index_options    )
+include { STAR_GENOMEGENERATE } from '../../modules/nf-core/software/star/genomegenerate/main'  addParams( options: params.index_options    )
+include { STAR_ALIGN          } from '../../modules/nf-core/software/star/align/main'           addParams( options: params.align_options    )
+include { BAM_SORT_SAMTOOLS   } from './bam_sort_samtools'                                      addParams( options: params.samtools_options )
 
 workflow ALIGN_STAR {
     take:

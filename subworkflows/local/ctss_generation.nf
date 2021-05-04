@@ -10,13 +10,13 @@ params.paraclu_options      = [:]
 params.count_matrix_options = [:]
 params.ctss_qc_options      = [:]
 
-include { CTSS_CREATE          } from '../process/ctss_create'              addParams( options: params.ctss_options  )
-include { BIGWIG_CREATE }        from '../process/bigwig_create'            addParams( options: params.bigwig_options )
-include { CTSS_PROCESS }         from '../process/ctss_process'             addParams( options: params.ctss_options )
-include { PARACLU_CLUSTER }      from '../process/paraclu_cluster'          addParams( options: params.paraclu_options )
-include { CTSS_GENERATE_COUNTS } from '../process/ctss_generate_counts'     addParams( options: params.count_matrix_options )
-include { CTSS_COUNT_MATRIX }    from '../process/ctss_count_matrix'        addParams( options: params.count_matrix_options )
-include { CTSS_QC }              from '../process/ctss_qc'                  addParams( options: params.ctss_qc_options )
+include { CTSS_CREATE          } from '../../modules/local/ctss_create'              addParams( options: params.ctss_options  )
+include { BIGWIG_CREATE }        from '../../modules/local/bigwig_create'            addParams( options: params.bigwig_options )
+include { CTSS_PROCESS }         from '../../modules/local/ctss_process'             addParams( options: params.ctss_options )
+include { PARACLU_CLUSTER }      from '../../modules/local/paraclu_cluster'          addParams( options: params.paraclu_options )
+include { CTSS_GENERATE_COUNTS } from '../../modules/local/ctss_generate_counts'     addParams( options: params.count_matrix_options )
+include { CTSS_COUNT_MATRIX }    from '../../modules/local/ctss_count_matrix'        addParams( options: params.count_matrix_options )
+include { CTSS_QC }              from '../../modules/local/ctss_qc'                  addParams( options: params.ctss_qc_options )
 
 workflow CTSS_GENERATION {
     take:
