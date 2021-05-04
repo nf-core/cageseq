@@ -440,7 +440,7 @@ if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
                 }
 
         input:
-        set val(name), file(reads) from read_files_trimming
+        set val(name), file(reads) from ch_read_files_trimming
 
         output:
         set val(name), file("*.fastq.gz") into trimmed_reads_trim_5g
