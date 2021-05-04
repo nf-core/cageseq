@@ -3,18 +3,31 @@ from __future__ import print_function
 from collections import OrderedDict
 import re
 
-# TODO nf-core: Add additional regexes for new tools in process get_software_versions
 regexes = {
-    "nf-core/cageseq": ["v_pipeline.txt", r"(\S+)"],
-    "Nextflow": ["v_nextflow.txt", r"(\S+)"],
-    "FastQC": ["v_fastqc.txt", r"FastQC v(\S+)"],
-    "MultiQC": ["v_multiqc.txt", r"multiqc, version (\S+)"],
+    'nf-core/cageseq': ['v_pipeline.txt', r"(\S+)"],
+    'Nextflow': ['v_nextflow.txt', r"(\S+)"],
+    'FastQC': ['v_fastqc.txt', r"FastQC v(\S+)"],
+    'MultiQC': ['v_multiqc.txt', r"multiqc, version (\S+)"],
+    'STAR': ['v_star.txt', r"STAR_(\S+)"],
+    'bowtie': ['v_bowtie.txt', r"version (\S+)"],
+    'bedtools': ['v_bedtools.txt', r"bedtools v(\S+)"],
+    'cutadapt': ['v_cutadapt.txt', r"(\S+)"],
+    'samtools': ['v_samtools.txt', r"samtools (\S+)"],
+    'sortmerna': ['v_sortmerna.txt', r"SortMeRNA version (\S+)"],
+    'rseqc': ['v_rseqc.txt', r"read_distribution.py (\S+)"],
 }
 results = OrderedDict()
-results["nf-core/cageseq"] = '<span style="color:#999999;">N/A</span>'
-results["Nextflow"] = '<span style="color:#999999;">N/A</span>'
-results["FastQC"] = '<span style="color:#999999;">N/A</span>'
-results["MultiQC"] = '<span style="color:#999999;">N/A</span>'
+results['nf-core/cageseq'] = '<span style="color:#999999;">N/A</span>'
+results['Nextflow'] = '<span style="color:#999999;">N/A</span>'
+results['FastQC'] = '<span style="color:#999999;">N/A</span>'
+results['MultiQC'] = '<span style="color:#999999;">N/A</span>'
+results['bowtie'] = '<span style="color:#999999;">N/A</span>'
+results['STAR'] = '<span style="color:#999999;">N/A</span>'
+results['bedtools'] = '<span style="color:#999999;">N/A</span>'
+results['cutadapt'] = '<span style="color:#999999;">N/A</span>'
+results['samtools'] = '<span style="color:#999999;">N/A</span>'
+results['sortmerna'] = '<span style="color:#999999;">N/A</span>'
+results['rseqc'] = '<span style="color:#999999;">N/A</span>'
 
 # Search each file using its regex
 for k, v in regexes.items():

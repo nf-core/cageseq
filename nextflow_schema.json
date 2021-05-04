@@ -18,13 +18,8 @@
                     "type": "string",
                     "fa_icon": "fas fa-dna",
                     "description": "Input FastQ files.",
-                    "help_text": "Use this to specify the location of your input FastQ files. For example:\n\n```bash\n--input 'path/to/data/sample_*_{1,2}.fastq'\n```\n\nPlease note the following requirements:\n\n1. The path must be enclosed in quotes\n2. The path must have at least one `*` wildcard character\n3. When using the pipeline with paired end data, the path must use `{1,2}` notation to specify read pairs.\n\nIf left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`"
-                },
-                "single_end": {
-                    "type": "boolean",
-                    "description": "Specifies that the input is single-end reads.",
-                    "fa_icon": "fas fa-align-center",
-                    "help_text": "By default, the pipeline expects paired-end data. If you have single-end data, you need to specify `--single_end` on the command line when you launch the pipeline. A normal glob pattern, enclosed in quotation marks, can then be used for `--input`. For example:\n\n```bash\n--single_end --input '*.fastq'\n```\n\nIt is not possible to run a mixture of single-end and paired-end files in one run."
+                    "help_text": "Use this to specify the location of your input FastQ files. For example:\n\n```bash\n--input 'path/to/data/sample_*_{1,2}.fastq'\n```\n\nPlease note the following requirements:\n\n1. The path must be enclosed in quotes\n2. The path must have at least one `*` wildcard character\n3. When using the pipeline with paired end data, the path must use `{1,2}` notation to specify read pairs.\n\nIf left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`",
+                    "default": "data/*R1.fastq.gz"
                 },
                 "outdir": {
                     "type": "string",
@@ -38,6 +33,36 @@
                     "fa_icon": "fas fa-envelope",
                     "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
                     "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+                },
+                "bigwig": {
+                    "type": "boolean",
+                    "description": "Specifies if TSS-bigwigs should be generated, additionally to the TSS-bed files",
+                    "fa_icon": "fas fa-sign-out-alt"
+                }
+            }
+        },
+        "alignment_options": {
+            "title": "Alignment options",
+            "type": "object",
+            "description": "Adjust parameters and filtering criteria for read alignments.",
+            "default": "",
+            "fa_icon": "fas fa-map-signs",
+            "properties": {
+                "aligner": {
+                    "type": "string",
+                    "default": "star",
+                    "fa_icon": "fas fa-map-marked-alt",
+                    "description": "Alignment tool to be used",
+                    "enum": [
+                        "star",
+                        "bowtie1"
+                    ]
+                },
+                "min_aln_length": {
+                    "type": "integer",
+                    "default": "15",
+                    "fa_icon": "fas fa-ruler",
+                    "description": "Minimum number of aligned basepairs of a read to be kept"
                 }
             }
         },
@@ -57,7 +82,7 @@
                     "type": "string",
                     "fa_icon": "fas fa-font",
                     "description": "Path to FASTA genome file.",
-                    "help_text": "If you have no genome reference available, the pipeline can build one using a FASTA file. This requires additional time and resources, so it's better to use a pre-build index if possible."
+                    "help_text": "This parameter is mandatory if `--genome` is not specified. If you don't have a bowtie1 or STAR index available, they will be generated for you. Combine with `--save_reference` to save indices for future runs."
                 },
                 "igenomes_base": {
                     "type": "string",
@@ -72,6 +97,174 @@
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
                     "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
+                },
+                "gtf": {
+                    "type": "string",
+                    "fa_icon": "fas fa-file-invoice",
+                    "description": "Path to gtf file."
+                },
+                "star_index": {
+                    "type": "string",
+                    "fa_icon": "far fa-star",
+                    "description": "Path to star index directory."
+                },
+                "bowtie_index": {
+                    "type": "string",
+                    "fa_icon": "fab fa-black-tie",
+                    "description": "Path to bowtie index directory."
+                },
+                "save_reference": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-save",
+                    "description": "All generated reference files will be saved to the results folder if this flag is set."
+                }
+            }
+        },
+        "trimming_options": {
+            "title": "Trimming options",
+            "type": "object",
+            "description": "Adjust trimming criteria and sequences.",
+            "default": "",
+            "fa_icon": "fas fa-cut",
+            "properties": {
+                "save_trimmed": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-save"
+                },
+                "trim_ecop": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-cut",
+                    "description": "Set to cut the enzyme binding site at the 5' end"
+                },
+                "trim_linker": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-cut",
+                    "description": "Select to cut the linker at the 3' end"
+                },
+                "trim_5g": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-cut",
+                    "description": "Trim the first `G` at the 5' end, if available"
+                },
+                "trim_artifacts": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-cut",
+                    "description": "Artifacts, generated in the sequencing process, are cut if this flag is not set to false."
+                },
+                "eco_site": {
+                    "type": "string",
+                    "default": "CAGCAG",
+                    "description": "Sequence of the ecoP15 site at the 5' end",
+                    "fa_icon": "far fa-hand-scissors"
+                },
+                "linker_seq": {
+                    "type": "string",
+                    "default": "TCGTATGCCGTCTTC",
+                    "fa_icon": "fas fa-link",
+                    "description": "Sequence of the linker at the 3' end"
+                },
+                "artifacts_5end": {
+                    "type": "string",
+                    "default": "$projectDir/assets/artifacts_5end.fasta",
+                    "fa_icon": "far fa-hand-scissors",
+                    "description": "Path to 5' end artifacts"
+                },
+                "artifacts_3end": {
+                    "type": "string",
+                    "default": "$projectDir/assets/artifacts_3end.fasta",
+                    "fa_icon": "far fa-hand-scissors",
+                    "description": "Path to 3' end artifacts"
+                }
+            }
+        },
+        "ribosomal_rna_removal_options": {
+            "title": "Ribosomal RNA removal options",
+            "type": "object",
+            "description": "Control the ribosomal RNA removal through SortMeRNA.",
+            "default": "",
+            "fa_icon": "far fa-trash-alt",
+            "properties": {
+                "remove_ribo_rna": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-trash-alt",
+                    "description": "Select to remove ribosoamal reads with SortMeRNA"
+                },
+                "save_non_ribo_reads": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-save",
+                    "description": "Select to save the ribosomal-free reads"
+                },
+                "ribo_database_manifest": {
+                    "type": "string",
+                    "default": "$projectDir/assets/rrna-db-defaults.txt",
+                    "fa_icon": "fas fa-database",
+                    "description": "Path to SortMeRNA database file",
+                    "help_text": "The SortMeRNA database file should be a .txt file with a URL/path to a ribisomal fasta file. "
+                }
+            }
+        },
+        "cage_tag_clustering_options": {
+            "title": "CAGE-tag clustering options",
+            "type": "object",
+            "description": "Define parameters for paraclu clustering.",
+            "default": "",
+            "fa_icon": "fas fa-align-left",
+            "properties": {
+                "min_cluster": {
+                    "type": "integer",
+                    "fa_icon": "fas fa-sort-amount-down",
+                    "default": 30,
+                    "description": "Minimum cluster size"
+                },
+                "tpm_cluster_threshold": {
+                    "type": "number",
+                    "fa_icon": "fas fa-chart-bar",
+                    "description": "Minimum tags per million a cluster has to have",
+                    "default": 0.2
+                }
+            }
+        },
+        "process_skipping_options": {
+            "title": "Process skipping options",
+            "type": "object",
+            "description": "Skip various steps within the workflow.",
+            "default": "",
+            "fa_icon": "fas fa-tasks",
+            "properties": {
+                "skip_initial_fastqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip FastQC run on input reads."
+                },
+                "skip_trimming": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip all trimming steps."
+                },
+                "skip_trimming_fastqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip FastQC run on trimmed reads."
+                },
+                "skip_alignment": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip alignment step."
+                },
+                "skip_samtools_stats": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip samtools stats QC step of aligned reads"
+                },
+                "skip_ctss_generation": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip steps generating CTSS files including clustering, bed/bigwig and count table output generation."
+                },
+                "skip_ctss_qc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip running RSeQC's read distribution QC step on the clustered CTSS."
                 }
             }
         },
@@ -154,12 +347,12 @@
                     "fa_icon": "fas fa-cogs",
                     "hidden": true
                 },
-                "show_hidden_params": {
-                    "type": "boolean",
-                    "fa_icon": "far fa-eye-slash",
-                    "description": "Show all params when using `--help`",
+                "clusterOptions": {
+                    "type": "string",
                     "hidden": true,
-                    "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
+                    "fa_icon": "fas fa-network-wired",
+                    "description": "Arguments passed to Nextflow clusterOptions.",
+                    "default": "false"
                 }
             }
         },
@@ -259,7 +452,22 @@
             "$ref": "#/definitions/input_output_options"
         },
         {
+            "$ref": "#/definitions/alignment_options"
+        },
+        {
             "$ref": "#/definitions/reference_genome_options"
+        },
+        {
+            "$ref": "#/definitions/trimming_options"
+        },
+        {
+            "$ref": "#/definitions/ribosomal_rna_removal_options"
+        },
+        {
+            "$ref": "#/definitions/cage_tag_clustering_options"
+        },
+        {
+            "$ref": "#/definitions/process_skipping_options"
         },
         {
             "$ref": "#/definitions/generic_options"
