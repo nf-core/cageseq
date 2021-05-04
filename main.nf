@@ -207,25 +207,16 @@ ch_output_docs_images = file("$projectDir/docs/images/", checkIfExists: true)
  * Create a channel for input read files
  */
 if (params.input_paths) {
-    if (params.single_end) {
-        Channel
-            .from(params.input_paths)
-            .map { row -> [ row[0], [ file(row[1][0], checkIfExists: true) ] ] }
-            .ifEmpty { exit 1, 'params.input_paths was empty - no input files supplied' }
-            .into { ch_read_files_fastqc; ch_read_files_trimming }
-    } else {
-        Channel
-            .from(params.input_paths)
-            .map { row -> [ row[0], [ file(row[1][0], checkIfExists: true), file(row[1][1], checkIfExists: true) ] ] }
-            .ifEmpty { exit 1, 'params.input_paths was empty - no input files supplied' }
-            .into { ch_read_files_fastqc; ch_read_files_trimming }
-    }
+Channel
+    .from(params.input_paths)
+    .map { row -> [ row[0].replaceAll("\\s","_"), file(row[1])] }
+    .ifEmpty { exit 1, "params.input was empty - no input files supplied" }
+    .into { ch_read_files_fastqc; read_files_trimming }
 } else {
 Channel
     .fromPath( params.input )
     .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\n" }
     .into { ch_read_files_fastqc; read_files_trimming }
-
 }
 
 ////////////////////////////////////////////////////
@@ -440,7 +431,7 @@ if(!params.skip_trimming && (params.trim_ecop || params.trim_linker)){
                 }
 
         input:
-        set val(name), file(reads) from ch_read_files_trimming
+        set val(name), file(reads) from read_files_trimming
 
         output:
         set val(name), file("*.fastq.gz") into trimmed_reads_trim_5g
