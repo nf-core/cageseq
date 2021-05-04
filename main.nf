@@ -17,11 +17,18 @@ nextflow.enable.dsl = 2
 
 def json_schema = "$baseDir/nextflow_schema.json"
 if (params.help) {
-    def command = "nextflow run nf-core/cageseq --input samplesheet.csv --genome GRCh38 -profile docker"
+    def command = 'nextflow run nf-core/cageseq --input samplesheet.csv --genome GRCh38 -profile docker'
     log.info Schema.params_help(workflow, params, json_schema, command)
     exit 0
 }
 
+////////////////////////////////////////////////////
+/* --         VALIDATE PARAMETERS              -- */
+////////////////////////////////////////////////////+
+def unexpectedParams = []
+if (params.validate_params) {
+    unexpectedParams = Schema.validateParameters(params, json_schema, log)
+}
 ////////////////////////////////////////////////////
 /* --         PRINT PARAMETER SUMMARY          -- */
 ////////////////////////////////////////////////////
@@ -39,7 +46,6 @@ Checks.aws_batch(workflow, params)
 // Check the hostnames against configured profiles
 Checks.hostname(workflow, params, log)
 
-
 /////////////////////////////
 /* -- RUN MAIN WORKFLOW -- */
 /////////////////////////////
@@ -47,6 +53,13 @@ Checks.hostname(workflow, params, log)
 workflow {
     include { CAGESEQ } from './cageseq'
     CAGESEQ ()
+}
+
+workflow.onError {
+    // Print unexpected parameters
+    for (p in unexpectedParams) {
+        log.warn "Unexpected parameter: ${p}"
+    }
 }
 
 /////////////////////////////
