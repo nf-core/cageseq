@@ -10,9 +10,12 @@ process CTSS_COUNT_MATRIX {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:'') }
 
-
-    conda     (params.enable_conda ? "conda-forge::sed=4.7" : null)
-    container "biocontainers/biocontainers:v1.2.0_cv1"
+    conda (params.enable_conda ? "bioconda::bioawk=1.0.6" : null)
+    if (workflow.containerEngine == 'singularity' && !params.pull_docker_container) {
+        container "https://depot.galaxyproject.org/singularity/bioawk:1.0--h5bf99c6_6"
+    } else {
+        container "quay.io/biocontainers/bioawk:1.0--h5bf99c6_6"
+    }
 
     input:
     path(counts)
@@ -24,7 +27,7 @@ process CTSS_COUNT_MATRIX {
     script:
     """
     echo 'coordinates' > coordinates
-    awk '{ print \$4}' ${clusters} >> coordinates
+    bioawk '{ print \$4}' ${clusters} >> coordinates
     paste -d "\t" coordinates ${counts} >> count_table.tsv
     """
 }

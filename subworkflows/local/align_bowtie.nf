@@ -11,7 +11,7 @@ params.samtools_options = [:]
 include { UNTAR                 }   from '../../modules/local/untar'                                addParams( options: params.index_options    )
 include { BOWTIE_INDEX          }   from '../../modules/local/bowtie_index'                         addParams( options: params.index_options    )
 include { BOWTIE_ALIGN          }   from '../../modules/local/bowtie_align'                         addParams( options: params.align_options    )
-include { SAMTOOLS_BOWTIE       }   from '../../modules/local/samtools_bowtie'                      addParams( options: params.samtools_options )
+include { SAMTOOLS_SAMTOBAM     }   from '../../modules/local/samtools_samtobam'                    addParams( options: params.samtools_options )
 include { BAM_SORT_SAMTOOLS   }     from './bam_sort_samtools'                                      addParams( options: params.samtools_options )
 
 workflow ALIGN_BOWTIE {
@@ -37,9 +37,9 @@ workflow ALIGN_BOWTIE {
     BOWTIE_ALIGN( reads, ch_index, gtf)
 
     // Convert SAM output to BAM 
-    SAMTOOLS_BOWTIE( BOWTIE_ALIGN.out.sam )
+    SAMTOOLS_SAMTOBAM( BOWTIE_ALIGN.out.sam )
     // Sort, index BAM file and run samtools stats, flagstat and idxstats
-    BAM_SORT_SAMTOOLS ( SAMTOOLS_BOWTIE.out.bam )
+    BAM_SORT_SAMTOOLS ( SAMTOOLS_SAMTOBAM.out.bam )
 
     emit:
     orig_sam            = BOWTIE_ALIGN.out.sam
