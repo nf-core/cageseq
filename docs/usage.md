@@ -14,9 +14,9 @@ The samplesheet must contain the four columns `group`, `replicate`, `fastq_1` an
 
 ```bash
 group,replicate,fastq_1,fastq_2
-cage1,1,cagesampleXY.fastq.gz,
-cage2,1,cagesampleAB.fastq.gz,
-cage1,2,cagesample3.fastq.gz,
+cage1,1,cagesampleAB.fastq.gz,
+cage1,2,cagesampleXY.fastq.gz,
+cage2,1,cagesample3.fastq.gz,
 ```
 
 ## Running the pipeline
