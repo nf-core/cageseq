@@ -133,14 +133,14 @@ class Completion {
                     break;
                 }
             }
-            log.info "-${colors.purple}[$workflow.manifest.name]${colors.green} ${pass_percent_mapped.size()}/$total_aln_count samples passed STAR ${params.min_mapped_reads}% mapped threshold:\n${samp_aln}${colors.reset}-"
+            log.info "-${colors.purple}[$workflow.manifest.name]${colors.green} ${pass_percent_mapped.size()}/$total_aln_count samples passed mapping ${params.min_mapped_reads}% mapped threshold:\n${samp_aln}${colors.reset}-"
         }
         if (fail_percent_mapped.size() > 0) {
             def samp_aln = ''
             for (samp in fail_percent_mapped) {
                 samp_aln += "    ${samp.value}%: ${samp.key}\n"
             }
-            log.info "-${colors.purple}[$workflow.manifest.name]${colors.red} ${fail_percent_mapped.size()}/$total_aln_count samples skipped since they failed STAR ${params.min_mapped_reads}% mapped threshold:\n${samp_aln}${colors.reset}-"
+            log.info "-${colors.purple}[$workflow.manifest.name]${colors.red} ${fail_percent_mapped.size()}/$total_aln_count samples skipped since they failed mapping ${params.min_mapped_reads}% mapped threshold:\n${samp_aln}${colors.reset}-"
         }
 
         if (workflow.success) {

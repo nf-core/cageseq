@@ -60,7 +60,7 @@
                 },
                 "min_aln_length": {
                     "type": "integer",
-                    "default": "15",
+                    "default": 15,
                     "fa_icon": "fas fa-ruler",
                     "description": "Minimum number of aligned basepairs of a read to be kept"
                 },
@@ -311,13 +311,6 @@
                     "type": "boolean",
                     "description": "Boolean whether to validate parameters against the schema at runtime",
                     "default": true
-                },
-                "name": {
-                    "type": "string",
-                    "description": "Workflow name.",
-                    "fa_icon": "fas fa-fingerprint",
-                    "hidden": true,
-                    "help_text": "A custom name for the pipeline run. Unlike the core nextflow `-name` option with one hyphen this parameter can be reused multiple times, for example if using `-resume`. Passed through to steps such as MultiQC and used for things like report filenames and titles."
                 },
                 "email_on_fail": {
                     "type": "string",
