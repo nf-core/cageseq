@@ -20,7 +20,7 @@ log.info Utils.logo(workflow, params.monochrome_logs)
 def json_schema = "$projectDir/nextflow_schema.json"
 if (params.help) {
     def command = 'nextflow run nf-core/cageseq --input samplesheet.csv --genome GRCh38 -profile docker'
-    log.info NfcoreSchema.paramsHelp(workflow, params, json_schema, command)
+    log.info NfcoreSchema.params_help(workflow, params, json_schema, command)
     log.info Utils.dashedLine(params.monochrome_logs)
     exit 0
 }
@@ -33,6 +33,7 @@ def unexpectedParams = []
 if (params.validate_params) {
     unexpectedParams = NfcoreSchema.validateParameters(params, json_schema, log)
 }
+
 ////////////////////////////////////////////////////
 /* --         PRINT PARAMETER SUMMARY          -- */
 ////////////////////////////////////////////////////
