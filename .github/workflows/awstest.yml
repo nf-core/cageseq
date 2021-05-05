@@ -19,12 +19,6 @@ jobs:
       - name: Install awscli
         run: conda install -c conda-forge awscli
       - name: Start AWS batch job
-        strategy:
-          matrix:
-            # Nextflow versions: check pipeline minimum and current latest
-            nxf_ver: ['19.10.0', '']
-            aligner: ["--aligner 'bowtie1'", "--aligner 'star'"]
-            options: ['--skip_trimming true','--trim_ecop false','--trim_linker false','--trim_5g false','--trim_artifacts false', '--bigwig', '--remove_ribo_rna']
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
