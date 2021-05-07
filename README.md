@@ -1,10 +1,8 @@
 # ![nf-core/cageseq](docs/images/nf-core-cageseq_logo.png)
 
-**CAGE-seq pipeline**.
-
-[![GitHub Actions CI Status](https://github.com/nf-core/cageseq/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/cageseq/actions)
-[![GitHub Actions Linting Status](https://github.com/nf-core/cageseq/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/cageseq/actions)
-[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A520.04.0-brightgreen.svg)](https://www.nextflow.io/)
+[![GitHub Actions CI Status](https://github.com/nf-core/cageseq/workflows/cageseq%20CI/badge.svg)](https://github.com/nf-core/cageseq/actions)
+[![GitHub Actions Linting Status](https://github.com/nf-core/cageseq/workflows/cageseq%20linting/badge.svg)](https://github.com/nf-core/cageseq/actions)
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%3E20.10.0-green)](https://www.nextflow.io/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4095105.svg)](https://doi.org/10.5281/zenodo.4095105)
 
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](https://bioconda.github.io/)
