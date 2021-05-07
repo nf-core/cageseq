@@ -39,8 +39,8 @@ cat $FILES > ctss_all
  awk -F "\t" '{print$1"\t"$6"\t"$2"\t"$5}' < all_pos > ctss_pos_4P
  awk -F "\t" '{print$1"\t"$6"\t"$3"\t"$5}' < all_neg > ctss_neg_4P
 
-#  "Sorting the pos prior paraclu clustering"ls
+#  "Sorting the positive prior paraclu clustering"ls
  sort -k1,1 -k3n ctss_pos_4P > ctss_all_pos_4Ps
 
-#  "Sorting the neg prior paraclu clustering"
+#  "Sorting the negative prior paraclu clustering"
  sort -k1,1 -k3n ctss_neg_4P > ctss_all_neg_4Ps

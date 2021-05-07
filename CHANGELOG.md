@@ -3,6 +3,28 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.0.2 - [2021-01-13]
+
+### `Added`
+
+* Update template to nf-core/tools `1.12.1`
+
+### `Fixed`
+
+* reads the `--input` parameters correclty
+* cleaned up multiqc config
+
+## v1.0.1 - [2020-11-23]
+
+### `Added`
+
+* Update template to nf-core/tools `1.12`
+
+### `Fixed`
+
+* clusters on the negative strand were not included in the final output file
+* bigwig export needs sorted input
+
 ## v1.0.0 (Gold Lion) - [2020-10-16]
 
 Initial release of nf-core/cageseq, created with the [nf-core](https://nf-co.re/) template.

@@ -28,7 +28,9 @@ extra_fn_clean_trim:
     - ".adapter_trimmed.g"
     - ".adapter_trimmed.g_trimmed_fastqc"
 
+# Define module order
 module_order:
+    - "fail_mapped_samples"
     - fastqc:
           name: "FastQC (raw)"
           info: "This section of the report shows FastQC results before adapter trimming."
@@ -60,3 +62,18 @@ report_section_order:
     nf-core-cageseq-summary:
         order: -1001
 export_plots: true
+
+remove_sections:
+    - samtools-stats-alignment
+
+# See https://github.com/ewels/MultiQC_TestData/blob/master/data/custom_content/with_config/table_headerconfig/multiqc_config.yaml
+custom_data:
+    fail_mapped_samples:
+        section_name: "WARNING: Fail Alignment Check"
+        description: "List of samples that failed the STAR minimum mapped reads threshold specified via the '--min_mapped_reads' parameter, and hence were ignored for the downstream processing steps."
+        plot_type: "table"
+        pconfig:
+            id: "fail_mapped_samples_table"
+            table_title: "Samples failed mapping threshold"
+            namespace: "Samples failed mapping threshold"
+            format: "{:.2f}"
