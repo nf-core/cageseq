@@ -405,9 +405,8 @@
                     "description": "Maximum amount of time that can be requested for any single job.",
                     "default": "240.h",
                     "fa_icon": "far fa-clock",
-                    "pattern": "^(\\d+\\.?\\s*(s|m|h|day)\\s*)+$",
-                    "hidden": true,
                     "pattern": "\\d+\\.?\\s*[mhd]",
+                    "hidden": true,
                     "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
                 }
             }
@@ -499,5 +498,13 @@
         {
             "$ref": "#/definitions/institutional_config_options"
         }
-    ]
+    ],
+    "properties": {
+        "enable_conda": {
+            "type": "string"
+        },
+        "cluster_options": {
+            "type": "string"
+        }
+    }
 }
