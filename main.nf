@@ -1,14 +1,15 @@
 #!/usr/bin/env nextflow
 /*
 ========================================================================================
-                         nf-core/cageseq
+                                    nf-core/cageseq
 ========================================================================================
- nf-core/cageseq Analysis Pipeline.
- #### Homepage / Documentation
- https://github.com/nf-core/cageseq
+nf-core/cageseq Analysis Pipeline.
+#### Homepage / Documentation
+https://github.com/nf-core/cageseq
 ----------------------------------------------------------------------------------------
 */
 
+<<<<<<< HEAD
 log.info Headers.nf_core(workflow, params.monochrome_logs)
 
 ////////////////////////////////////////////////////
@@ -35,19 +36,38 @@ if (params.validate_params) {
 // Check if genome exists in the config file
 if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
     exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(', ')}"
+=======
+nextflow.enable.dsl = 2
+
+////////////////////////////////////////////////////
+/* --               PRINT HELP                 -- */
+////////////////////////////////////////////////////
+
+log.info Utils.logo(workflow, params.monochrome_logs)
+
+def json_schema = "$projectDir/nextflow_schema.json"
+if (params.help) {
+    def command = 'nextflow run nf-core/cageseq --input samplesheet.csv --genome GRCh38 -profile docker'
+    log.info NfcoreSchema.params_help(workflow, params, json_schema, command)
+    log.info Utils.dashedLine(params.monochrome_logs)
+    exit 0
 }
 
-// TODO nf-core: Add any reference files that are needed
-// Configurable reference genomes
-//
-// NOTE - THIS IS NOT USED IN THIS PIPELINE, EXAMPLE ONLY
-// If you want to use the channel below in a process, define the following:
-//   input:
-//   file fasta from ch_fasta
-//
-params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
-if (params.fasta) { ch_fasta = file(params.fasta, checkIfExists: true) }
 
+////////////////////////////////////////////////////
+/* --         VALIDATE PARAMETERS              -- */
+////////////////////////////////////////////////////+
+def unexpectedParams = []
+if (params.validate_params) {
+    unexpectedParams = NfcoreSchema.validateParameters(params, json_schema, log)
+>>>>>>> origin/dev
+}
+
+////////////////////////////////////////////////////
+/* --         PRINT PARAMETER SUMMARY          -- */
+////////////////////////////////////////////////////
+
+<<<<<<< HEAD
 // Check AWS batch settings
 if (workflow.profile.contains('awsbatch')) {
     // AWSBatch sanity checking
@@ -388,3 +408,38 @@ def checkHostname() {
         }
     }
 }
+=======
+def summary_params = NfcoreSchema.params_summary_map(workflow, params, json_schema)
+log.info NfcoreSchema.params_summary_log(workflow, params, json_schema)
+log.info Utils.dashedLine(params.monochrome_logs)
+
+////////////////////////////////////////////////////
+/* --          PARAMETER CHECKS                -- */
+////////////////////////////////////////////////////
+
+// Check AWS batch settings
+Checks.awsBatch(workflow, params)
+
+// Check the hostnames against configured profiles
+Checks.hostName(workflow, params, log)
+
+/////////////////////////////
+/* -- RUN MAIN WORKFLOW -- */
+/////////////////////////////
+
+workflow {
+    include { CAGESEQ } from './workflows/cageseq'
+    CAGESEQ ()
+}
+
+workflow.onError {
+    // Print unexpected parameters
+    for (p in unexpectedParams) {
+        log.warn "Unexpected parameter: ${p}"
+    }
+}
+
+/////////////////////////////
+/* -- THE END -- */
+/////////////////////////////
+>>>>>>> origin/dev
