@@ -12,7 +12,7 @@ This release marks the switch from DSL1 to DSL2 language. Major structural chang
 * Changed to general DSL2 structure with additional folders:
   * `lib` : groovy helper functions
   * `modules` : local and nf-core modules
-  * `subworkflows` : small subworkflows 
+  * `subworkflows` : small subworkflows
   * `workflows` : the main pipeline workflows
 * parameter validation with groovy functions and the `nextflow_schema.json`
 * deletion of `Dockerfile` and `environment.yml`
