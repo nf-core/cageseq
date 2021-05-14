@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 2.0.0 Silver Zebra - [2021-05-12]
+## 2.0.0 Nickel Chicken - [2021-05-12]
 
 This release marks the switch from DSL1 to DSL2 language. Major structural changes have therefore been made to the pipeline.
 
