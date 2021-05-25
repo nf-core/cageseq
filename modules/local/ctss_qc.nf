@@ -11,7 +11,7 @@ process CTSS_QC {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:meta.id) }
 
-    conda (params.enable_conda ? "bioconda::mulled-v2-73efd97e29f8e7045b0bf4b2b0389399f25a885b:8a97dfb2b01dca2f366faa19a8c52c9bb0e3885e-0" : null)
+    conda (params.enable_conda ? "bioconda::rseqc=3.0.0 bioconda::bedtools=2.20.1" : null)
     if (workflow.containerEngine == 'singularity' && !params.pull_docker_container) {
         container "https://depot.galaxyproject.org/singularity/mulled-v2-73efd97e29f8e7045b0bf4b2b0389399f25a885b:8a97dfb2b01dca2f366faa19a8c52c9bb0e3885e-0"
     } else {
