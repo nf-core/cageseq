@@ -13,7 +13,7 @@ process CTSS_GENERATE_COUNTS {
 
     conda (params.enable_conda ? "bioconda::bedtools=2.26.0gx" : null)
     if (workflow.containerEngine == 'singularity' && !params.pull_docker_container) {
-        container "https://depot.galaxyproject.org/singularity/quay.io/biocontainers/bedtools:2.26.0gx--he513fc3_4"
+        container "https://depot.galaxyproject.org/singularity/bedtools:2.26.0gx--he513fc3_4"
     } else {
         container "quay.io/biocontainers/bedtools:2.26.0gx--he513fc3_4"
     }
