@@ -44,6 +44,6 @@ process SORTMERNA {
     gzip ${prefix}.no_rRNA.fastq
     mv rRNA-reads.log ${prefix}_rRNA_report.txt
 
-    sortmerna --version 2>&1 >/dev/null | grep "SortMeRNA version" | cut -d" " -f3 > ${software}.version.txt
+    echo \$(sortmerna --version 2>&1) | sed 's/^.*SortMeRNA version //; s/ Build Date.*\$//' > ${software}.version.txt
     """
 }
