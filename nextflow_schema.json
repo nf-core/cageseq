@@ -147,16 +147,19 @@
                 },
                 "trim_ecop": {
                     "type": "boolean",
+                    "default": true,
                     "fa_icon": "fas fa-cut",
                     "description": "Set to cut the enzyme binding site at the 5' end"
                 },
                 "trim_linker": {
                     "type": "boolean",
+                    "default": true,
                     "fa_icon": "fas fa-cut",
                     "description": "Select to cut the linker at the 3' end"
                 },
                 "trim_5g": {
                     "type": "boolean",
+                    "default": true,
                     "fa_icon": "fas fa-cut",
                     "description": "Trim the first `G` at the 5' end, if available"
                 },
@@ -373,6 +376,12 @@
                     "description": "Show all params when using `--help`",
                     "hidden": true,
                     "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
+                },
+                "cluster_options": {
+                    "type": "string"
+                },
+                "enable_conda": {
+                    "type": "string"
                 }
             }
         },
@@ -498,13 +507,5 @@
         {
             "$ref": "#/definitions/institutional_config_options"
         }
-    ],
-    "properties": {
-        "enable_conda": {
-            "type": "string"
-        },
-        "cluster_options": {
-            "type": "string"
-        }
-    }
+    ]
 }
