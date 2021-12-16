@@ -19,8 +19,8 @@ This release marks the switch from DSL1 to DSL2 language. Major structural chang
 
 ### Minor changes
 
-* Update template to nf-core/tools `1.14`
-* reads the `--input` parameters correclty
+* Update template to nf-core/tools `2.2`
+* reads the `--input` parameters correctly
 * cleaned up multiqc config
 
 ## v1.0.1 - [2020-11-23]
