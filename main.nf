@@ -1,73 +1,63 @@
 #!/usr/bin/env nextflow
 /*
 ========================================================================================
-                                    nf-core/cageseq
+    nf-core/cageseq
 ========================================================================================
-nf-core/cageseq Analysis Pipeline.
-#### Homepage / Documentation
-https://github.com/nf-core/cageseq
+    Github : https://github.com/nf-core/cageseq
+    Website: https://nf-co.re/cageseq
+    Slack  : https://nfcore.slack.com/channels/cageseq
 ----------------------------------------------------------------------------------------
 */
 
 nextflow.enable.dsl = 2
 
-////////////////////////////////////////////////////
-/* --               PRINT HELP                 -- */
-////////////////////////////////////////////////////
+/*
+========================================================================================
+    GENOME PARAMETER VALUES
+========================================================================================
+*/
 
-log.info Utils.logo(workflow, params.monochrome_logs)
+params.fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
 
-def json_schema = "$projectDir/nextflow_schema.json"
-if (params.help) {
-    def command = 'nextflow run nf-core/cageseq --input samplesheet.csv --genome GRCh38 -profile docker'
-    log.info NfcoreSchema.params_help(workflow, params, json_schema, command)
-    log.info Utils.dashedLine(params.monochrome_logs)
-    exit 0
-}
+/*
+========================================================================================
+    VALIDATE & PRINT PARAMETER SUMMARY
+========================================================================================
+*/
 
+WorkflowMain.initialise(workflow, params, log)
 
-////////////////////////////////////////////////////
-/* --         VALIDATE PARAMETERS              -- */
-////////////////////////////////////////////////////+
-def unexpectedParams = []
-if (params.validate_params) {
-    unexpectedParams = NfcoreSchema.validateParameters(params, json_schema, log)
-}
+/*
+========================================================================================
+    NAMED WORKFLOW FOR PIPELINE
+========================================================================================
+*/
 
-////////////////////////////////////////////////////
-/* --         PRINT PARAMETER SUMMARY          -- */
-////////////////////////////////////////////////////
+include { CAGESEQ } from './workflows/cageseq'
 
-def summary_params = NfcoreSchema.params_summary_map(workflow, params, json_schema)
-log.info NfcoreSchema.params_summary_log(workflow, params, json_schema)
-log.info Utils.dashedLine(params.monochrome_logs)
-
-////////////////////////////////////////////////////
-/* --          PARAMETER CHECKS                -- */
-////////////////////////////////////////////////////
-
-// Check AWS batch settings
-Checks.awsBatch(workflow, params)
-
-// Check the hostnames against configured profiles
-Checks.hostName(workflow, params, log)
-
-/////////////////////////////
-/* -- RUN MAIN WORKFLOW -- */
-/////////////////////////////
-
-workflow {
-    include { CAGESEQ } from './workflows/cageseq'
+//
+// WORKFLOW: Run main nf-core/cageseq analysis pipeline
+//
+workflow NFCORE_CAGESEQ {
     CAGESEQ ()
 }
 
-workflow.onError {
-    // Print unexpected parameters
-    for (p in unexpectedParams) {
-        log.warn "Unexpected parameter: ${p}"
-    }
+/*
+========================================================================================
+    RUN ALL WORKFLOWS
+========================================================================================
+*/
+
+//
+// WORKFLOW: Execute a single named workflow for the pipeline
+// See: https://github.com/nf-core/rnaseq/issues/619
+//
+workflow {
+    NFCORE_CAGESEQ ()
 }
 
-/////////////////////////////
-/* -- THE END -- */
-/////////////////////////////
+/*
+========================================================================================
+    THE END
+========================================================================================
+*/
