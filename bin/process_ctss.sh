@@ -29,18 +29,4 @@ cat $FILES > ctss_all
 
 # "Filter ctss < $TPM TPM"
  counts=$(awk 'FNR==NR{sum+=$5} END {print sum}' ctssAll)
- awk -v ctssall="$counts" '{if (($5/ctssall)*1000000>="$TPM") print}' ctssAll > ctssAll_${TPM}_tpm_new
-
-#  "BED into minus and positive"
- sed '/+/d' ctssAll_${TPM}_tpm_new > all_neg
- grep + ctssAll_${TPM}_tpm_new > all_pos
-
-#  "CTSS output to paraclu format"
- awk -F "\t" '{print$1"\t"$6"\t"$2"\t"$5}' < all_pos > ctss_pos_4P
- awk -F "\t" '{print$1"\t"$6"\t"$3"\t"$5}' < all_neg > ctss_neg_4P
-
-#  "Sorting the positive prior paraclu clustering"ls
- sort -k1,1 -k3n ctss_pos_4P > ctss_all_pos_4Ps
-
-#  "Sorting the negative prior paraclu clustering"
- sort -k1,1 -k3n ctss_neg_4P > ctss_all_neg_4Ps
+ awk -v ctssall="$counts" '{if (($5/ctssall)*1000000>="$TPM") print}' ctssAll > ctssAll_${TPM}_tpm_new.ctss.bed

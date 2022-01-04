@@ -9,3 +9,36 @@ report_section_order:
         order: -1001
 
 export_plots: true
+
+# Run only these modules
+run_modules:
+    - custom_content
+    - fastqc
+    - cutadapt
+    - sortmerna
+    - star
+    - bowtie1
+    - samtools
+    - rseqc
+    
+module_order:
+    - fastqc:
+        name: 'FastQC (raw)'
+        info: 'This section of the report shows FastQC results before adapter trimming.'
+        path_filters:
+            - '*.raw_fastqc.zip'
+    - cutadapt
+    - fastqc:
+        name: 'FastQC (trimmed)'
+        info: 'This section of the report shows FastQC results after adapter trimming and ribosomal RNA removal.'
+        path_filters:
+            - '*.post_fastqc.zip'
+    - star
+    - bowtie1
+    - samtools
+    - rseqc
+extra_fn_clean_exts:
+    - '.adapter'
+    - '.5g'
+    - '.post'
+    - '.raw'

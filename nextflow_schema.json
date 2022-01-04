@@ -58,7 +58,7 @@
                     "description": "Alignment tool to be used",
                     "enum": [
                         "star",
-                        "bowtie1"
+                        "bowtie"
                     ]
                 },
                 "min_aln_length": {
@@ -102,7 +102,7 @@
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a bowtie1 or STAR index available this will be generated for you automatically. Combine with `--save_reference` to save indices index for future runs.",
+                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a bowtie or STAR index available this will be generated for you automatically. Combine with `--save_reference` to save indices index for future runs.",
                     "fa_icon": "far fa-file-code"
                 },
                 "igenomes_base": {
@@ -287,7 +287,7 @@
                     "fa_icon": "fas fa-fast-forward",
                     "description": "Skip steps generating CTSS files including clustering, bed/bigwig and count table output generation."
                 },
-                "skip_ctss_qc": {
+                "skip_tag_cluster_qc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-fast-forward",
                     "description": "Skip running RSeQC's read distribution QC step on the clustered CTSS."

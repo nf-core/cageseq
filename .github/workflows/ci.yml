@@ -57,7 +57,7 @@ jobs:
     strategy:
       matrix:
         # Nextflow versions: check pipeline minimum and current latest
-        aligner: ["--aligner bowtie1", "--aligner star"]
+        aligner: ["--aligner bowtie", "--aligner star"]
         parameters:
           [
             "--skip_trimming true",
