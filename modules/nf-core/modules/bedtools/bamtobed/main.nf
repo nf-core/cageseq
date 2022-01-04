@@ -23,7 +23,7 @@ process BEDTOOLS_BAMTOBED {
         $args \\
         -i $bam \\
         | bedtools sort > ${prefix}.bed
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bedtools: \$(bedtools --version | sed -e "s/bedtools v//g")

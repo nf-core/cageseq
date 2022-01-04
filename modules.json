@@ -25,7 +25,7 @@
                 "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
             },
             "cutadapt": {
-                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
+                "git_sha": "e3285528aca2733ff2d544cb5e5fcc34599226f3"
             },
             "fastqc": {
                 "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
@@ -38,9 +38,6 @@
             },
             "multiqc": {
                 "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
-            },
-            "paraclu": {
-                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
             },
             "rseqc/readdistribution": {
                 "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
