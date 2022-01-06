@@ -20,7 +20,7 @@ run_modules:
     - bowtie1
     - samtools
     - rseqc
-    
+
 module_order:
     - fastqc:
         name: 'FastQC (raw)'

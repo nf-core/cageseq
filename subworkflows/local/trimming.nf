@@ -14,14 +14,14 @@ workflow TRIMMING_PREPROCESSING {
     trim_adapters   // boolean: true/false
     trim_5g         // boolean: true/false
     trim_artifacts  // boolean: true/false
-    skip_trimming   // boolean: true/false 
+    skip_trimming   // boolean: true/false
 
     main:
-    
+
     cutadapt_log = Channel.empty()
     ch_versions  = Channel.empty()
-    
-    
+
+
     trim_reads = reads
     if (!skip_trimming) {
     //     Trim adapters, eco-site and linker sequences
@@ -45,7 +45,7 @@ workflow TRIMMING_PREPROCESSING {
             // Channels for artifacts 5'-end and 3'-end
             ch_5end_artifacts = Channel.fromPath(params.artifacts_5end)
             ch_3end_artifacts = Channel.fromPath(params.artifacts_3end)
-            
+
             CUTADAPT_TRIMARTIFACTS( trim_reads )
             trim_reads = CUTADAPT_TRIMARTIFACTS.out.reads
             ch_versions = ch_versions.mix(CUTADAPT_TRIMARTIFACTS.out.versions)
@@ -57,5 +57,5 @@ workflow TRIMMING_PREPROCESSING {
     reads = trim_reads   // channel: [ val(meta), [ reads ] ]
     cutadapt_log
     versions = ch_versions     // channel: [ versions.yml ]
-    
+
 }

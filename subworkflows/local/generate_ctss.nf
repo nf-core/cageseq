@@ -24,22 +24,22 @@ workflow GENERATE_CTSS {
 
     CTSS_CREATE( BEDTOOLS_BAMTOBED.out.bed ).ctss.set{ch_ctss}
     ch_versions = ch_versions.mix(CTSS_CREATE.out.versions.first())
-    
+
     // Create BigWig files
     ch_bigwig = Channel.empty()
     if (params.bigwig){
         BEDTOBEDGRAPH_BYSTRAND(ch_ctss)
         ch_versions = ch_versions.mix(BEDTOBEDGRAPH_BYSTRAND.out.versions)
-        
+
         BGTOBW_POS(BEDTOBEDGRAPH_BYSTRAND.out.pos_bedgraph, genome_sizes)
         ch_bigwig = BGTOBW_POS.out.bigwig
         BGTOBW_NEG(BEDTOBEDGRAPH_BYSTRAND.out.neg_bedgraph, genome_sizes)
         ch_bigwig = ch_bigwig.mix(BGTOBW_NEG.out.bigwig)
         ch_versions = ch_versions.mix(BGTOBW_NEG.out.versions)
     }
-    
+
     emit:
-    ctss     = ch_ctss     // channel: [ val(meta), [ ctss ] ] 
+    ctss     = ch_ctss     // channel: [ val(meta), [ ctss ] ]
     bigwig   = ch_bigwig   // channel: [ val(meta), [ bigwig ] ]
     versions = ch_versions // channel: [ versions.yml ]
 }

@@ -18,7 +18,7 @@ include { BOWTIE_BUILD                } from '../../modules/nf-core/modules/bowt
 include { GTF2BED                     } from '../../modules/local/gtf2bed'
 
 workflow PREPARE_GENOME {
-    
+
     main:
 
     ch_versions = Channel.empty()
@@ -109,6 +109,6 @@ workflow PREPARE_GENOME {
     chrom_sizes      = ch_chrom_sizes      //    path: genome.sizes
     star_index       = ch_star_index       //    path: star/index/
     bowtie_index     = ch_bowtie_index     //    path: bowtie/index/
-    
+
     versions         = ch_versions.ifEmpty(null) // channel: [ versions.yml ]
 }
