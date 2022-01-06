@@ -137,7 +137,7 @@ workflow CAGESEQ {
     //
     // MODULE: Run FastQC
     //
-    if (!(params.skip_fastqc || params.skip_qc)) {
+    if (!(params.skip_initial_fastqc || params.skip_qc)) {
         FASTQC (
             INPUT_CHECK.out.reads
         )
@@ -176,8 +176,8 @@ workflow CAGESEQ {
         ch_sortmerna_multiqc = SORTMERNA.out.log
         ch_versions = ch_versions.mix(SORTMERNA.out.versions.first())
     }
-    
-    
+
+
     //
     // MODULE: Run FastQC after filtering and trimming
     //
@@ -194,7 +194,7 @@ workflow CAGESEQ {
     PREPARE_GENOME ()
     ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 
-     
+
     //
     // SUBWORKFLOW: Alignment with STAR or bowtie
     //
@@ -231,7 +231,7 @@ workflow CAGESEQ {
     // SUBWORKFLOW: Sort, index BAM file and run samtools stats, flagstat and idxstats
     //
     BAM_SORT_SAMTOOLS ( ch_genome_bam )
-    ch_samtools_stats    = BAM_SORT_SAMTOOLS.out.stats   
+    ch_samtools_stats    = BAM_SORT_SAMTOOLS.out.stats
     ch_samtools_flagstat = BAM_SORT_SAMTOOLS.out.flagstat
     ch_samtools_idxstats = BAM_SORT_SAMTOOLS.out.idxstats
     ch_versions = ch_versions.mix(BAM_SORT_SAMTOOLS.out.versions)
@@ -285,7 +285,7 @@ workflow CAGESEQ {
     ch_multiqc_files = ch_multiqc_files.mix(ch_samtools_flagstat.collect{it[1]}.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(ch_samtools_idxstats.collect{it[1]}.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CLUSTER_TAGS.out.tag_cluster_qc.collect{it[1]}.ifEmpty([]))
-    
+
     MULTIQC (
         ch_multiqc_files.collect()
     )

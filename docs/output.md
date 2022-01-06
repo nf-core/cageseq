@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document describes the output produced by the pipeline. Most of the plots are taken from the MultiQC report, which summarises results at the end of the pipeline.
+This document describes the output produced by the pipeline. Most of the plots are taken from the MultiQC report, which summarises results at the end of the pipeline run.
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
@@ -10,11 +10,18 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-* [FastQC](#fastqc) - Raw read QC
+* [FastQC](#fastqc) - Raw input read QC
+* [Trimming](#trimming) - Adapter + EcoP15 + 5'G + artifact fragments removal
+* [Ribomosal RNA removal](#ribomosal-rna-removal) - (optional) rRNA filtering
+* [trimmed reads FASTQC](#trimed-reads-fastqc) - Read QC after trimming and filtering
+* [Alignment](#alignment) - Read alignment to a reference genome
+* [CAGE tag identifcation](#cage-tag-grouping) - CAGE tag/CAGE transcription start site (CTSS) identification
+* [CAGE tag clustering](#cage-tag-clustering) - CAGE tag clustering
+* [QC of tag clusters](#cage-tag-clustering-qc) - read distribution of CAGE tags along the gene models
 * [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 * [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
-### FastQC
+## 1. FastQC
 
 <details markdown="1">
 <summary>Output files</summary>
@@ -40,27 +47,22 @@ sequences, primers, poly-A tails and other types of unwanted sequence from your
 high-throughput sequencing reads.
 
 By default this pipeline trims the cut enzyme binding site at the 5'-end and
-linkers at the 3'-end (can be disabled by setting `--trim_ecop` or `--trim_linkers to false`).
-Furthermore, to combat the leading-G-bias of CAGE-seq, G's at the 5'-end are removed. Additional artifacts generated in the sequencing process, can be removed via the `--trim_artifacts` parameter.
+linkers at the 3'-end (can be disabled by setting `--trim_ecop` or `--trim_linkers` to `false`).
+Furthermore, to combat the leading-G-bias of CAGE-seq, G's at the 5'-end are removed (disabled by setting `--trim_5g` to `false`). Additional artifacts generated in the sequencing process can be removed via the `--trim_artifacts` parameter (artifact sequence are provided via `--artifacts_5end [path]` and `--artifacts_3end [path]`).
 
-All the following trimming process are skipped if `--skip_trimming` is supplied and the fastq files below are only available if '--save_trimmed' is supplied.
+All the following trimming process are skipped if `--skip_trimming` is supplied and the fastq files below are only available if `--save_trimmed` is supplied.
 
-**Output directory: `results/trimmed`**
 
-* `adapter_trimmed/sample.adapter_trimmed.fastq.gz`
-  * FastQ file after removal of linkers and EcoP15 site.
-* `adapter_trimmed/logs/`
-  * Trimming report (describes which parameters were used)
-* if `--trim_5g`:
-  * `g_trimmed/sample.g_trimmed.fastq.gz`
-    * 5' G-corrected FastQ file
-  * `g_trimmed/logs/`
-    * Trimming report (describes which parameters were used)
-* if `--trim_artifacts`:
-  * `artifacts_trimmed/sample.artifact_trimmed.fastq.gz`
-    * FastQ file after artifact removal
-  * `artifacts_trimmed/logs/`
-    * Trimming report (describes which parameters were used)
+<details markdown="1">
+<summary>Output files</summary>
+
+* `cutadapt/`
+    * `cutadapt/logs/`: Trimming reports
+    * `cutadapt/reads/`:
+        * `*5g.trim.fastq.gz`: 5' G-bias corrected FastQ file.
+        * `*adapter.trim.fastq.gz`: FastQ file after removal of linkers and EcoP15 site.
+        * `*artifacts.trim.fastq.gz`: FastQ file without artifact sequences.
+</details>
 
 ## 3. Ribomosal RNA removal
 
@@ -70,12 +72,27 @@ The MultiQC report shows the overall percentage of rRNA in the sample in the gen
 
 ![SortMeRNA](images/sortmerna-detailed_plot.png)
 
-**Output directory : `results/SortMeRNA/`**
 
-* `logs/`
-  * ribosomal RNA mapping reports (describes which parameters were used)
+<details markdown="1">
+<summary>Output files</summary>
 
-## 4. Alignment
+* `sortmerna/`
+    * `sortmerna/logs/`: ribosomal RNA mapping reports
+
+</details>
+
+## 4. Trimmed reads FASTQC
+
+<details markdown="1">
+<summary>Output files</summary>
+
+* `fastqc_post/`
+    * `*post_fastqc.html`: FastQC report containing quality metrics.
+    * `*post_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
+
+</details>
+
+## 5. Alignment
 
 The reads are aligned either with STAR or with bowtie, set via `--aligner`.
 
@@ -88,16 +105,18 @@ good samples should have most reads as _Uniquely mapped_ and few _Unmapped_ read
 
 ![STAR](images/star_alignment_plot.png)
 
-**Output directory: `results/STAR`**
+<details markdown="1">
+<summary>Output files</summary>
 
-* `Sample_Aligned.sortedByCoord.out.bam`
-  * The aligned BAM file
-* `Sample_Log.final.out`
-  * The STAR alignment report, contains mapping results summary
-* `Sample_Log.out` and `Sample_Log.progress.out`
-  * STAR log files, containing a lot of detailed information about the run. Typically only useful for debugging purposes.
-* `Sample_SJ.out.tab`
-  * Filtered splice junctions detected in the mapping
+* `star/`
+    * `star/star_log`
+        * `*.SJ.out.tab`: File containing filtered splice junctions detected after mapping the reads.
+        * `*.Log.final.out`: STAR alignment report containing the mapping results summary.
+        * `*.Log.out` and `*.Log.progress.out`: STAR log files containing detailed information about the run. Typically only useful for debugging purposes.
+    * `star/unmapped/`
+        * `*.fastq.gz`: If `--save_unaligned` is specified, FastQ files containing unmapped reads will be placed in this directory.
+
+</details>
 
 ### Bowtie 1
 
@@ -110,69 +129,74 @@ good samples should have most reads as _aligned_ and few _Not aligned_ reads.
 
 ![Bowtie 1](images/bowtie1_alignment_plot.png)
 
-**Output directory: `results/bowtie`**
+<details markdown="1">
+<summary>Output files</summary>
 
-* `Sample.bam`
-  * The aligned BAM file
-* `logs/Sample.out`
-  * The bowtie alignment report, contains mapping results summary
+* `bowtie/`
+    * `bowtie/bowtie_log`
+        * `*.out`: The bowtie alignment report, contains mapping results summary
+    * `bowtie/unmapped/`
+        * `*.fastq.gz`: If `--save_unaligned` is specified, FastQ files containing unmapped reads will be placed in this directory.
 
-## 5. CAGE tag grouping
+</details>
 
-The custom script `bin/make_ctss.sh` generates a bed file (and a bigWig file with `--bigwig`) for each sample with the summed up 1bp unclustered cage tags.
+### SAMtools
 
-**Output directory: `results/ctss`**
+The original BAM files generated by the selected alignment algorithm are further processed with [SAMtools](http://samtools.sourceforge.net/) to sort them by coordinate, for indexing, as well as to generate read mapping statistics. `$ALIGNER` stands either for `star` or `bowtie` depending on the used aligner.
 
-* `Sample.ctss.bed`
-  * A BED6 file with the mapped cage tags
-* if `--bigwig`:
-  * `Sample.ctss.bw`
-    * A bigWig file with the mapped cage tags
+![MultiQC - SAMtools alignment scores plot](images/mqc_samtools_mapped.png)
 
-## 6. CTSS clustering
+![MultiQC - SAMtools mapped reads per contig plot](images/mqc_samtools_idxstats.png)
+
+<details markdown="1">
+<summary>Output files</summary>
+
+* `<ALIGNER>/samtools_stats/`
+    * SAMtools `<SAMPLE>.sorted.bam.flagstat`, `<SAMPLE>.sorted.bam.idxstats` and `<SAMPLE>.sorted.bam.stats` files generated from the alignment files.
+
+</details>
+
+## 6. CAGE tag identification
+
+The aligned reads are converted and grouped to BED files (and bigWig files with `--bigwig`) with 1bp long CAGE tags/transcription start sites (CTSS).
+
+<details markdown="1">
+<summary>Output files</summary>
+
+* `$ALIGNER/ctss`
+    * `$ALIGNER/ctss/bed/*.ctss.bed`: A BED6 file with the mapped cage tags
+    * `$ALIGNER/ctss/bigwig/*.ctss.bigWig`: A bigWig file with the mapped cage tags
+
+</details>
+
+## 7. CAGE tag clustering
 
 ### paraclu
 
 [paraclu](http://cbrc3.cbrc.jp/~martin/paraclu/) finds clusters in data
-attached to sequences. It is applied on the pool of all ctss bed files to cluster and returns a bed file with the clustered cage-defined transcription start sites (CTSS).
+attached to sequences. It is applied on the pool of all ctss bed files to cluster and returns a BED file with the clustered tags. These clusters are then intersected with the BED files and a BED file with counts only in the tag clusters is created for each file. Additionally these counts are summarized in a tab-separated count table, where each row stands for a tag cluster and each column for a sample.
 
-**Output directory: `results/ctss/clusters`**
+<details markdown="1">
+<summary>Output files</summary>
 
-* `ctss_all_clustered_simplified.bed`
-  A BED6 file with the found clusters and their pooled expression as the score.
+* `$ALIGNER/tag_clusters`
+    * `$ALIGNER/tag_clusters/ctss.clustered.simplified.bed`: A BED6 file with the found tag clusters and their pooled expression as the score.
+    * `$ALIGNER/tag_clusters/bed/*.ctss.bed_counts.bed`: A BED6 file with the expression of the tag clusters in this sample.
+    * `$ALIGNER/tag_clusters/count_table.tsv`: Each column of the count table stands for one sample and each row for one tag cluster. The first column contains the tag cluster coordinates. The first row of this table is the header with "coordinates" and the sample names.
 
-* `ctss_all_clustered_simplified.bed`
-  * A BED6 file with the clustered CTSSs and their pooled counts
+</details>
 
-## 7. Count table generation
-
-The cage tags are intersected with the clusters identified by
- paraclu and summarized in a count table.
-
-**Output directory: `results/ctss/`**
-
-* `count_table.tsv`:
-  * Each column of the count table stands for one sample and each row for one tag cluster. The first row of this table is the header with sample names and the first column contains the tag cluster coordinates.
-
-## 8. QC of results
+## 8. QC of tag clusters
 
 ### RSeQC
 
 RSeQC is a package of scripts designed to evaluate the quality of RNA seq data. You can find out more about the package at the [RSeQC website](http://rseqc.sourceforge.net/).
 
-This pipeline only runs the read destribution RSeQC scripts on the CTSS clusters. The results are summarised within the MultiQC report.
-
-[read_distribution.py](http://rseqc.sourceforge.net/#read-distribution-py)
-calculates how mapped reads are distributed over genomic features.
+This pipeline only runs the [read distribution RSeQC scripts]((http://rseqc.sourceforge.net/#read-distribution-py)) on the tag clusters. These calculate how mapped reads are distributed over genomic features. The results are summarized within the MultiQC report.
 
 ![Read distribution](images/rseqc_read_distribution_plot.png)
 
-**Output directory : `results/rseqc/read_distribution/`**
-
-* Sample_read_distribution.txt:
-  * text file with the raw data describing the distribution of the mapped reads.
-
-### MultiQC
+## 9. MultiQC
 
 <details markdown="1">
 <summary>Output files</summary>
@@ -188,7 +212,7 @@ calculates how mapped reads are distributed over genomic features.
 
 Results generated by MultiQC collate pipeline QC from supported tools e.g. FastQC. The pipeline has special steps which also allow the software versions to be reported in the MultiQC output for future traceability. For more information about how to use MultiQC reports, see <http://multiqc.info>.
 
-### Pipeline information
+## 10. Pipeline information
 
 <details markdown="1">
 <summary>Output files</summary>

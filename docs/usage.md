@@ -1,67 +1,29 @@
 # nf-core/cageseq: Usage
 
-## Samplesheet
+## Samplesheet input
 
-You will need to create a samplesheet file with the information about your samples before running this pipeline. The samplesheet has to be a comma-separated with with 4 columns and a header row as shown in the examples below. Use the `input` parameter to specifiy the location of the samplesheet
+You will need to create a samplesheet file with the information about your samples before running this pipeline. The samplesheet has to be a comma-separated with with 2 columns and a header row as shown in the examples below. Use the `input` parameter to specifiy the location of the samplesheet
 
 ```bash
---input 'samplesheet.csv'
+--input `[path to samplesheet file]'
 ```
 
 ### Format
 
-The samplesheet must contain the four columns `group`, `replicate`, `fastq_1` and `fastq_2`. The `group` column specifies the experimental group a sample belongs to. With the `replicate` column, you can indicate replicates. For instance, when having three samples from the same experimental group, they must have the numbers 1, 2 and 3 in their replicate field. The `fastq_1` column defines the location of your FastQ files. Similar, the `fastq_2` file would specifiy the location of the second FastQ file in the case of paired end data. Note however, that this is currently not supported. Below is an example samplesheet:
+The samplesheet must contain the two columns `sample` and `fastq_1`. Below is an example samplesheet:
 
 ```bash
-group,replicate,fastq_1,fastq_2
-cage1,1,cagesampleAB.fastq.gz,
-cage1,2,cagesampleXY.fastq.gz,
-cage2,1,cagesample3.fastq.gz,
+sample,fastq_1
+cage1,cagesample1.fastq.gz,
+cage2,cagesample2.fastq.gz,
 ```
 
-## Samplesheet input
+| Column| Description |
+|----------------|---------------------------------------|
+| `sample`       | Custom sample name.  Spaces in sample names are automatically converted to underscores (`_`). |
+| `fastq_1`      | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz". |
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
-
-```console
---input '[path to samplesheet file]'
-```
-
-### Multiple runs of the same sample
-
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
-
-```console
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
-```
-
-### Full samplesheet
-
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
-
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
-
-```console
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
-```
-
-| Column         | Description                                                                                                                                                                            |
-|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `sample`       | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1`      | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2`      | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-
-An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+An [example samplesheet](../assets/samplesheet.csv) is provided with the pipeline.
 
 ## Running the pipeline
 

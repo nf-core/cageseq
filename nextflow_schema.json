@@ -135,10 +135,21 @@
                     "fa_icon": "fab fa-black-tie",
                     "description": "Path to bowtie index directory."
                 },
+                "seq_platform": {
+                    "type": "string",
+                    "description": "Specify the platform used for sequencing.",
+                    "help_text": "Used by STAR to generate header in BAM file.",
+                    "fa_icon": "fas fa-cash-register"
+                },
                 "save_reference": {
                     "type": "boolean",
-                    "fa_icon": "far fa-save",
+                    "fa_icon": "fas fa-save",
                     "description": "All generated reference files will be saved to the results folder if this flag is set."
+                },
+                "save_unaligned": {
+                    "type": "boolean",
+                    "description": "Save reads, which couldn't be aligned.",
+                    "fa_icon": "fas fa-save"
                 }
             }
         },
@@ -257,6 +268,11 @@
             "default": "",
             "fa_icon": "fas fa-tasks",
             "properties": {
+                "skip_qc": {
+                    "type": "boolean",
+                    "description": "Skip all QC processes.",
+                    "fa_icon": "fas fa-fast-forward"
+                },
                 "skip_initial_fastqc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-fast-forward",
@@ -286,6 +302,11 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-fast-forward",
                     "description": "Skip steps generating CTSS files including clustering, bed/bigwig and count table output generation."
+                },
+                "skip_ctss_clustering": {
+                    "type": "boolean",
+                    "description": "Skip generation of tag clusters from CTSS.",
+                    "fa_icon": "fas fa-fast-forward"
                 },
                 "skip_tag_cluster_qc": {
                     "type": "boolean",
@@ -490,13 +511,10 @@
             "$ref": "#/definitions/generic_options"
         },
         {
-            "$ref": "#/definitions/institutional_config_options"
-        },
-        {
             "$ref": "#/definitions/max_job_request_options"
         },
         {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/definitions/institutional_config_options"
         }
     ]
 }
