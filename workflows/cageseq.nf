@@ -137,16 +137,19 @@ workflow CAGESEQ {
     //
     // MODULE: Run FastQC
     //
+    ch_fastqc_multiqc = Channel.empty()
     if (!(params.skip_initial_fastqc || params.skip_qc)) {
         FASTQC (
             INPUT_CHECK.out.reads
         )
         ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+        ch_fastqc_multiqc = FASTQC.out.zip
     }
 
     //
     // SUBWORKFLOW: Trim adapters
     //
+    ch_trimming_multiqc = Channel.empty()
     TRIMMING_PREPROCESSING (
         ch_fastq,
         params.artifacts_5end,
@@ -157,6 +160,7 @@ workflow CAGESEQ {
         params.skip_trimming
     )
     ch_versions = ch_versions.mix(TRIMMING_PREPROCESSING.out.versions)
+    ch_trimming_multiqc = TRIMMING_PREPROCESSING.out.cutadapt_log
     ch_filtered_reads = TRIMMING_PREPROCESSING.out.reads
 
     //
@@ -181,11 +185,13 @@ workflow CAGESEQ {
     //
     // MODULE: Run FastQC after filtering and trimming
     //
+    ch_fastqc_post_multiqc = Channel.empty()
     if (!(params.skip_qc || params.skip_trimming_fastqc || params.skip_trimming)) {
         FASTQC_POST (
             ch_filtered_reads
         )
         ch_versions = ch_versions.mix(FASTQC_POST.out.versions.first())
+        ch_fastqc_post_multiqc = FASTQC_POST.out.zip
     }
 
     //
@@ -239,6 +245,7 @@ workflow CAGESEQ {
     //
     // SUBWORKFLOW: Generate CTSS, make QC, BigWig files and count table
     //
+    ch_cluster_qc = Channel.empty()
     if (!params.skip_ctss_generation) {
         GENERATE_CTSS( ch_genome_bam, PREPARE_GENOME.out.chrom_sizes )
         ch_versions = ch_versions.mix(GENERATE_CTSS.out.versions)
@@ -254,6 +261,7 @@ workflow CAGESEQ {
                 params.skip_qc || params.skip_tag_cluster_qc
             )
             ch_versions = ch_versions.mix(CLUSTER_TAGS.out.versions)
+            ch_cluster_qc = CLUSTER_TAGS.out.tag_cluster_qc
         }
     }
 
@@ -275,16 +283,16 @@ workflow CAGESEQ {
     ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(TRIMMING_PREPROCESSING.out.cutadapt_log.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_multiqc.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_trimming_multiqc.collect{it[1]}.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(ch_sortmerna_multiqc.collect{it[1]}.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC_POST.out.zip.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_fastqc_post_multiqc.collect{it[1]}.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(ch_star_multiqc.collect{it[1]}.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(ch_bowtie_multiqc.collect{it[1]}.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(ch_samtools_stats.collect{it[1]}.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(ch_samtools_flagstat.collect{it[1]}.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(ch_samtools_idxstats.collect{it[1]}.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CLUSTER_TAGS.out.tag_cluster_qc.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_cluster_qc.collect{it[1]}.ifEmpty([]))
 
     MULTIQC (
         ch_multiqc_files.collect()
