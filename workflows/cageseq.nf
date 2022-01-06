@@ -208,8 +208,8 @@ workflow CAGESEQ {
             PREPARE_GENOME.out.star_index,
             PREPARE_GENOME.out.gtf,
             params.star_ignore_sjdbgtf,
-            params.seq_platform,
-            params.seq_center
+            params.seq_platform ? params.seq_platform : '',
+            params.seq_center ? params.seq_center : ''
         )
         ch_genome_bam        = STAR_ALIGN.out.bam
         ch_star_multiqc      = STAR_ALIGN.out.log_final
