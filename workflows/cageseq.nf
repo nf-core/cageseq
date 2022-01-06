@@ -181,7 +181,7 @@ workflow CAGESEQ {
     //
     // MODULE: Run FastQC after filtering and trimming
     //
-    if (!(params.skip_fastqc || params.skip_qc || params.skip_trimming_fastqc || params.skip_trimming)) {
+    if (!(params.skip_qc || params.skip_trimming_fastqc || params.skip_trimming)) {
         FASTQC_POST (
             ch_filtered_reads
         )
