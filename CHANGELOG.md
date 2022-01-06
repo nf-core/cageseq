@@ -10,16 +10,27 @@ This release marks the switch from DSL1 to DSL2 language. Major structural chang
 ### Major changes
 
 * Changed to general DSL2 structure with additional folders:
-  * `lib` : groovy helper functions
-  * `modules` : local and nf-core modules
-  * `subworkflows` : small subworkflows
-  * `workflows` : the main pipeline workflows
+    * `lib` : groovy helper functions
+    * `modules` : local and nf-core modules
+    * `subworkflows` : small subworkflows
+    * `workflows` : the main pipeline workflows
 * parameter validation with groovy functions and the `nextflow_schema.json`
 * deletion of `Dockerfile` and `environment.yml`
+* changed `--aligner` value from `bowtie1` to `bowtie`
 
 ### Minor changes
 
-* Update template to nf-core/tools `2.2`
+* cleaned up MultiQC config
+* added parameters `--seq_platform`, `save_unaligned`, `--skip_qc`, `--skip_ctss_clustering` and `--skip_multiqc`.
+
+## v1.0.2 - [2021-01-13]
+
+### `Added`
+
+* Update template to nf-core/tools `1.12.1`
+
+### `Fixed`
+
 * reads the `--input` parameters correctly
 * cleaned up multiqc config
 

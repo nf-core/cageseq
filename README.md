@@ -76,8 +76,6 @@ nf-core/cageseq was originally written by Kevin Menden, Tristan Kast, Matthias H
 
 <!-- We thank the following people for their extensive assistance in the development of this pipeline: -->
 
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
-
 ## Contributions and Support
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
@@ -88,7 +86,6 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 
 If you use  nf-core/cageseq for your analysis, please cite it using the following doi: [10.5281/zenodo.4095105](https://doi.org/10.5281/zenodo.4095105)
 
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
 You can cite the `nf-core` publication as follows:

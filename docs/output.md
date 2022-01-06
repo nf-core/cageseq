@@ -52,7 +52,6 @@ Furthermore, to combat the leading-G-bias of CAGE-seq, G's at the 5'-end are rem
 
 All the following trimming process are skipped if `--skip_trimming` is supplied and the fastq files below are only available if `--save_trimmed` is supplied.
 
-
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -62,6 +61,7 @@ All the following trimming process are skipped if `--skip_trimming` is supplied 
         * `*5g.trim.fastq.gz`: 5' G-bias corrected FastQ file.
         * `*adapter.trim.fastq.gz`: FastQ file after removal of linkers and EcoP15 site.
         * `*artifacts.trim.fastq.gz`: FastQ file without artifact sequences.
+
 </details>
 
 ## 3. Ribomosal RNA removal
@@ -71,7 +71,6 @@ All the following trimming process are skipped if `--skip_trimming` is supplied 
 The MultiQC report shows the overall percentage of rRNA in the sample in the general statistics section. The SortMeRNA section shows a bar plot of the filtered rRNA types.
 
 ![SortMeRNA](images/sortmerna-detailed_plot.png)
-
 
 <details markdown="1">
 <summary>Output files</summary>
