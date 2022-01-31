@@ -1,0 +1,8 @@
+tasks:
+  - name: Install Nextflow
+    init: |
+      curl -s https://get.nextflow.io | bash
+      sudo mv nextflow /usr/local/bin
+  - name: Install nf-core
+    init: |
+      pip install nf-core

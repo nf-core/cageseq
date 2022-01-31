@@ -3,6 +3,26 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.0 Nickel Chicken - [2022-01-10]
+
+This release marks the switch from DSL1 to DSL2 language. Major structural changes have therefore been made to the pipeline.
+
+### Major changes
+
+* Changed to general DSL2 structure with additional folders:
+    * `lib` : groovy helper functions
+    * `modules` : local and nf-core modules
+    * `subworkflows` : small subworkflows
+    * `workflows` : the main pipeline workflows
+* parameter validation with groovy functions and the `nextflow_schema.json`
+* deletion of `Dockerfile` and `environment.yml`
+* changed `--aligner` value from `bowtie1` to `bowtie`
+
+### Minor changes
+
+* cleaned up MultiQC config
+* added parameters `--seq_platform`, `save_unaligned`, `--skip_qc`, `--skip_ctss_clustering` and `--skip_multiqc`.
+
 ## v1.0.2 - [2021-01-13]
 
 ### `Added`
@@ -11,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
-* reads the `--input` parameters correclty
+* reads the `--input` parameters correctly
 * cleaned up multiqc config
 
 ## v1.0.1 - [2020-11-23]

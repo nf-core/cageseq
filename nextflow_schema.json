@@ -16,14 +16,17 @@
             "properties": {
                 "input": {
                     "type": "string",
-                    "fa_icon": "fas fa-dna",
-                    "description": "Input FastQ files.",
-                    "help_text": "Use this to specify the location of your input FastQ files. For example:\n\n```bash\n--input 'path/to/data/sample_*_{1,2}.fastq'\n```\n\nPlease note the following requirements:\n\n1. The path must be enclosed in quotes\n2. The path must have at least one `*` wildcard character\n3. When using the pipeline with paired end data, the path must use `{1,2}` notation to specify read pairs.\n\nIf left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`",
-                    "default": "data/*R1.fastq.gz"
+                    "format": "file-path",
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$",
+                    "schema": "assets/schema_input.json",
+                    "description": "Path to comma-separated file containing information about the samples in the experiment.",
+                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/cageseq/usage#samplesheet-input).",
+                    "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
                     "type": "string",
-                    "description": "The output directory where the results will be saved.",
+                    "description": "Path to the output directory where the results will be saved.",
                     "default": "./results",
                     "fa_icon": "fas fa-folder-open"
                 },
@@ -55,14 +58,29 @@
                     "description": "Alignment tool to be used",
                     "enum": [
                         "star",
-                        "bowtie1"
+                        "bowtie"
                     ]
                 },
                 "min_aln_length": {
                     "type": "integer",
-                    "default": "15",
+                    "default": 15,
                     "fa_icon": "fas fa-ruler",
                     "description": "Minimum number of aligned basepairs of a read to be kept"
+                },
+                "star_ignore_sjdbgtf": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-ban",
+                    "description": "When using pre-built STAR indices do not re-extract and use splice junctions from the GTF file."
+                },
+                "seq_center": {
+                    "type": "string",
+                    "description": "Sequencing center information to be added to read group of BAM files.",
+                    "fa_icon": "fas fa-synagogue"
+                },
+                "min_mapped_reads": {
+                    "type": "integer",
+                    "default": 5,
+                    "description": "Percentage of minimum number of mapped reads for files to be considered for downstream analysis."
                 }
             }
         },
@@ -70,24 +88,28 @@
             "title": "Reference genome options",
             "type": "object",
             "fa_icon": "fas fa-dna",
-            "description": "Options for the reference genome indices used to align reads.",
+            "description": "Reference genome related files and options required for the workflow.",
             "properties": {
                 "genome": {
                     "type": "string",
                     "description": "Name of iGenomes reference.",
                     "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`.\n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
                 },
                 "fasta": {
                     "type": "string",
-                    "fa_icon": "fas fa-font",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is mandatory if `--genome` is not specified. If you don't have a bowtie1 or STAR index available, they will be generated for you. Combine with `--save_reference` to save indices for future runs."
+                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a bowtie or STAR index available this will be generated for you automatically. Combine with `--save_reference` to save indices index for future runs.",
+                    "fa_icon": "far fa-file-code"
                 },
                 "igenomes_base": {
                     "type": "string",
+                    "format": "directory-path",
                     "description": "Directory / URL base for iGenomes references.",
-                    "default": "s3://ngi-igenomes/igenomes/",
+                    "default": "s3://ngi-igenomes/igenomes",
                     "fa_icon": "fas fa-cloud-download-alt",
                     "hidden": true
                 },
@@ -113,10 +135,21 @@
                     "fa_icon": "fab fa-black-tie",
                     "description": "Path to bowtie index directory."
                 },
+                "seq_platform": {
+                    "type": "string",
+                    "description": "Specify the platform used for sequencing.",
+                    "help_text": "Used by STAR to generate header in BAM file.",
+                    "fa_icon": "fas fa-cash-register"
+                },
                 "save_reference": {
                     "type": "boolean",
-                    "fa_icon": "far fa-save",
+                    "fa_icon": "fas fa-save",
                     "description": "All generated reference files will be saved to the results folder if this flag is set."
+                },
+                "save_unaligned": {
+                    "type": "boolean",
+                    "description": "Save reads, which couldn't be aligned.",
+                    "fa_icon": "fas fa-save"
                 }
             }
         },
@@ -129,20 +162,24 @@
             "properties": {
                 "save_trimmed": {
                     "type": "boolean",
-                    "fa_icon": "far fa-save"
+                    "fa_icon": "far fa-save",
+                    "description": "Save trimmed reads"
                 },
                 "trim_ecop": {
                     "type": "boolean",
+                    "default": true,
                     "fa_icon": "fas fa-cut",
                     "description": "Set to cut the enzyme binding site at the 5' end"
                 },
                 "trim_linker": {
                     "type": "boolean",
+                    "default": true,
                     "fa_icon": "fas fa-cut",
                     "description": "Select to cut the linker at the 3' end"
                 },
                 "trim_5g": {
                     "type": "boolean",
+                    "default": true,
                     "fa_icon": "fas fa-cut",
                     "description": "Trim the first `G` at the 5' end, if available"
                 },
@@ -231,6 +268,11 @@
             "default": "",
             "fa_icon": "fas fa-tasks",
             "properties": {
+                "skip_qc": {
+                    "type": "boolean",
+                    "description": "Skip all QC processes.",
+                    "fa_icon": "fas fa-fast-forward"
+                },
                 "skip_initial_fastqc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-fast-forward",
@@ -261,10 +303,20 @@
                     "fa_icon": "fas fa-fast-forward",
                     "description": "Skip steps generating CTSS files including clustering, bed/bigwig and count table output generation."
                 },
-                "skip_ctss_qc": {
+                "skip_ctss_clustering": {
+                    "type": "boolean",
+                    "description": "Skip generation of tag clusters from CTSS.",
+                    "fa_icon": "fas fa-fast-forward"
+                },
+                "skip_tag_cluster_qc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-fast-forward",
                     "description": "Skip running RSeQC's read distribution QC step on the clustered CTSS."
+                },
+                "skip_multiqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-fast-forward",
+                    "description": "Skip MultiQC step"
                 }
             }
         },
@@ -278,67 +330,47 @@
                 "help": {
                     "type": "boolean",
                     "description": "Display help text.",
-                    "hidden": true,
-                    "fa_icon": "fas fa-question-circle"
-                },
-                "publish_dir_mode": {
-                    "type": "string",
-                    "default": "copy",
-                    "hidden": true,
-                    "description": "Method used to save pipeline results to output directory.",
-                    "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files. See [Nextflow docs](https://www.nextflow.io/docs/latest/process.html#publishdir) for details.",
-                    "fa_icon": "fas fa-copy",
-                    "enum": [
-                        "symlink",
-                        "rellink",
-                        "link",
-                        "copy",
-                        "copyNoFollow",
-                        "move"
-                    ]
-                },
-                "name": {
-                    "type": "string",
-                    "description": "Workflow name.",
-                    "fa_icon": "fas fa-fingerprint",
-                    "hidden": true,
-                    "help_text": "A custom name for the pipeline run. Unlike the core nextflow `-name` option with one hyphen this parameter can be reused multiple times, for example if using `-resume`. Passed through to steps such as MultiQC and used for things like report filenames and titles."
+                    "fa_icon": "fas fa-question-circle",
+                    "hidden": true
                 },
                 "email_on_fail": {
                     "type": "string",
                     "description": "Email address for completion summary, only when pipeline fails.",
                     "fa_icon": "fas fa-exclamation-triangle",
                     "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$",
-                    "hidden": true,
-                    "help_text": "This works exactly as with `--email`, except emails are only sent if the workflow is not successful."
+                    "help_text": "An email address to send a summary email to when the pipeline is completed - ONLY sent if the pipeline does not exit successfully.",
+                    "hidden": true
                 },
                 "plaintext_email": {
                     "type": "boolean",
                     "description": "Send plain-text email instead of HTML.",
                     "fa_icon": "fas fa-remove-format",
-                    "hidden": true,
-                    "help_text": "Set to receive plain-text e-mails instead of HTML formatted."
+                    "hidden": true
                 },
                 "max_multiqc_email_size": {
                     "type": "string",
                     "description": "File size limit when attaching MultiQC reports to summary emails.",
+                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
                     "default": "25.MB",
                     "fa_icon": "fas fa-file-upload",
-                    "hidden": true,
-                    "help_text": "If file generated by pipeline exceeds the threshold, it will not be attached."
+                    "hidden": true
                 },
                 "monochrome_logs": {
                     "type": "boolean",
                     "description": "Do not use coloured log outputs.",
                     "fa_icon": "fas fa-palette",
-                    "hidden": true,
-                    "help_text": "Set to disable colourful command line output and live life in monochrome."
+                    "hidden": true
                 },
                 "multiqc_config": {
                     "type": "string",
                     "description": "Custom config file to supply to MultiQC.",
                     "fa_icon": "fas fa-cog",
                     "hidden": true
+                },
+                "multiqc_title": {
+                    "type": "string",
+                    "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
+                    "fa_icon": "fas fa-file-signature"
                 },
                 "tracedir": {
                     "type": "string",
@@ -347,12 +379,25 @@
                     "fa_icon": "fas fa-cogs",
                     "hidden": true
                 },
-                "clusterOptions": {
-                    "type": "string",
+                "validate_params": {
+                    "type": "boolean",
+                    "description": "Boolean whether to validate parameters against the schema at runtime",
+                    "default": true,
+                    "fa_icon": "fas fa-check-square",
+                    "hidden": true
+                },
+                "show_hidden_params": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-eye-slash",
+                    "description": "Show all params when using `--help`",
                     "hidden": true,
-                    "fa_icon": "fas fa-network-wired",
-                    "description": "Arguments passed to Nextflow clusterOptions.",
-                    "default": "false"
+                    "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
+                },
+                "enable_conda": {
+                    "type": "boolean",
+                    "description": "Run this workflow with Conda. You can also use '-profile conda' instead of providing this parameter.",
+                    "hidden": true,
+                    "fa_icon": "fas fa-bacon"
                 }
             }
         },
@@ -365,7 +410,7 @@
             "properties": {
                 "max_cpus": {
                     "type": "integer",
-                    "description": "Maximum number of CPUs that can be requested    for any single job.",
+                    "description": "Maximum number of CPUs that can be requested for any single job.",
                     "default": 16,
                     "fa_icon": "fas fa-microchip",
                     "hidden": true,
@@ -376,6 +421,7 @@
                     "description": "Maximum amount of memory that can be requested for any single job.",
                     "default": "128.GB",
                     "fa_icon": "fas fa-memory",
+                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
                     "hidden": true,
                     "help_text": "Use to set an upper-limit for the memory requirement for each process. Should be a string in the format integer-unit e.g. `--max_memory '8.GB'`"
                 },
@@ -384,6 +430,7 @@
                     "description": "Maximum amount of time that can be requested for any single job.",
                     "default": "240.h",
                     "fa_icon": "far fa-clock",
+                    "pattern": "^(\\d+\\.?\\s*(s|m|h|day)\\s*)+$",
                     "hidden": true,
                     "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
                 }
@@ -401,20 +448,19 @@
                     "description": "Git commit id for Institutional configs.",
                     "default": "master",
                     "hidden": true,
-                    "fa_icon": "fas fa-users-cog",
-                    "help_text": "Provide git commit id for custom Institutional configs hosted at `nf-core/configs`. This was implemented for reproducibility purposes. Default: `master`.\n\n```bash\n## Download and use config file with following git commit id\n--custom_config_version d52db660777c4bf36546ddb188ec530c3ada1b96\n```"
+                    "fa_icon": "fas fa-users-cog"
                 },
                 "custom_config_base": {
                     "type": "string",
                     "description": "Base directory for Institutional configs.",
                     "default": "https://raw.githubusercontent.com/nf-core/configs/master",
                     "hidden": true,
-                    "help_text": "If you're running offline, nextflow will not be able to fetch the institutional config files from the internet. If you don't need them, then this is not a problem. If you do need them, you should download the files from the repo and tell nextflow where to find them with the `custom_config_base` option. For example:\n\n```bash\n## Download and unzip the config files\ncd /path/to/my/configs\nwget https://github.com/nf-core/configs/archive/master.zip\nunzip master.zip\n\n## Run the pipeline\ncd /path/to/my/data\nnextflow run /path/to/pipeline/ --custom_config_base /path/to/my/configs/configs-master/\n```\n\n> Note that the nf-core/tools helper package has a `download` command to download all required pipeline files + singularity containers + institutional configs in one go for you, to make this process easier.",
+                    "help_text": "If you're running offline, Nextflow will not be able to fetch the institutional config files from the internet. If you don't need them, then this is not a problem. If you do need them, you should download the files from the repo and tell Nextflow where to find them with this parameter.",
                     "fa_icon": "fas fa-users-cog"
                 },
-                "hostnames": {
+                "config_profile_name": {
                     "type": "string",
-                    "description": "Institutional configs hostname.",
+                    "description": "Institutional config name.",
                     "hidden": true,
                     "fa_icon": "fas fa-users-cog"
                 },

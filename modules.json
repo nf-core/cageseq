@@ -1,0 +1,80 @@
+{
+    "name": "nf-core/cageseq",
+    "homePage": "https://github.com/nf-core/cageseq",
+    "repos": {
+        "nf-core/modules": {
+            "bedtools/bamtobed": {
+                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
+            },
+            "bedtools/genomecov": {
+                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
+            },
+            "bedtools/merge": {
+                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
+            },
+            "bowtie/align": {
+                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
+            },
+            "bowtie/build": {
+                "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
+            },
+            "custom/dumpsoftwareversions": {
+                "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
+            },
+            "custom/getchromsizes": {
+                "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
+            },
+            "cutadapt": {
+                "git_sha": "e3285528aca2733ff2d544cb5e5fcc34599226f3"
+            },
+            "fastqc": {
+                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
+            },
+            "gffread": {
+                "git_sha": "d473a247d2e0c619b0df877ea19d9a5a98c8e3c8"
+            },
+            "gunzip": {
+                "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
+            },
+            "multiqc": {
+                "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
+            },
+            "rseqc/readdistribution": {
+                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
+            },
+            "samtools/flagstat": {
+                "git_sha": "e751e5040af57e1b4e06ed4e0f3efe6de25c1683"
+            },
+            "samtools/idxstats": {
+                "git_sha": "e751e5040af57e1b4e06ed4e0f3efe6de25c1683"
+            },
+            "samtools/index": {
+                "git_sha": "e751e5040af57e1b4e06ed4e0f3efe6de25c1683"
+            },
+            "samtools/sort": {
+                "git_sha": "e751e5040af57e1b4e06ed4e0f3efe6de25c1683"
+            },
+            "samtools/stats": {
+                "git_sha": "e751e5040af57e1b4e06ed4e0f3efe6de25c1683"
+            },
+            "samtools/view": {
+                "git_sha": "e751e5040af57e1b4e06ed4e0f3efe6de25c1683"
+            },
+            "sortmerna": {
+                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
+            },
+            "star/align": {
+                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
+            },
+            "star/genomegenerate": {
+                "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
+            },
+            "ucsc/bedgraphtobigwig": {
+                "git_sha": "9d0cad583b9a71a6509b754fdf589cbfbed08961"
+            },
+            "untar": {
+                "git_sha": "20d8250d9f39ddb05dfb437603aaf99b5c0b2b41"
+            }
+        }
+    }
+}
