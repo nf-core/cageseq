@@ -23,7 +23,7 @@ class Workflow {
         return [ percent_aligned, pass ]
     }
 
-    //    Function that parses and returns the alignment rate from the bowtie1 log output
+    //    Function that parses and returns the alignment rate from the bowtie log output
     static ArrayList getBowtiePercentMapped(workflow, params, log, align_log) {
         def percent_aligned = 0
         def pattern = /# reads with at least one alignment:\s*\d*\s*\((\d*\.\d*)%\)/
