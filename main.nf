@@ -4,7 +4,7 @@
     nf-core/cageseq
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Github : https://github.com/nf-core/cageseq
-    Website: https://nf-co.re/cageseq
+Website: https://nf-co.re/cageseq
     Slack  : https://nfcore.slack.com/channels/cageseq
 ----------------------------------------------------------------------------------------
 */
