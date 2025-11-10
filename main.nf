@@ -1,15 +1,11 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/cageseq
+    ComputationalRegulatoryGenomicsICL/customcage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/cageseq
-    Website: https://nf-co.re/cageseq
-    Slack  : https://nfcore.slack.com/channels/cageseq
+    Github : https://github.com/ComputationalRegulatoryGenomicsICL/customcage
 ----------------------------------------------------------------------------------------
 */
-
-nextflow.enable.dsl = 2
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -17,11 +13,10 @@ nextflow.enable.dsl = 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { CAGESEQ  } from './workflows/cageseq'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_cageseq_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_cageseq_pipeline'
-
-include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_cageseq_pipeline'
+include { CUSTOMCAGE  } from './workflows/customcage'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_customcage_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_customcage_pipeline'
+include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_customcage_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,7 +38,7 @@ params.fasta = getGenomeAttribute('fasta')
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow NFCORE_CAGESEQ {
+workflow COMPUTATIONALREGULATORYGENOMICSICL_CUSTOMCAGE {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -53,13 +48,11 @@ workflow NFCORE_CAGESEQ {
     //
     // WORKFLOW: Run pipeline
     //
-    CAGESEQ (
+    CUSTOMCAGE (
         samplesheet
     )
-
     emit:
-    multiqc_report = CAGESEQ.out.multiqc_report // channel: /path/to/multiqc_report.html
-
+    multiqc_report = CUSTOMCAGE.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,27 +63,27 @@ workflow NFCORE_CAGESEQ {
 workflow {
 
     main:
-
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
     PIPELINE_INITIALISATION (
         params.version,
-        params.help,
         params.validate_params,
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input
+        params.input,
+        params.help,
+        params.help_full,
+        params.show_hidden
     )
 
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_CAGESEQ (
+    COMPUTATIONALREGULATORYGENOMICSICL_CUSTOMCAGE (
         PIPELINE_INITIALISATION.out.samplesheet
     )
-
     //
     // SUBWORKFLOW: Run completion tasks
     //
@@ -101,7 +94,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        NFCORE_CAGESEQ.out.multiqc_report
+        COMPUTATIONALREGULATORYGENOMICSICL_CUSTOMCAGE.out.multiqc_report
     )
 }
 

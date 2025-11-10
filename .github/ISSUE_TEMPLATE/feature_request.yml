@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for the nf-core/cageseq pipeline
+description: Suggest an idea for the ComputationalRegulatoryGenomicsICL/customcage pipeline
 labels: enhancement
 body:
   - type: textarea
