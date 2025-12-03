@@ -21,7 +21,7 @@ workflow PREPARE_MAPPING_METADATA {
                 fasta = fasta
                 [new_meta, fasta]
             }.unique()
-            SAMTOOLS_FAIDX( 
+            SAMTOOLS_FAIDX(
                 chrom_size_fa,
                 ["idx", params.index],
                 [true] )

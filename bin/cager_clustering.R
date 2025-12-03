@@ -98,4 +98,3 @@ cager_clustering <- function(
 
     return(ce)
 }
-
