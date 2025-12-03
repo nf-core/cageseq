@@ -5,7 +5,7 @@ cageronly: false
 gtf: "cageflow_test_data/danRer11_genome/danRer11.ensGene.gtf"
 
 # preprocessing parameters
-samplesheet: 
+samplesheet:
 infolder: "cageflow_test_data/fastq/pe"
 sample_name_fields: 2
 genome_name: "danRer11"

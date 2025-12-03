@@ -5,7 +5,7 @@ cageronly: false
 gtf: "cageflow_test_data/danRer11_genome/danRer11.ensGene.gtf"
 
 # preprocessing parameters
-samplesheet: 
+samplesheet:
 infolder: "/mnt/biggley/home/slava/projects/leancage_dev/cageflow_test_data/fastq/pe"
 sample_name_fields: 2
 genome_name: "danRer11"
@@ -16,7 +16,7 @@ seq_center: false
 # whether to take the uniquely mapped only
 unique_only: false
 # whether to remove reads that do not start with G
-remove_non_g: false 
+remove_non_g: false
 # whether to trim G or not
 nogtrim: true
 # mapper to use

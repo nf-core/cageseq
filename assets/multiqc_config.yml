@@ -27,3 +27,4 @@ top_modules:
   - cutadapt:
       name: "Cutadapt"
       info: "is used here to trim 5'-G."
+disable_version_detection: true

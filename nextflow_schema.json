@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/ComputationalRegulatoryGenomicsICL/customcage/master/nextflow_schema.json",
+    "$id": "https://raw.githubusercontent.com/ComputationalRegulatoryGenomicsICL/customcage/main/nextflow_schema.json",
     "title": "ComputationalRegulatoryGenomicsICL/customcage pipeline parameters",
     "description": "Schema for the inputs provided with params.yaml",
     "type": "object",
@@ -176,6 +176,223 @@
                     "hidden": true
                 }
             }
+        },
+        "pipeline_parameters": {
+            "title": "Pipeline parameters",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "fullpipeline": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run the whole pipeline"
+                },
+                "maponly": {
+                    "type": "boolean",
+                    "description": "Run only the mapping part until bigiwgs or bams"
+                },
+                "cageronly": {
+                    "type": "boolean",
+                    "description": "Run only the CAGEr processing part from bigiwgs or bams"
+                },
+                "gtf": {
+                    "type": "string",
+                    "description": "Genome annotation fiel in GTF format"
+                },
+                "input": {
+                    "type": "string",
+                    "description": "Path to the input file. Mutually exclusive with infolder"
+                },
+                "infolder": {
+                    "type": "string",
+                    "description": "Path to the folder with fastq files. Mutually exclusive with input"
+                },
+                "save_merged_fastq": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to save merged fasta files"
+                },
+                "sample_name_fields": {
+                    "type": "integer",
+                    "description": "Number of underscore separated fields  denoting sample name when infolder is used"
+                },
+                "genome_name": {
+                    "type": "string",
+                    "description": "Name of the reference genome. It is used as meta information"
+                },
+                "genome": {
+                    "type": "string",
+                    "description": "FASTA file containing a reference genome."
+                },
+                "index": {
+                    "type": "string",
+                    "description": "Specifies a directory with a genome index"
+                },
+                "seq_platform": {
+                    "type": "string",
+                    "description": "Sequencing platform used. Required for mapping with STAR"
+                },
+                "seq_center": {
+                    "type": "boolean",
+                    "description": "Name of the sequencing center. Required for mapping with STAR"
+                },
+                "unique_only": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether only uniquely mapped reads should be considered for downstream analysis."
+                },
+                "remove_non_g": {
+                    "type": "boolean",
+                    "description": "Whether to keep only those reads that start with G base"
+                },
+                "params_trimgalore": {
+                    "type": "string",
+                    "description": "Additional parameters that can be passed to TrimGalore!"
+                },
+                "nogtrim": {
+                    "type": "boolean",
+                    "description": "Makes the pipeline skip the G-trimming step in preprocessing"
+                },
+                "bowtie2": {
+                    "type": "boolean",
+                    "description": "Switches the aligner from STAR to bowtie2"
+                },
+                "dedup": {
+                    "type": "boolean",
+                    "description": "Switches on PCR duplicate removal"
+                },
+                "dist": {
+                    "type": "integer",
+                    "description": "Sets an optical duplicate distance, used together with dedup"
+                },
+                "cager_sample_file": {
+                    "type": "string",
+                    "description": "The input CSV samplesheet including the name of the samples, their pairedness status, and the location of bigwig or bam files. Required when cageronly is true."
+                },
+                "datatype": {
+                    "type": "string",
+                    "description": "Format of the mapping data file passed to the TSS analysis part when STAR is used (either 'bam' or 'bigwig').",
+                    "default": "bigwig"
+                },
+                "forgeseed": {
+                    "type": "string",
+                    "description": "Seed file for BSgenome forging"
+                },
+                "sourcedir": {
+                    "type": "string",
+                    "description": "Directory containing either a set of FASTA files, one per reference chromosome, or a 2bit file for the whole reference genome. Used for BSgenome forging"
+                },
+                "bsgenome": {
+                    "type": "string",
+                    "description": "BSgenome R package to use (if not forged)"
+                },
+                "corrplot_tagCountThreshold": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Threshold above which raw and normalized CTSS are considered for the correlation plot"
+                },
+                "norm_range_min": {
+                    "type": "integer",
+                    "default": 5,
+                    "description": "Defines the lower thresold for fitting the power-law distribution"
+                },
+                "norm_range_max": {
+                    "type": "integer",
+                    "default": 10000,
+                    "description": "Defines the upper thresold for fitting the power-law distribution"
+                },
+                "norm_method": {
+                    "type": "string",
+                    "default": "powerLaw",
+                    "description": "Method used for normalizing the samples: powerLaw, simpleTpm, and none are supported"
+                },
+                "alpha": {
+                    "type": "string",
+                    "description": "User specified alpha, the `-1 *` fitted slope in the log-log representation of the power-law distribution. If none, the average across samples is calculated and used."
+                },
+                "t_norm": {
+                    "type": "integer",
+                    "default": 1000000,
+                    "description": "Total number of CAGE tags in the reference power-law distribution"
+                },
+                "sample_num_thr": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed."
+                },
+                "ctss_thr": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed."
+                },
+                "distclu_maxDist": {
+                    "type": "integer",
+                    "default": 20,
+                    "description": "Maximum distance for distance-based clustering (distclu)"
+                },
+                "keepSingletonsAbove": {
+                    "type": "integer",
+                    "default": 5,
+                    "description": "The tpm threshold above which even a single CTSS is kept during clustering"
+                },
+                "iq_low": {
+                    "type": "number",
+                    "default": 0.1,
+                    "description": "Define the lower quantile boundaries of the interquartile range"
+                },
+                "iq_high": {
+                    "type": "number",
+                    "default": 0.9,
+                    "description": "Define the upper quantile boundaries of the interquartile range"
+                },
+                "iqw_tpm_threshold": {
+                    "type": "integer",
+                    "default": 3,
+                    "description": "Threshold above which tag clusters are considered for the interquartile width distribution plot"
+                },
+                "tssregion_up": {
+                    "type": "integer",
+                    "default": -3000,
+                    "description": "Upstream distance to consider into TSS region for ChIPseeker annotation"
+                },
+                "tssregion_down": {
+                    "type": "integer",
+                    "default": 3000,
+                    "description": "Downstream distance to consider into TSS region for ChIPseeker annotation"
+                },
+                "tsslogo_upstream": {
+                    "type": "integer",
+                    "default": 35,
+                    "description": "The number of bases to inlcude upstream of the TSS for TSS logos"
+                },
+                "consensus_thr": {
+                    "type": "integer",
+                    "default": 2,
+                    "description": "Used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquartile ranges of tag clusters to be joined together into consensus clusters."
+                },
+                "consensus_dist": {
+                    "type": "integer",
+                    "default": 100,
+                    "description": "Used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquartile ranges of tag clusters to be joined together into consensus clusters."
+                },
+                "cfBalanceThreshold": {
+                    "type": "number",
+                    "default": 0.95,
+                    "description": "Defines the balance threshold above which bidirectionality is considered balanced and enhancers are called"
+                },
+                "unexpressed": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is a non-inclusive lower boundary for the number of samples where the clusters should show bidirectionality."
+                },
+                "minSamples": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is a non-inclusive lower boundary for the number of samples where the clusters should show bidirectionality."
+                }
+            },
+            "required": ["gtf"]
         }
     },
     "allOf": [
@@ -187,212 +404,9 @@
         },
         {
             "$ref": "#/$defs/generic_options"
+        },
+        {
+            "$ref": "#/$defs/pipeline_parameters"
         }
-    ],
-    "properties": {
-        "fullpipeline": {
-            "type": "boolean",
-            "default": true,
-            "description": "Run the whole pipeline"
-        },
-        "maponly": {
-            "type": "boolean",
-            "description": "Run only the mapping part until bigiwgs or bams"
-        },
-        "cageronly": {
-            "type": "boolean",
-            "description": "Run only the CAGEr processing part from bigiwgs or bams"
-        },
-        "gtf": {
-            "type": "string",
-            "description": "Genome annotation fiel in GTF format"
-        },
-        "input": {
-            "type": "string",
-            "description": "Path to the input file. Mutually exclusive with infolder"
-        },
-        "infolder": {
-            "type": "string",
-            "description": "Path to the folder with fastq files. Mutually exclusive with input"
-        },
-        "sample_name_fields": {
-            "type": "integer",
-            "description": "Number of underscore separated fields  denoting sample name when infolder is used"
-        },
-        "genome_name": {
-            "type": "string",
-            "description": "Name of the reference genome. It is used as meta information"
-        },
-        "index": {
-            "type": "string",
-            "description": "Specifies a directory with a genome index"
-        },
-        "seq_platform": {
-            "type": "string",
-            "description": "Sequencing platform used. Required for mapping with STAR"
-        },
-        "seq_center": {
-            "type": "boolean",
-            "description": "Name of the sequencing center. Required for mapping with STAR"
-        },
-        "unique_only": {
-            "type": "boolean",
-            "default": true,
-            "description": "Whether only uniquely mapped reads should be considered for downstream analysis."
-        },
-        "remove_non_g": {
-            "type": "boolean",
-            "description": "Whether to keep only those reads that start with G base"
-        },
-        "params_trimgalore": {
-            "type": "string",
-            "description": "Additional parameters that can be passed to TrimGalore!"
-        },
-        "cager_sample_file": {
-            "type": "string",
-            "description": "The input CSV samplesheet including the name of the samples, their pairedness status, and the location of bigwig or bam files. Required when cageronly is true."
-        },
-        "forgeseed": {
-            "type": "string",
-            "description": "Seed file for BSgenome forging"
-        },
-        "sourcedir": {
-            "type": "string",
-            "description": "Directory containing either a set of FASTA files, one per reference chromosome, or a 2bit file for the whole reference genome. Used for BSgenome forging"
-        },
-        "bsgenome": {
-            "type": "string",
-            "description": "BSgenome R package to use (if not forged)"
-        },
-        "corrplot_tagCountThreshold": {
-            "type": "integer",
-            "default": 1,
-            "description": "Threshold above which raw and normalized CTSS are considered for the correlation plot"
-        },
-        "norm_range_min": {
-            "type": "integer",
-            "default": 5,
-            "description": "Defines the lower thresold for fitting the power-law distribution"
-        },
-        "norm_range_max": {
-            "type": "integer",
-            "default": 10000,
-            "description": "Defines the upper thresold for fitting the power-law distribution"
-        },
-        "norm_method": {
-            "type": "string",
-            "default": "powerLaw",
-            "description": "Method used for normalizing the samples: powerLaw, simpleTpm, and none are supported"
-        },
-        "alpha": {
-            "type": "string",
-            "description": "User specified alpha, the `-1 *` fitted slope in the log-log representation of the power-law distribution. If none, the average across samples is calculated and used."
-        },
-        "t_norm": {
-            "type": "integer",
-            "default": 1000000,
-            "description": "Total number of CAGE tags in the reference power-law distribution"
-        },
-        "sample_num_thr": {
-            "type": "integer",
-            "default": 1,
-            "description": "Parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed."
-        },
-        "ctss_thr": {
-            "type": "integer",
-            "default": 1,
-            "description": "Parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed."
-        },
-        "distclu_maxDist": {
-            "type": "integer",
-            "default": 20,
-            "description": "Maximum distance for distance-based clustering (distclu)"
-        },
-        "keepSingletonsAbove": {
-            "type": "integer",
-            "default": 5,
-            "description": "The tpm threshold above which even a single CTSS is kept during clustering"
-        },
-        "iq_low": {
-            "type": "number",
-            "default": 0.1,
-            "description": "Define the lower quantile boundaries of the interquartile range"
-        },
-        "iq_high": {
-            "type": "number",
-            "default": 0.9,
-            "description": "Define the upper quantile boundaries of the interquartile range"
-        },
-        "iqw_tpm_threshold": {
-            "type": "integer",
-            "default": 3,
-            "description": "Threshold above which tag clusters are considered for the interquartile width distribution plot"
-        },
-        "tssregion_up": {
-            "type": "integer",
-            "default": -3000,
-            "description": "Upstream distance to consider into TSS region for ChIPseeker annotation"
-        },
-        "tssregion_down": {
-            "type": "integer",
-            "default": 3000,
-            "description": "Downstream distance to consider into TSS region for ChIPseeker annotation"
-        },
-        "tsslogo_upstream": {
-            "type": "integer",
-            "default": 35,
-            "description": "The number of bases to inlcude upstream of the TSS for TSS logos"
-        },
-        "consensus_thr": {
-            "type": "integer",
-            "default": 2,
-            "description": "Used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquartile ranges of tag clusters to be joined together into consensus clusters."
-        },
-        "consensus_dist": {
-            "type": "integer",
-            "default": 100,
-            "description": "Used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquartile ranges of tag clusters to be joined together into consensus clusters."
-        },
-        "cfBalanceThreshold": {
-            "type": "number",
-            "default": 0.95,
-            "description": "Defines the balance threshold above which bidirectionality is considered balanced and enhancers are called"
-        },
-        "unexpressed": {
-            "type": "integer",
-            "default": 0,
-            "description": "Used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is a non-inclusive lower boundary for the number of samples where the clusters should show bidirectionality."
-        },
-        "minSamples": {
-            "type": "integer",
-            "default": 0,
-            "description": "Used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is a non-inclusive lower boundary for the number of samples where the clusters should show bidirectionality."
-        },
-        "nogtrim": {
-            "type": "boolean",
-            "description": "Makes the pipeline skip the G-trimming step in preprocessing"
-        },
-        "bowtie2": {
-            "type": "boolean",
-            "description": "Switches the aligner from STAR to bowtie2"
-        },
-        "dedup": {
-            "type": "boolean",
-            "description": "Switches on PCR duplicate removal"
-        },
-        "dist": {
-            "type": "integer",
-            "description": "Sets an optical duplicate distance, used together with dedup"
-        },
-        "save_merged_fastq": {
-            "type": "boolean",
-            "default": true,
-            "description": "Whether to save merged fasta files"
-        },
-        "genome": {
-            "type": "string",
-            "description": "FASTA file containing a reference genome."
-        }
-    },
-    "required": ["gtf"]
+    ]
 }

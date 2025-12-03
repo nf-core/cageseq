@@ -1,4 +1,4 @@
-# ComputationalRegulatoryGenomicsICL/customcage: Usage
+# nf-core/customcage: Usage
 
 > _Documentation of pipeline parameters is generated automatically from the pipeline schema and can no longer be found in markdown files._
 
@@ -6,7 +6,7 @@
 
 <!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
 
-**ComputationalRegulatoryGenomicsICL/customcageq** is a Nextflow pipeline to process CAGE sequencing data from raw reads to the identification of consensus clusters and enhancers.
+**nf-core/customcageq** is a Nextflow pipeline to process CAGE sequencing data from raw reads to the identification of consensus clusters and enhancers.
 The pipeline is specifically designed to be used for assessing the quality of the CAGE data, and calling promoters and enhancers with good default values that can be later fine tuned as needed.
 The pipeline also supports the re-analysis of the reads with updated parameters.
 
@@ -150,8 +150,41 @@ where
 
 For paired-end reads, `fastq_2` should contain the full path to reverse reads, while `single_end` should be set to `False`.
 
-- [Samplesheet](samplesheet.md)
-  - Additional information on the samplesheet.
+##### Additional information for samplesheet
+
+###### Multiple entries of the same sample
+
+The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
+
+```csv title="samplesheet.csv"
+sample,fastq_1,fastq_2
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
+CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+```
+
+##### Input checks
+
+The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
+
+A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
+
+```csv title="samplesheet.csv"
+sample,fastq_1,fastq_2
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
+CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
+TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
+TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
+TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
+TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+```
+
+| Column    | Description                                                                                                                                                                            |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
+| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
 
 ##### Starting from a folder path
 
@@ -165,7 +198,7 @@ _Note, that if the sample name had any dash (`-`) it is converted to underscore 
 
 #### CAGEr subpipeline
 
-To run the analysis with CAGEr with already existing bigwig or bam files, the input is another sample sheet with 4 columns and a header row. 
+To run the analysis with CAGEr with already existing bigwig or bam files, the input is another sample sheet with 4 columns and a header row.
 the 4th column, `new_name` defines which samples should be merged (provide the same names for the samples), dropped (leave the field empty), or kept as is (match the with the id field).
 An example is shown below (this file can be found at `docs/examples/samplesheet_cager.csv`). It is recommended to use absolute paths for the input files.
 
@@ -209,7 +242,8 @@ work                # Directory containing the nextflow working files
 You can change the maximum number of instances of the same process that can run in parallel (by default, the maximum number of instances of the same process equals 2).
 To do this, change the value of the `maxForks` parameter in `conf/base.config`.
 
-<!-- TODO: check if this can be overwritten with the -c option in nextflow, that would be cleaner -->
+> [!WARNING]
+> Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
 
 Limiting this number makes sure that the pipeline does not try to obtain all available resources.
 
@@ -217,9 +251,6 @@ By default, up to 10 different mapping loci are allowed for each read but only u
 If you would like to work with multimappers (or change mapping parameters in any other way), please amend STAR mapping options in `conf/modules.config` and/or replace the default `true` value for the `unique_only` pipeline option with `false` (in which case bigWig files will be created using the full set of alignments, not only unique ones).
 However, if multimapping reads are allowed, then bigWig files will contain non-integer counts for positions where multimappers align.
 This is due to the fact that STAR splits the count of 1 between all alignments of the same read.
-
-- [nextflow_usage](docs/nextflow_usage.md)
-  - Nextflow specific information
 
 ## Examples
 
@@ -302,3 +333,158 @@ nextflow run customcageq/main.nf \
 ```
 
 This example collects options that are **not recommended** but retained just in case. Using `bowtie2` does not allow accounting for splicing and makes CAGEr use BAM files, which slows the creation of the CAGEexp object considerably. Also, read deduplication is not recommended because CAGE reads, by design, come only from transcripts, with one read coming from the 5'-end of the transcript, which increases the probability of true duplicates, in comparison to whole-genome libraries, like ChIP-seq or ATAC-seq. The `--bowtie2` option can also be used with the `--fasta` option to build a `bowtie2` genome index on the fly, while the `--dedup` and `--dist` options can be used with the default `STAR` mapping.
+
+### Test data
+
+The pipeline can be run on test single-end and paired-end data. The directory containing test CAGE libraries and all necessary reference genome files can be downloaded from the Sequence Read Archives. It should be placed next to this repository and uncompressed.
+
+Single-end test reads were randomly sampled from yeast CAGE libraries "Ana" (replicate 1, ERR2495148, anaerobic conditions) and "Eth" (replicate 1, ERR2495150, ethanol limitation) generated and analyzed in ([Börlin et al., 2019](https://academic.oup.com/femsyr/article/19/2/foy128/5257840)).
+The test data include two samples split into two lanes each.
+One lane contains approximately 300,000 reads; therefore, the whole dataset contains around 1.2 mln reads.
+See `generate_se_test_data.sh` for details on how the test dataset was generated.
+
+To run the pipeline on these data, use the following command from outside the pipeline repository:
+
+```
+nextflow run customcageq/main.nf \
+    -params-file customcageq/testdata/params_yeast_borlin_test.yaml \
+    -profile singularity \
+    -w work_se_test
+```
+
+We recommend adapting the suggested values for the options `-profile` (Nextflow profile name) and `-w` (Nextflow work directory) according to your system's setup.
+
+Paired-end test reads were randomly sampled from zebrafish CAGE libraries "4-5 somites" (SRR10215487) and "prim-5" (SRR10215486) generated and analyzed in ([Nepal et al., 2020](https://doi.org/10.1038/s41467-019-13687-0)). The test data include two samples split into two lanes each. One lane contains approximately 1 mln reads; therefore, the whole dataset contains around 4 mln reads. See `generate_pe_test_data.sh` for details on how the test dataset was generated.
+
+To run the pipeline on these data, use the following command from outside the pipeline repository:
+
+```
+nextflow run customcageq/main.nf \
+    -params-file customcageq/testdata/params_danio_nepal_test.yaml \
+    -profile singularity \
+    -w work_pe_test
+```
+
+We recommend adapting the suggested values for the options `-profile` (Nextflow profile name) and `-w` (Nextflow work directory) according to your system's setup.
+
+### Updating the pipeline
+
+When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
+
+```bash
+nextflow pull ComputationalRegulatoryGenomicsICL/customcage
+```
+
+### Reproducibility
+
+It is a good idea to specify the pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
+
+First, go to the [ComputationalRegulatoryGenomicsICL/customcage releases page](https://github.com/ComputationalRegulatoryGenomicsICL/customcage/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
+
+This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For example, at the bottom of the MultiQC reports.
+
+To further assist in reproducibility, you can use share and reuse [parameter files](#running-the-pipeline) to repeat pipeline runs with the same settings without having to write out a command with every single parameter.
+
+> [!TIP]
+> If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
+
+## Core Nextflow arguments
+
+> [!NOTE]
+> These options are part of Nextflow and use a _single_ hyphen (pipeline parameters use a double-hyphen)
+
+### `-profile`
+
+Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments.
+
+Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Shifter, Charliecloud, Apptainer, Conda) - see below.
+
+> [!IMPORTANT]
+> We highly recommend the use of Docker or Singularity containers for full pipeline reproducibility, however when this is not possible, Conda is also supported.
+
+The pipeline also dynamically loads configurations from [https://github.com/nf-core/configs](https://github.com/nf-core/configs) when it runs, making multiple config profiles for various institutional clusters available at run time. For more information and to check if your system is supported, please see the [nf-core/configs documentation](https://github.com/nf-core/configs#documentation).
+
+Note that multiple profiles can be loaded, for example: `-profile test,docker` - the order of arguments is important!
+They are loaded in sequence, so later profiles can overwrite earlier profiles.
+
+If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it can lead to different results on different machines dependent on the computer environment.
+
+- `test`
+  - A profile with a complete configuration for automated testing
+  - Includes links to test data so needs no other parameters
+- `docker`
+  - A generic configuration profile to be used with [Docker](https://docker.com/)
+- `singularity`
+  - A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
+- `podman`
+  - A generic configuration profile to be used with [Podman](https://podman.io/)
+- `shifter`
+  - A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
+- `charliecloud`
+  - A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
+- `apptainer`
+  - A generic configuration profile to be used with [Apptainer](https://apptainer.org/)
+- `wave`
+  - A generic configuration profile to enable [Wave](https://seqera.io/wave/) containers. Use together with one of the above (requires Nextflow ` 24.03.0-edge` or later).
+- `conda`
+  - A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter, Charliecloud, or Apptainer.
+
+### `-resume`
+
+Specify this when restarting a pipeline. Nextflow will use cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously. For input to be considered the same, not only the names must be identical but the files' contents as well. For more info about this parameter, see [this blog post](https://www.nextflow.io/blog/2019/demystifying-nextflow-resume.html).
+
+You can also supply a run name to resume a specific run: `-resume [run-name]`. Use the `nextflow log` command to show previous run names.
+
+### `-c`
+
+Specify the path to a specific config file (this is a core Nextflow command). See the [nf-core website documentation](https://nf-co.re/usage/configuration) for more information.
+
+:::warning
+Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
+:::
+
+## Custom configuration
+
+### Resource requests
+
+Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the compute resources that the pipeline requests. Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the pipeline steps, if the job exits with any of the error codes specified [here](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/base.config#L18) it will automatically be resubmitted with higher resources request (2 x original, then 3 x original). If it still fails after the third attempt then the pipeline execution is stopped.
+
+To change the resource requests, please see the [max resources](https://nf-co.re/docs/usage/configuration#max-resources) and [tuning workflow resources](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources) section of the nf-core website.
+
+### Custom Containers
+
+In some cases, you may wish to change the container or conda environment used by a pipeline steps for a particular tool. By default, nf-core pipelines use containers and software from the [biocontainers](https://biocontainers.pro/) or [bioconda](https://bioconda.github.io/) projects. However, in some cases the pipeline specified version maybe out of date.
+
+To use a different container from the default container or conda environment specified in a pipeline, please see the [updating tool versions](https://nf-co.re/docs/usage/configuration#updating-tool-versions) section of the nf-core website.
+
+### Custom Tool Arguments
+
+A pipeline might not always support every possible argument or option of a particular tool used in pipeline. Fortunately, nf-core pipelines provide some freedom to users to insert additional parameters that the pipeline does not include by default.
+
+To learn how to provide additional arguments to a particular tool of the pipeline, please see the [customising tool arguments](https://nf-co.re/docs/usage/configuration#customising-tool-arguments) section of the nf-core website.
+
+### nf-core/configs
+
+In most cases, you will only need to create a custom config as a one-off but if you and others within your organisation are likely to be running nf-core pipelines regularly and need to use the same settings regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter. You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
+
+See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more information about creating your own configuration files.
+
+If you have any questions or issues please send us a message on [Slack](https://nf-co.re/join/slack) on the [`#configs` channel](https://nfcore.slack.com/channels/configs).
+
+## Running in the background
+
+Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
+
+The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
+
+Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
+Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
+
+## Nextflow memory requirements
+
+In some cases, the Nextflow Java virtual machines can start to request a large amount of memory.
+We recommend adding the following line to your environment to limit this (typically in `~/.bashrc` or `~./bash_profile`):
+
+```bash
+NXF_OPTS='-Xms1g -Xmx4g'
+```
