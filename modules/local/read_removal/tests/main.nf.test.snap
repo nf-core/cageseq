@@ -1,0 +1,22 @@
+{
+    "Should run without failures": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": true
+                        },
+                        "filtered_output.fastq.gz:md5,cfd776232dadec4c170f9d496ca84834"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        },
+        "timestamp": "2025-12-14T15:50:23.746868165"
+    }
+}

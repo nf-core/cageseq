@@ -16,7 +16,7 @@ nextflow_process {
             process {
                 """
                 // define inputs of the process here. Example:
-                input[0] = [[id:'test'], file("${projectDir}/test_data/read_removal_example.fastq", checkIfExists: true)]
+                input[0] = [[id:'test', single_end:true], file("${projectDir}/test_data/read_removal_example.fastq.gz", checkIfExists: true)]
                 """
             }
         }
