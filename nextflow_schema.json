@@ -200,9 +200,9 @@
                     "type": "string",
                     "description": "Genome annotation fiel in GTF format"
                 },
-                "input": {
+                "samplesheet": {
                     "type": "string",
-                    "description": "Path to the input file. Mutually exclusive with infolder"
+                    "description": "Path to the samplesheet file. Mutually exclusive with infolder"
                 },
                 "infolder": {
                     "type": "string",
