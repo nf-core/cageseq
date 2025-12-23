@@ -22,29 +22,38 @@ An example is shown below.
 fullpipeline: true
 maponly: false
 cageronly: false
-gtf: "testdata/sacCer3_genome/sacCer3.ensGene.gtf"
+gtf: "cageflow_test_data/danRer11_genome/danRer11.ensGene.gtf"
 
 # preprocessing parameters
-input: "docs/examples/samplesheet_sacer_pe.csv"
-infolder:
-sample_name_fields:
-# mapping parameters
-genome_name: "sacCer3"
-fasta: "testdata/sacCer3_genome/sacCer3.fa"
-index: "testdata/sacCer3_genome/sacCer3_star_index/"
+samplesheet: "/mnt/biggley/home/slava/projects/leancage_dev/pe_samplesheet.csv"
+infolder: 
+outdir: "results"
+sample_name_fields: 3
+genome_name: "danRer11"
+genome: "cageflow_test_data/danRer11_genome/danRer11.fa"
+index: 
 seq_platform: "illumina"
 seq_center: false
 # whether to take the uniquely mapped only
 unique_only: true
 # whether to remove reads that do not start with G
-remove_non_g: false
+remove_non_g: true
+# whether to trim G or not
+nogtrim: false
+# mapper to use
+bowtie2: true
+# dedup
+dedup: true
+dist: 100
 
 # CAGEr parameters
-cager_sample_file: "docs/examples/sample_list.csv" # with sorted list of bigwigs, if mapping is run elsewhere
+cager_sample_file: ../nepal_sample_list_test.csv
+# datatype: "bam" or "bigwig". if bowtie2 is used, it will be set to bam
+datatype: "bam"
 # BSgenome
 forgeseed:
 sourcedir:
-bsgenome: "BSgenome.Scerevisiae.UCSC.sacCer3"
+bsgenome: "BSgenome.Drerio.UCSC.danRer11"
 # parameter for correlation calculation
 corrplot_tagCountThreshold: 1
 # parameters for normalization
@@ -64,7 +73,7 @@ iq_high: 0.9
 iqw_tpm_threshold: 3
 tssregion_up: -3000
 tssregion_down: 3000
-tsslogo_upstream: 35
+tsslogo_upstream: 20
 # parameters for consensus clusters
 consensus_thr: 2
 consensus_dist: 100
@@ -81,12 +90,12 @@ where the pipeline parameters that should be provided in all runs are
 
 The parameters specific to mapping, can be left empty when running in `cageronly` mode:
 
-- `input` specifies the input CSV samplesheet. This option is mutually exclusive with `infolder`.
+- `samplesheet` specifies the input CSV samplesheet. This option is mutually exclusive with `infolder`.
 - `infolder` specifies the input directory with FASTQ files (stored together for all samples or located in per-sample subdirectories). This option is mutually exclusive with `input`, and may be used together with `sample_name_fields`.
 - `sample_name_fields` is a supporting parameter for `infolder` in case your sample name has underscore(s) in it. By default, only the first part of the string before the first underscore is taken for samplename. If you have more, like `my_sample_name_S1_L001_R1_001.fastq.gz`, with this parameter you may specify _how many underscore separated fields_ the sample name has in the filename. In the `my_sample_name_S1_L001_R1_001.fastq.gz` example, this parameter should be = 3.
 - `genome_name` specifies the name of the reference genome. It is used as meta information
-- `genome` specifies a FASTA file containing a reference genome. This option is mandatory, unless `index` is set.
-- `index` specifies a directory with a genome index (`bowtie2` or `STAR`). This is a mandatory option, unless `fasta` is set.
+- `genome` specifies a FASTA file containing a reference genome. This option is mandatory.
+- `index` specifies a directory with a genome index (`bowtie2` or `STAR`). This is an optional parameter.
 - `seq_platform` specifies the sequencing platform used. Required for mapping with `STAR`.
 - `seq_center` specifies the name of the sequencing center. Required for mapping with `STAR`.
 - `unique_only` specifies if only uniquely mapped reads are considered for downstream analysis. Required for mapping with `STAR`. Not considered when using `bowtie2`.
