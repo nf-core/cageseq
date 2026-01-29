@@ -5,7 +5,7 @@ cageronly: false
 gtf: "cageflow_test_data/sacCer3_genome/sacCer3.ensGene.gtf"
 
 # preprocessing parameters
-samplesheet: "/mnt/biggley/home/slava/projects/leancage_dev/se_2_samplesheet.csv"
+input: "/mnt/biggley/home/slava/projects/leancage_dev/se_2_samplesheet.csv"
 infolder: 
 outdir: "results"
 sample_name_fields: 3

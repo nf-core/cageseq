@@ -14,14 +14,14 @@ workflow PARAMETER_CHECKS {
 
     main:
 
-        if (params.samplesheet) {
+        if (params.input) {
             //
-            // Create channel from samplesheet file provided through params.samplesheet
+            // Create channel from samplesheet file provided through params.input
             //
 
             println("Reading in samplesheet")
 
-            input_handler = Channel.fromPath(params.samplesheet, checkIfExists: true)
+            input_handler = Channel.fromPath(params.input, checkIfExists: true)
 
             println("Creating channel from samplesheet")
 
@@ -37,7 +37,7 @@ workflow PARAMETER_CHECKS {
                 params.infolder
             )
         } else {
-            exit 1, 'Provide input by using the --samplesheet or the --infolder options.'
+            exit 1, 'Provide input by using the --input or the --infolder options.'
         }
 
         println("Initializing channels")
