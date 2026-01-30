@@ -25,7 +25,7 @@ cageronly: false
 gtf: "cageflow_test_data/danRer11_genome/danRer11.ensGene.gtf"
 
 # preprocessing parameters
-samplesheet: "/mnt/biggley/home/slava/projects/leancage_dev/pe_samplesheet.csv"
+input: "docs/examples/samplesheet_sacer_pe.csv"
 infolder: 
 outdir: "results"
 sample_name_fields: 3
@@ -47,7 +47,7 @@ dedup: true
 dist: 100
 
 # CAGEr parameters
-cager_sample_file: ../nepal_sample_list_test.csv
+cager_sample_file: "docs/examples/sample_list.csv" # with sorted list of bigwigs, if mapping is run elsewhere
 # datatype: "bam" or "bigwig". if bowtie2 is used, it will be set to bam
 datatype: "bam"
 # BSgenome
@@ -73,7 +73,7 @@ iq_high: 0.9
 iqw_tpm_threshold: 3
 tssregion_up: -3000
 tssregion_down: 3000
-tsslogo_upstream: 20
+tsslogo_upstream: 35
 # parameters for consensus clusters
 consensus_thr: 2
 consensus_dist: 100
@@ -90,7 +90,7 @@ where the pipeline parameters that should be provided in all runs are
 
 The parameters specific to mapping, can be left empty when running in `cageronly` mode:
 
-- `samplesheet` specifies the input CSV samplesheet. This option is mutually exclusive with `infolder`.
+- `input` specifies the input CSV samplesheet. This option is mutually exclusive with `infolder`.
 - `infolder` specifies the input directory with FASTQ files (stored together for all samples or located in per-sample subdirectories). This option is mutually exclusive with `input`, and may be used together with `sample_name_fields`.
 - `sample_name_fields` is a supporting parameter for `infolder` in case your sample name has underscore(s) in it. By default, only the first part of the string before the first underscore is taken for samplename. If you have more, like `my_sample_name_S1_L001_R1_001.fastq.gz`, with this parameter you may specify _how many underscore separated fields_ the sample name has in the filename. In the `my_sample_name_S1_L001_R1_001.fastq.gz` example, this parameter should be = 3.
 - `genome_name` specifies the name of the reference genome. It is used as meta information
