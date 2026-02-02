@@ -202,7 +202,7 @@
                 },
                 "input": {
                     "type": "string",
-                    "description": "Path to the input file. Mutually exclusive with infolder"
+                    "description": "Path to the samplesheet file. Mutually exclusive with infolder"
                 },
                 "infolder": {
                     "type": "string",
