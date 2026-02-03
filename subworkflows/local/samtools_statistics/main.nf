@@ -6,6 +6,8 @@ include { SAMTOOLS_STATS } from '../../../modules/nf-core/samtools/stats/main.nf
 include { SAMTOOLS_IDXSTATS } from '../../../modules/nf-core/samtools/idxstats/main.nf'
 include { SAMTOOLS_FLAGSTAT } from '../../../modules/nf-core/samtools/flagstat/main.nf'
 
+
+//  TODO: replace with https://github.com/nf-core/modules/blob/master/subworkflows/nf-core/bam_stats_samtools/main.nf
 workflow SAMTOOLS_STATISTICS {
     take:
         ch_bam_bai
@@ -14,7 +16,7 @@ workflow SAMTOOLS_STATISTICS {
         ch_versions
 
     main:
-        if (params.fasta) {
+        if (params.genome) {
             ch_meta_fasta = ch_bam_bai
                 .combine(ch_fasta)
                 .map{[it[3], it[4]]}
