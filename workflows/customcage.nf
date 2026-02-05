@@ -10,11 +10,11 @@ params.gtf = "$projectDir/assets/NO_FILE_GTF"
 params.input = "$projectDir/assets/NO_FILE_SAMPLESHEET"
 params.infolder = ''
 params.outdir = "results"
-params.sample_name_fields = ''
-params.genome_name = ''
+params.sample_name_fields = 1
+params.genome_name = 'unknown'
 params.genome = "$projectDir/assets/NO_FILE_FASTA"
 params.index = "$projectDir/assets/NO_FILE_INDEX"
-params.seq_platform = ''
+params.seq_platform = 'unknown'
 params.seq_center = false
 params.unique_only = true
 params.remove_non_g = false
@@ -244,6 +244,25 @@ workflow CUSTOMCAGE {
             sort: true,
             newLine: true
         ).set { ch_collated_versions }
+
+    def topic_versions = channel.topic("versions")
+      .distinct()
+      .branch { entry ->
+          versions_file: entry instanceof Path
+          versions_tuple: true
+      }
+
+    def topic_versions_string = topic_versions.versions_tuple
+        .map { process, tool, version ->
+            [ process[process.lastIndexOf(':')+1..-1], "  ${tool}: ${version}" ]
+        }
+        .groupTuple(by:0)
+        .map { process, tool_versions ->
+            tool_versions.unique().sort()
+            "${process}:\n${tool_versions.join('\n')}"
+        }
+    ch_collated_versions = softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
+        .mix(topic_versions_string)
 
 
     //

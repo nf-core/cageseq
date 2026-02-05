@@ -19,12 +19,10 @@ workflow PREPROCESSING {
         CAT_FASTQ (
             ch_fastq
         ).reads.set { ch_cat_fastq }
-        ch_versions = ch_versions.mix(CAT_FASTQ.out.versions)
 
         FASTQC (
             ch_cat_fastq
         )
-        ch_versions = ch_versions.mix(FASTQC.out.versions)
 
         if (params.remove_non_g){
             ch_cat_fastq = READ_REMOVAL (ch_cat_fastq)
@@ -39,7 +37,6 @@ workflow PREPROCESSING {
             CUTADAPT (
                 TRIMGALORE.out.reads
             )
-            ch_versions = ch_versions.mix(CUTADAPT.out.versions)
         }
 
         ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))

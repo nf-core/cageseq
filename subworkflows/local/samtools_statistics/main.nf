@@ -42,7 +42,6 @@ workflow SAMTOOLS_STATISTICS {
         ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_FLAGSTAT.out.flagstat.collect{it[1]})
 
         SAMTOOLS_IDXSTATS ( ch_bam_bai )
-        ch_versions = ch_versions.mix(SAMTOOLS_IDXSTATS.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_IDXSTATS.out.idxstats.collect{it[1]})
 
     emit:
