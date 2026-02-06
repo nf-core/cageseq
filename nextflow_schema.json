@@ -215,13 +215,11 @@
                 },
                 "sample_name_fields": {
                     "type": "integer",
-                    "description": "Number of underscore separated fields  denoting sample name when infolder is used",
-                    "default": 1
+                    "description": "Number of underscore separated fields  denoting sample name when infolder is used"
                 },
                 "genome_name": {
                     "type": "string",
-                    "description": "Name of the reference genome. It is used as meta information",
-                    "default": "unknown"
+                    "description": "Name of the reference genome. It is used as meta information"
                 },
                 "genome": {
                     "type": "string",
@@ -233,8 +231,7 @@
                 },
                 "seq_platform": {
                     "type": "string",
-                    "description": "Sequencing platform used. Required for mapping with STAR",
-                    "default": "unknown"
+                    "description": "Sequencing platform used. Required for mapping with STAR"
                 },
                 "seq_center": {
                     "type": "boolean",
