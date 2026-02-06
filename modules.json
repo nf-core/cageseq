@@ -70,63 +70,63 @@
                     },
                     "samtools/idxstats": {
                         "branch": "master",
-                        "git_sha": "267436250b979506ccc1ae52cbac701ad29fe9a5",
+                        "git_sha": "1d2fbdcbca677bbe8da0f9d0d2bb7c02f2cab1c9",
                         "installed_by": [
                             "bam_stats_samtools"
                         ]
                     },
                     "samtools/index": {
                         "branch": "master",
-                        "git_sha": "5394565c5fe4c760e5b35977ec7607c62e81d1f8",
+                        "git_sha": "1d2fbdcbca677bbe8da0f9d0d2bb7c02f2cab1c9",
                         "installed_by": [
                             "modules"
                         ]
                     },
                     "samtools/sort": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "5cb9a8694da0a0e550921636bb60bc8c56445fd7",
                         "installed_by": [
                             "modules"
                         ]
                     },
                     "samtools/stats": {
                         "branch": "master",
-                        "git_sha": "b13f07be4c508d6ff6312d354d09f2493243e208",
+                        "git_sha": "fe93fde0845f907fc91ad7cc7d797930408824df",
                         "installed_by": [
                             "bam_stats_samtools"
                         ]
                     },
                     "samtools/view": {
                         "branch": "master",
-                        "git_sha": "04fbbc7c43cebc0b95d5b126f6d9fe4effa33519",
+                        "git_sha": "d2ceed2ec5fccf922638f116a15e02f6458288fb",
                         "installed_by": [
                             "modules"
                         ]
                     },
                     "star/align": {
                         "branch": "master",
-                        "git_sha": "a5ad53288c79fa52c5ae708c317e09ec2dd149ab",
+                        "git_sha": "d6419d592de78e193625b209c1d0a5cc09206df3",
                         "installed_by": [
                             "modules"
                         ]
                     },
                     "star/genomegenerate": {
                         "branch": "master",
-                        "git_sha": "a5ad53288c79fa52c5ae708c317e09ec2dd149ab",
+                        "git_sha": "481efe07277c76e23738b4be0724ba7d99653d7e",
                         "installed_by": [
                             "modules"
                         ]
                     },
                     "trimgalore": {
                         "branch": "master",
-                        "git_sha": "41dfa3f7c0ffabb96a6a813fe321c6d1cc5b6e46",
+                        "git_sha": "eed5d14302a6c9070dcc25feeab707a27a4b3254",
                         "installed_by": [
                             "modules"
                         ]
                     },
                     "ucsc/wigtobigwig": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "41dfa3f7c0ffabb96a6a813fe321c6d1cc5b6e46",
                         "installed_by": [
                             "modules"
                         ]

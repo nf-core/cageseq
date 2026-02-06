@@ -10,7 +10,7 @@ process UCSC_WIGTOBIGWIG {
 
     input:
     tuple val(meta), path(wig)
-    each path(sizes)
+    path sizes
 
     output:
     tuple val(meta), path("*.bw"), emit: bw
@@ -21,22 +21,14 @@ process UCSC_WIGTOBIGWIG {
 
     script:
     def args = task.ext.args ?: ''
+    def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '447' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
-
     """
-    # Make a bigWig from the first wig
     wigToBigWig \\
         $args \\
-        ${wig[0]} \\
+        $wig \\
         $sizes \\
-        ${wig[0]}.bw
-
-    # Make a bigWig from the second wig
-    wigToBigWig \\
-        $args \\
-        ${wig[1]} \\
-        $sizes \\
-        ${wig[1]}.bw
+        ${prefix}.bw
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -45,10 +37,10 @@ process UCSC_WIGTOBIGWIG {
     """
 
     stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '447' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
-    touch ${wig[0]}.bw
-    touch ${wig[1]}.bw
+    touch ${prefix}.bw
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
