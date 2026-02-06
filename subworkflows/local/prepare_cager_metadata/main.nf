@@ -9,7 +9,6 @@ workflow PREPARE_CAGER_METADATA {
 
     take:
         ch_gtf
-        ch_versions
 
     main:
 
@@ -21,7 +20,6 @@ workflow PREPARE_CAGER_METADATA {
                 forge_seed,
                 seqs_srcdir
             )
-            ch_versions = ch_versions.mix(FORGE_BSGENOME.out.versions)
         }
 
         if (params.bsgenome) {
@@ -42,11 +40,9 @@ workflow PREPARE_CAGER_METADATA {
 
         ch_txdb = GTF2TXDB(ch_gtf)
         ch_txdb_file = GTF2TXDB.out.txdb
-        ch_versions = ch_versions.mix(GTF2TXDB.out.versions)
 
     emit:
         ch_bsgenome_file
         ch_bsgenome_name
         ch_txdb_file
-        ch_versions
 }

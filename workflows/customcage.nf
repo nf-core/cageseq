@@ -90,7 +90,6 @@ include { STAR } from '../subworkflows/local/star/main.nf'
 include { BOWTIE2 } from '../subworkflows/local/bowtie2/main.nf'
 include { DEDUPLICATION } from '../subworkflows/local/deduplication/main.nf'
 include { SAMTOOLS_PROCESSING } from '../subworkflows/local/samtools/main.nf'
-include { SAMTOOLS_STATISTICS } from '../subworkflows/local/samtools_statistics/main.nf'
 include { BAM_STATS_SAMTOOLS } from '../subworkflows/nf-core/bam_stats_samtools/main'
 include { MULTIQC } from '../modules/nf-core/multiqc/main.nf'
 include { WRITE_SAMPLE_LIST } from '../modules/local/write_sample_list/main.nf'
@@ -130,55 +129,48 @@ workflow CUSTOMCAGE {
         ch_fasta = Channel.empty()
         ch_index = Channel.empty()
 
-        PARAMETER_CHECKS(ch_fasta, ch_index, ch_versions)
+        PARAMETER_CHECKS(ch_fasta, ch_index)
 
         ch_fasta = PARAMETER_CHECKS.out.ch_fasta
         ch_index = PARAMETER_CHECKS.out.ch_index
         ch_fastq = PARAMETER_CHECKS.out.ch_fastq
-        ch_versions = PARAMETER_CHECKS.out.ch_versions
 
-        PREPROCESSING(ch_fastq, ch_versions, ch_multiqc_files)
+        PREPROCESSING(ch_fastq, ch_multiqc_files)
 
         ch_reads_to_align = PREPROCESSING.out.ch_reads_to_align
         ch_multiqc_files = PREPROCESSING.out.ch_multiqc_files
-        ch_versions = PREPROCESSING.out.ch_versions
 
-        PREPARE_MAPPING_METADATA( ch_fasta, ch_versions )
+        PREPARE_MAPPING_METADATA( ch_fasta )
         ch_chrom_sizes = PREPARE_MAPPING_METADATA.out.ch_chrom_sizes
         ch_fasta = PREPARE_MAPPING_METADATA.out.ch_fasta
-        ch_versions = PREPARE_MAPPING_METADATA.out.ch_versions
 
         if (params.bowtie2) {
-            BOWTIE2(ch_reads_to_align, ch_fasta, ch_index, ch_multiqc_files, ch_versions)
+            BOWTIE2(ch_reads_to_align, ch_fasta, ch_index, ch_multiqc_files)
 
             ch_aligned = BOWTIE2.out.ch_aligned
             ch_multiqc_files = BOWTIE2.out.ch_multiqc_files
-            ch_versions = BOWTIE2.out.ch_versions
             // NOTE: placeholder so that the channel is not empty
             // it will be replaced in SAMTOOLS
             ch_for_cager = ch_aligned
 
         } else {
-            STAR(ch_reads_to_align, ch_fasta, ch_index, ch_gtf, ch_chrom_sizes, ch_multiqc_files, ch_versions)
+            STAR(ch_reads_to_align, ch_fasta, ch_index, ch_gtf, ch_chrom_sizes, ch_multiqc_files)
 
             ch_for_cager = STAR.out.bigwig_ch_for_cager
             ch_aligned = STAR.out.ch_aligned
             ch_multiqc_files = STAR.out.ch_multiqc_files
-            ch_versions = STAR.out.ch_versions
         }
 
         if (params.dedup) {
-            DEDUPLICATION(ch_aligned, ch_versions, ch_for_cager)
+            DEDUPLICATION(ch_aligned, ch_for_cager)
 
             ch_for_cager = DEDUPLICATION.out.ch_for_cager
             ch_bam_bai = DEDUPLICATION.out.ch_bam_bai
-            ch_versions = DEDUPLICATION.out.ch_versions
         } else {
-            SAMTOOLS_PROCESSING(ch_aligned, ch_versions, ch_for_cager)
+            SAMTOOLS_PROCESSING(ch_aligned, ch_fasta, ch_for_cager)
 
             ch_for_cager = SAMTOOLS_PROCESSING.out.ch_for_cager
             ch_bam_bai = SAMTOOLS_PROCESSING.out.ch_bam_bai
-            ch_versions = SAMTOOLS_PROCESSING.out.ch_versions
         }
 
         ch_meta_fasta = ch_bam_bai
@@ -217,11 +209,10 @@ workflow CUSTOMCAGE {
 
     if (params.cageronly || params.fullpipeline) {
 
-        PREPARE_CAGER_METADATA( ch_gtf, ch_versions )
+        PREPARE_CAGER_METADATA( ch_gtf )
         ch_bsgenome_file = PREPARE_CAGER_METADATA.out.ch_bsgenome_file
         ch_bsgenome_name = PREPARE_CAGER_METADATA.out.ch_bsgenome_name
         ch_txdb_file = PREPARE_CAGER_METADATA.out.ch_txdb_file
-        ch_versions = PREPARE_CAGER_METADATA.out.ch_versions
 
         CAGER(
             ch_bsgenome_file,

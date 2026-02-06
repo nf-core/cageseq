@@ -12,7 +12,6 @@ workflow PREPROCESSING {
 
     take:
         ch_fastq
-        ch_versions
         ch_multiqc_files
 
     main:
@@ -31,7 +30,6 @@ workflow PREPROCESSING {
         TRIMGALORE (
             ch_cat_fastq
         )
-        ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
 
         if (!params.nogtrim) {
             CUTADAPT (
@@ -46,7 +44,6 @@ workflow PREPROCESSING {
 
     emit:
         ch_reads_to_align
-        ch_versions
         ch_multiqc_files
 
 }

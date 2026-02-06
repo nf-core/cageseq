@@ -10,7 +10,6 @@ workflow PARAMETER_CHECKS {
     take:
         ch_fasta
         ch_index
-        ch_versions
 
     main:
 
@@ -82,7 +81,6 @@ workflow PARAMETER_CHECKS {
         ch_fasta
         ch_index
         ch_fastq
-        ch_versions
 
 }
 

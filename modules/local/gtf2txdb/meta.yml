@@ -33,12 +33,9 @@ output:
         description: |
           A TxDb object in SQLite format, which can be imported to R.
   versions:
-    - versions.yml:
-        type: file
-        description: File containing software versions
-        pattern: "versions.yml"
-        ontologies:
-          - edam: http://edamontology.org/format_3750 # YAML
+  - versions.yml:
+      type: file
+      description: YAML file containing versions of tools used in the module
 authors:
   - "@sidorov-si"
 maintainers:

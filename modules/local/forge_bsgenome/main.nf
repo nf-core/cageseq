@@ -8,7 +8,7 @@ process FORGE_BSGENOME {
 
     output:
     path "BSgenome.*.tar.gz", emit: bsgenome
-    path "versions.yml",      emit: versions
+    path "versions.yml", emit: versions, topic: versions
 
     """
     forge_bsgenome.R ${forge_seed} ${seqs_srcdir}

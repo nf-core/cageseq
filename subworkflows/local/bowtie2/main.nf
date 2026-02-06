@@ -13,7 +13,6 @@ workflow BOWTIE2 {
         ch_fasta
         ch_index
         ch_multiqc_files
-        ch_versions
 
     main:
         sample_meta = ch_reads_to_align.map{ meta, fastq ->
@@ -24,7 +23,6 @@ workflow BOWTIE2 {
             BOWTIE2_BUILD (
                 ch_fasta
             )
-            ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions)
             ch_index = sample_meta.combine(BOWTIE2_BUILD.out.index.map { genome_name, index -> index } )
         } else {
             ch_index = sample_meta.combine(ch_index.map { genome_name, index -> index })
@@ -44,16 +42,13 @@ workflow BOWTIE2 {
             false
         )
         ch_multiqc_files = ch_multiqc_files.mix(BOWTIE2_ALIGN.out.log.collect{it[1]})
-        ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
 
         SAMTOOLS_VIEW_MAPQ ( BOWTIE2_ALIGN.out.bam )
-        ch_versions = ch_versions.mix(SAMTOOLS_VIEW_MAPQ.out.versions)
 
         ch_aligned = SAMTOOLS_VIEW_MAPQ.out.bam
 
     emit:
         ch_aligned
         ch_multiqc_files
-        ch_versions
 
 }

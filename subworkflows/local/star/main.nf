@@ -15,7 +15,6 @@ workflow STAR {
         ch_gtf
         ch_chrom_sizes
         ch_multiqc_files
-        ch_versions
 
     main:
 
@@ -30,7 +29,6 @@ workflow STAR {
                 ch_fasta,
                 ch_genome_name.combine(ch_gtf)
             )
-            ch_versions = ch_versions.mix(STAR_GENOMEGENERATE.out.versions)
             ch_index = sample_meta.combine(STAR_GENOMEGENERATE.out.index.map { it[1] })
         }
 
@@ -42,7 +40,6 @@ workflow STAR {
             params.seq_platform,
             params.seq_center
         )
-        ch_versions = ch_versions.mix(STAR_ALIGN.out.versions)
 
         ch_aligned = STAR_ALIGN.out.bam_sorted_aligned
 
@@ -67,11 +64,13 @@ workflow STAR {
             }
         }
 
+
+        wigs_for_conversion.view()
+        
         UCSC_WIGTOBIGWIG (
             wigs_for_conversion,
             ch_chrom_sizes_for_wig
         )
-        ch_versions = ch_versions.mix(UCSC_WIGTOBIGWIG.out.versions)
 
         bigwig_ch_for_cager = UCSC_WIGTOBIGWIG.out.bw
 
@@ -79,5 +78,4 @@ workflow STAR {
         bigwig_ch_for_cager
         ch_aligned
         ch_multiqc_files
-        ch_versions
 }

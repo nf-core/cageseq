@@ -8,7 +8,6 @@ workflow PREPARE_MAPPING_METADATA {
 
     take:
         ch_fasta
-        ch_versions
 
     main:
 
@@ -37,5 +36,4 @@ workflow PREPARE_MAPPING_METADATA {
     emit:
         ch_chrom_sizes
         ch_fasta
-        ch_versions
 }
