@@ -91,6 +91,7 @@ include { BOWTIE2 } from '../subworkflows/local/bowtie2/main.nf'
 include { DEDUPLICATION } from '../subworkflows/local/deduplication/main.nf'
 include { SAMTOOLS_PROCESSING } from '../subworkflows/local/samtools/main.nf'
 include { SAMTOOLS_STATISTICS } from '../subworkflows/local/samtools_statistics/main.nf'
+include { BAM_STATS_SAMTOOLS } from '../subworkflows/nf-core/bam_stats_samtools/main'
 include { MULTIQC } from '../modules/nf-core/multiqc/main.nf'
 include { WRITE_SAMPLE_LIST } from '../modules/local/write_sample_list/main.nf'
 include { CAGER } from '../subworkflows/local/cager/main.nf'
@@ -180,10 +181,11 @@ workflow CUSTOMCAGE {
             ch_versions = SAMTOOLS_PROCESSING.out.ch_versions
         }
 
-        SAMTOOLS_STATISTICS(ch_bam_bai, ch_fasta, ch_multiqc_files, ch_versions)
+        ch_meta_fasta = ch_bam_bai
+            .combine(ch_fasta)
+            .map{[it[3], it[4]]}
 
-        ch_multiqc_files = SAMTOOLS_STATISTICS.out.ch_multiqc_files
-        ch_versions = SAMTOOLS_STATISTICS.out.ch_versions
+        BAM_STATS_SAMTOOLS(ch_bam_bai, ch_meta_fasta)
 
         if (params.bowtie2) {
             mapped_files_ch = ch_for_cager.map{ meta, paths ->

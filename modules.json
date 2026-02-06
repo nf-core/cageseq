@@ -7,7 +7,7 @@
                 "nf-core": {
                     "bowtie2/align": {
                         "branch": "master",
-                        "git_sha": "e753770db613ce014b3c4bc94f6cba443427b726",
+                        "git_sha": "ab146e7909edbf6dcc6459de57eef29dceb61d42",
                         "installed_by": [
                             "modules"
                         ]
@@ -35,14 +35,14 @@
                     },
                     "fastqc": {
                         "branch": "master",
-                        "git_sha": "5bdb098216aaf5df9c3b6343e6204cd932503c16",
+                        "git_sha": "3009f27c4e4b6e99da4eeebe82799e13924a4a1f",
                         "installed_by": [
                             "modules"
                         ]
                     },
                     "multiqc": {
                         "branch": "master",
-                        "git_sha": "80cba9452fb1e9bb79884976fa1ca0e671949aa2",
+                        "git_sha": "575e1a4b51a9bad7a8cd1316a88fb85684ef7c7b",
                         "installed_by": [
                             "modules"
                         ]
@@ -56,14 +56,14 @@
                     },
                     "samtools/fixmate": {
                         "branch": "master",
-                        "git_sha": "e753770db613ce014b3c4bc94f6cba443427b726",
+                        "git_sha": "4a8800a7285bb174b1e1d50ea4067eeb19d8d391",
                         "installed_by": [
                             "modules"
                         ]
                     },
                     "samtools/flagstat": {
                         "branch": "master",
-                        "git_sha": "e334e12a1e985adc5ffc3fc78a68be1de711de45",
+                        "git_sha": "1d2fbdcbca677bbe8da0f9d0d2bb7c02f2cab1c9",
                         "installed_by": [
                             "bam_stats_samtools"
                         ]
@@ -135,6 +135,13 @@
             },
             "subworkflows": {
                 "nf-core": {
+                    "bam_stats_samtools": {
+                        "branch": "master",
+                        "git_sha": "7ac6cbe7c17c2dad685da7f70496c8f48ea48687",
+                        "installed_by": [
+                            "subworkflows"
+                        ]
+                    },
                     "utils_nextflow_pipeline": {
                         "branch": "master",
                         "git_sha": "c2b22d85f30a706a3073387f30380704fcae013b",
