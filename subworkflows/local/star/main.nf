@@ -4,7 +4,7 @@
 
 include { STAR_ALIGN } from '../../../modules/nf-core/star/align/main.nf'
 include { STAR_GENOMEGENERATE } from '../../../modules/nf-core/star/genomegenerate/main.nf'
-include { UCSC_WIGTOBIGWIG } from '../../../modules/nf-core/ucsc/wigtobigwig/main.nf'
+include { UCSC_WIGTOBIGWIG } from '../../../modules/local/ucsc/wigtobigwig/main.nf'
 
 workflow STAR {
 
@@ -50,6 +50,7 @@ workflow STAR {
             sizes}
 
         wigs = STAR_ALIGN.out.wig
+
         if (params.unique_only){
             wigs_for_conversion = wigs.map{ meta, wigs ->
                 meta = meta
@@ -64,9 +65,6 @@ workflow STAR {
             }
         }
 
-
-        wigs_for_conversion.view()
-        
         UCSC_WIGTOBIGWIG (
             wigs_for_conversion,
             ch_chrom_sizes_for_wig
