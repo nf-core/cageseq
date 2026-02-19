@@ -1,16 +1,10 @@
-name: "cagefightr_enhancer_calling"
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "cagefightr_enhancercalling"
 description: Enhancer calling using CAGEfightR starting from normalized CAGEr object
 keywords:
   - CAGE
   - enhancer calling
 tools:
-  - "optparse":
-      description: "A command-line option parser for R"
-      homepage: "https://CRAN.R-project.org/package=optparse"
-      documentation: "https://cran.r-project.org/web/packages/optparse/refman/optparse.html"
-      doi: "10.32614/CRAN.package.optparse"
-      licence: ["GPL-2 | GPL-3"]
-      identifier: optparse
   - "CAGEfightR":
       description: "Tool for performing a wide range of common data analysis tasks for CAGE and 5'-end data in general."
       homepage: "https://bioconductor.org/packages/devel/bioc/html/CAGEfightR.html"
@@ -59,51 +53,44 @@ tools:
       licence: ["Artistic-2.0 + file"]
       identifier: rtracklayer
 input:
-  - cager_obj:
-      type: file
-      description: |
-        Path to a CAGEr object file containing normalized CAGE data.
-        The CAGEr object should be saved in RDS format.
-      pattern: "*{.rds}"
-  - txdb:
-      type: file
-      description: SQLite file of a TxDb object containing transcript annotations.
-      pattern: "*{.sqlite}"
+  - - cager_obj:
+        type: file
+        description: |
+          CAGEr object with normalized tags and consensus clusters, in RDS format.
+        pattern: "*.{rds}"
+  - - txdb:
+        type: file
+        description: SQLite file of a TxDb object containing transcript annotations.
+        pattern: "*.{sqlite}"
 output:
-  rds:
-    - "intermediate_cagerobj/supported_enhancers.rds":
-        type: file
-        description: |
-          Called supported enhancers in rds format.
-    - "intermediate_cagerobj/nonTSS_enhancers.rds":
-        type: file
-        description: |
-          Enhancers not overlapping called consensus clusters in rds format.
-  plots:
-    - "plots/*.pdf":
-        type: file
-        description: |
-          List of PDF files containing plots generated during the enhancer calling process.
-    - "plots/*.plot.rds":
-        type: file
-        description: |
-          List of RDS files containing plots generated during the enhancer calling process.
-  enhancer_table:
-    - "tables/*.tsv":
-        type: file
-        description: |
-          Table with enhancer expression per sample.
-    - "tracks/*.bed":
-        type: file
-        description: |
-          Bed file of enhancer locations.
-  versions:
-    - versions.yml:
-        type: file
-        description: File containing software versions
-        pattern: "versions.yml"
-        ontologies:
-          - edam: http://edamontology.org/format_3750 # YAML
+  - rds:
+      - "intermediate_cagerobj/supported_enhancers.rds":
+          type: file
+          description: Called supported enhancers in RDS format.
+      - "intermediate_cagerobj/nonTSS_enhancers.rds":
+          type: file
+          description: Enhancers not overlapping called consensus clusters in RDS format.
+  - plots:
+      - "plots/*.pdf":
+          type: file
+          description: PDF files containing plots generated during enhancer calling.
+      - "plots/*plot.rds":
+          type: file
+          description: RDS files containing ggplot objects from enhancer calling.
+  - enhancer_table:
+      - "tables/*.tsv":
+          type: file
+          description: Table with enhancer expression per sample.
+      - "tracks/*.bed":
+          type: file
+          description: BED file of enhancer locations.
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions.
+          pattern: "versions.yml"
+          ontologies:
+            - edam: http://edamontology.org/format_3750 # YAML
 authors:
   - "@ferenckata"
 maintainers:

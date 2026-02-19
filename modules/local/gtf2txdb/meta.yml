@@ -14,7 +14,6 @@ tools:
       tool_dev_url: "https://github.com/Bioconductor/txdbmaker"
       doi: "10.18129/B9.bioc.txdbmaker"
       licence: ["Artistic-2.0"]
-      identifier: bioconductor-txdbmaker
 
 input:
   - - gtf:
