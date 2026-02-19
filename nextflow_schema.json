@@ -1,8 +1,8 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/ComputationalRegulatoryGenomicsICL/customcage/master/nextflow_schema.json",
-    "title": "ComputationalRegulatoryGenomicsICL/customcage pipeline parameters",
-    "description": "This is the first version of the Lenhard's group custom CAGE pipeline implemented in nextflow and nf-core",
+    "$id": "https://raw.githubusercontent.com/nf-core/cageseq/main/nextflow_schema.json",
+    "title": "nf-core/cageseq pipeline parameters",
+    "description": "CAGE-sequencing analysis pipeline with trimming, alignment and counting of CAGE tags.",
     "type": "object",
     "$defs": {
         "input_output_options": {
@@ -20,7 +20,7 @@
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
-                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row.",
+                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/cageseq/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
