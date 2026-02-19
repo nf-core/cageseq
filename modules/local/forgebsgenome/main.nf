@@ -26,5 +26,11 @@ process FORGEBSGENOME {
     """
     touch genome.tar.gz
     touch test.Rcheck
+    cat <<-END_VERSIONS > versions.yml
+       "${task.process}":
+           R: \$(R --version | head -1 | awk '{print \$3}')
+           R_txdbmaker: \$(Rscript -e 'packageVersion("txdbmaker")' | awk '{print \$2}' | tr -d "‘’")
+       END_VERSIONS
+
     """
 }
