@@ -4,7 +4,7 @@
 
 include { BOWTIE2_BUILD } from '../../../modules/nf-core/bowtie2/build/main.nf'
 include { BOWTIE2_ALIGN } from '../../../modules/nf-core/bowtie2/align/main.nf'
-include { SAMTOOLS_VIEW_MAPQ } from '../../../modules/local/samtools/view_mapq/main.nf'
+include { SAMTOOLS_VIEW  } from '../../../modules/nf-core/samtools/view/main.nf'
 
 workflow BOWTIE2 {
 
@@ -43,9 +43,14 @@ workflow BOWTIE2 {
         )
         ch_multiqc_files = ch_multiqc_files.mix(BOWTIE2_ALIGN.out.log.collect{it[1]})
 
-        SAMTOOLS_VIEW_MAPQ ( BOWTIE2_ALIGN.out.bam )
+        SAMTOOLS_VIEW (
+            BOWTIE2_ALIGN.out.bam.map { meta, bam -> [ meta, bam, [] ] },
+            [ [:], [] ],
+            [],
+            null
+        )
 
-        ch_aligned = SAMTOOLS_VIEW_MAPQ.out.bam
+        ch_aligned = SAMTOOLS_VIEW.out.bam
 
     emit:
         ch_aligned
