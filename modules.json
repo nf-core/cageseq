@@ -60,6 +60,11 @@
                         "git_sha": "1d2fbdcbca677bbe8da0f9d0d2bb7c02f2cab1c9",
                         "installed_by": ["modules"]
                     },
+                    "samtools/markdup": {
+                        "branch": "master",
+                        "git_sha": "18ef126d5c91f6f4ad94fe6b939647771d5bc7b0",
+                        "installed_by": ["modules"]
+                    },
                     "samtools/sort": {
                         "branch": "master",
                         "git_sha": "5cb9a8694da0a0e550921636bb60bc8c56445fd7",

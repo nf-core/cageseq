@@ -96,7 +96,7 @@ workflow CAGESEQ {
         }
 
         if (params.dedup) {
-            DEDUPLICATION(ch_aligned, ch_for_cager)
+            DEDUPLICATION(ch_aligned, ch_for_cager, ch_fasta)
 
             ch_for_cager = DEDUPLICATION.out.ch_for_cager
             ch_bam_bai = DEDUPLICATION.out.ch_bam_bai

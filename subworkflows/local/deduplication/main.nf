@@ -7,13 +7,14 @@ include { SAMTOOLS_FIXMATE } from '../../../modules/nf-core/samtools/fixmate/mai
 include { SAMTOOLS_SORT as SORT_AFTER_FIXMATE} from '../../../modules/nf-core/samtools/sort/main.nf'
 include { SAMTOOLS_INDEX as INDEX_AFTER_FIXMATE} from '../../../modules/nf-core/samtools/index/main.nf'
 
-include { SAMTOOLS_DEDUP } from '../../../modules/local/samtools/dedup/main.nf'
+include { SAMTOOLS_MARKDUP } from '../../../modules/nf-core/samtools/markdup/main.nf'
 include { SAMTOOLS_INDEX as INDEX_DEDUP} from '../../../modules/nf-core/samtools/index/main.nf'
 
 workflow DEDUPLICATION {
     take:
         ch_aligned
         ch_for_cager
+        ch_fasta
 
     main:
 
@@ -29,13 +30,24 @@ workflow DEDUPLICATION {
         SORT_AFTER_FIXMATE(ch_bam_to_sort)
         INDEX_AFTER_FIXMATE(SORT_AFTER_FIXMATE.out.bam)
 
-        SAMTOOLS_DEDUP (SORT_AFTER_FIXMATE.out.bam)
-        INDEX_DEDUP (SAMTOOLS_DEDUP.out.bam)
+        // Prepare fasta channel for SAMTOOLS_MARKDUP
+        ch_fasta_indexed = ch_fasta
+            .map { fasta ->
+                def meta = [:]
+                def fai = file("${fasta}.fai")
+                [meta, fasta, fai]
+            }
 
-        ch_bam_bai = SAMTOOLS_DEDUP.out.bam.join(INDEX_DEDUP.out.bai)
+        SAMTOOLS_MARKDUP (
+            SORT_AFTER_FIXMATE.out.bam,
+            ch_fasta_indexed
+        )
+        INDEX_DEDUP (SAMTOOLS_MARKDUP.out.bam)
+
+        ch_bam_bai = SAMTOOLS_MARKDUP.out.bam.join(INDEX_DEDUP.out.bai)
 
         if (params.bowtie2) {
-            ch_for_cager = SAMTOOLS_DEDUP.out.bam
+            ch_for_cager = SAMTOOLS_MARKDUP.out.bam
         }
 
     emit:
