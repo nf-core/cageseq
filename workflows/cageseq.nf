@@ -9,13 +9,13 @@ include { paramsSummaryMap          } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc      } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML    } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_cageseq_pipeline/main'
+include { getGenomeAttribute        } from '../subworkflows/local/utils_nfcore_cageseq_pipeline/main'
 
 // Input readers
 include { MAPPED_INPUTS             } from '../subworkflows/local/mapped_inputs/main.nf'
 include { RELATIVISATION            } from '../modules/local/relativisation/main.nf'
 
 // Pipeline subworkflows and modules
-include { PARAMETER_CHECKS          } from '../subworkflows/local/parameter_checks/main.nf'
 include { PREPROCESSING             } from '../subworkflows/local/preprocessing/main.nf'
 include { PREPARE_MAPPING_METADATA  } from '../subworkflows/local/prepare_mapping_metadata/main.nf'
 include { PREPARE_CAGER_METADATA    } from '../subworkflows/local/prepare_cager_metadata/main.nf'
@@ -57,11 +57,6 @@ workflow CAGESEQ {
     // Handle CAGEr-only mode (no mapping)
     //
     if (!params.maponly && !params.fullpipeline) {
-        if (!params.cager_sample_file) {
-            exit 1, 'Sample list file is mandatory if mapping is not done within the pipeline.'
-        }
-        println("Running CAGEr analysis subpipeline")
-
         ch_cager_sample_file = channel.fromPath(params.cager_sample_file)
         mapped_files_ch = MAPPED_INPUTS(ch_cager_sample_file).collect()
         merged_sample_file = RELATIVISATION(ch_cager_sample_file)
@@ -72,17 +67,46 @@ workflow CAGESEQ {
     //
     if (params.maponly || params.fullpipeline) {
 
-        ch_fasta = channel.empty()
-        ch_index = channel.empty()
+        //
+        // Use reads channel from pipeline initialisation
+        //
+        ch_fastq = ch_samplesheet
 
         //
-        // SUBWORKFLOW: Parameter checks and input validation
+        // Create genome and index channels from parameters
         //
-        PARAMETER_CHECKS(ch_fasta, ch_index)
-
-        ch_fasta = PARAMETER_CHECKS.out.ch_fasta
-        ch_index = PARAMETER_CHECKS.out.ch_index
-        ch_fastq = PARAMETER_CHECKS.out.ch_fastq
+        ch_genome_name = channel.of(params.genome_name)
+        if (params.index) {
+            ch_pre_idx = channel.fromPath(params.index, checkIfExists: true)
+            sample_meta = ch_fastq.map { meta, fastq -> [meta] }
+            ch_index = sample_meta.combine(ch_pre_idx)
+            if (params.genome) {
+                ch_pre_fa = channel.fromPath(params.genome, checkIfExists: true)
+                ch_fasta = ch_genome_name.combine(ch_pre_fa)
+            } else {
+                ch_fasta = channel.empty()
+            }
+        } else if (params.genome) {
+            def fasta_igenomes = getGenomeAttribute('fasta')
+            def index_igenomes = params.bowtie2 ? getGenomeAttribute('bowtie2') : getGenomeAttribute('star')
+            if (fasta_igenomes) {
+                ch_pre_fa = channel.fromPath(fasta_igenomes, checkIfExists: true)
+                ch_fasta  = ch_genome_name.combine(ch_pre_fa)
+            } else {
+                ch_fasta = channel.empty()
+            }
+            if (index_igenomes) {
+                ch_pre_idx  = channel.fromPath(index_igenomes, checkIfExists: true)
+                sample_meta = ch_fastq.map { meta, fastq -> [meta] }
+                ch_index    = sample_meta.combine(ch_pre_idx)
+            } else {
+                ch_index = channel.empty()
+            }
+        } else {
+            ch_pre_fa = channel.fromPath(params.genome, checkIfExists: true)
+            ch_fasta = ch_genome_name.combine(ch_pre_fa)
+            ch_index = channel.empty()
+        }
 
         //
         // MODULE: Run FastQC on raw reads

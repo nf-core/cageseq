@@ -17,6 +17,7 @@ include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
 include { imNotification            } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
+include { INPUT_FROM_FOLDER         } from '../input_from_folder/main.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -98,28 +99,34 @@ workflow PIPELINE_INITIALISATION {
     validateInputParameters()
 
     //
-    // Create channel from input file provided through params.input
+    // Create channel from input file provided through params.input or params.infolder
     //
-
-    channel
-        .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
-        .map {
-            meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
-                } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
-                }
-        }
-        .groupTuple()
-        .map { samplesheet ->
-            validateInputSamplesheet(samplesheet)
-        }
-        .map {
-            meta, fastqs ->
-                return [ meta, fastqs.flatten() ]
-        }
-        .set { ch_samplesheet }
+    if (params.input) {
+        channel
+            .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
+            .map {
+                meta, fastq_1, fastq_2 ->
+                    if (!fastq_2) {
+                        return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
+                    } else {
+                        return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
+                    }
+            }
+            .groupTuple()
+            .map { samplesheet ->
+                validateInputSamplesheet(samplesheet)
+            }
+            .map {
+                meta, fastqs ->
+                    return [ meta, fastqs.flatten() ]
+            }
+            .set { ch_samplesheet }
+    } else if (params.infolder) {
+        INPUT_FROM_FOLDER(params.infolder)
+        ch_samplesheet = INPUT_FROM_FOLDER.out.ch_fastq
+    } else {
+        ch_samplesheet = channel.empty()
+    }
 
     emit:
     samplesheet = ch_samplesheet
@@ -184,6 +191,36 @@ workflow PIPELINE_COMPLETION {
 //
 def validateInputParameters() {
     genomeExistsError()
+
+    // Validate input source and genome for mapping modes
+    if (params.maponly || params.fullpipeline) {
+        if (!params.input && !params.infolder) {
+            error("Provide input reads via --input (samplesheet CSV) or --infolder (directory of FASTQ files).")
+        }
+        if (!params.genome && !params.index) {
+            error("A reference genome FASTA (--genome) or a pre-built index directory (--index) must be specified.")
+        }
+    }
+
+    // Validate CAGEr-only mode requires a pre-mapped sample file
+    if (!params.maponly && !params.fullpipeline && !params.cager_sample_file) {
+        error("--cager_sample_file is required when running in CAGEr-only mode (i.e. without --maponly or --fullpipeline).")
+    }
+
+    // --dist requires --dedup
+    if (params.dist && !params.dedup) {
+        error("The --dist option requires --dedup to be set.")
+    }
+
+    // BSgenome options: either --bsgenome XOR (--forgeseed AND --sourcedir)
+    if (params.cageronly || params.fullpipeline) {
+        if (!params.bsgenome && (!params.forgeseed || !params.sourcedir)) {
+            error("Either --bsgenome or both --forgeseed and --sourcedir must be specified for CAGEr analysis.")
+        }
+        if (params.bsgenome && (params.forgeseed || params.sourcedir)) {
+            error("--bsgenome is mutually exclusive with --forgeseed / --sourcedir.")
+        }
+    }
 }
 
 //
