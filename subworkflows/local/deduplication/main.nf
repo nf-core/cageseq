@@ -28,7 +28,7 @@ workflow DEDUPLICATION {
 
         SORT_AFTER_FIXMATE(ch_bam_to_sort)
         INDEX_AFTER_FIXMATE(SORT_AFTER_FIXMATE.out.bam)
-    
+
         SAMTOOLS_DEDUP (SORT_AFTER_FIXMATE.out.bam)
         INDEX_DEDUP (SAMTOOLS_DEDUP.out.bam)
 

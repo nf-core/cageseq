@@ -26,12 +26,12 @@ gtf: "cageflow_test_data/danRer11_genome/danRer11.ensGene.gtf"
 
 # preprocessing parameters
 input: "docs/examples/samplesheet_sacer_pe.csv"
-infolder: 
+infolder:
 outdir: "results"
 sample_name_fields: 3
 genome_name: "danRer11"
 genome: "cageflow_test_data/danRer11_genome/danRer11.fa"
-index: 
+index:
 seq_platform: "illumina"
 seq_center: false
 # whether to take the uniquely mapped only

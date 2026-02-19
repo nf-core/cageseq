@@ -33,9 +33,9 @@ output:
         description: |
           A TxDb object in SQLite format, which can be imported to R.
   versions:
-  - versions.yml:
-      type: file
-      description: YAML file containing versions of tools used in the module
+    - versions.yml:
+        type: file
+        description: YAML file containing versions of tools used in the module
 authors:
   - "@sidorov-si"
 maintainers:
