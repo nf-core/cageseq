@@ -2,8 +2,8 @@
 // Subworkflow to get the BSgenome via forging or loading
 //
 
-include { GTF2TXDB } from '../../../modules/local/gtf2txdb/main.nf'
-include { FORGE_BSGENOME } from '../../../modules/local/forge_bsgenome/main.nf'
+include { GTF2TXDB      } from '../../../modules/local/gtf2txdb/main.nf'
+include { FORGEBSGENOME } from '../../../modules/local/forgebsgenome/main.nf'
 
 workflow PREPARE_CAGER_METADATA {
 
@@ -15,10 +15,10 @@ workflow PREPARE_CAGER_METADATA {
         // prepare or fetch BSgenome
         if (params.forgeseed) {
             forge_seed = file(params.forgeseed, checkIfExists: true)
-            seqs_srcdir = file(params.sourcedir, checkIfExists: true)
-            FORGE_BSGENOME (
-                forge_seed,
-                seqs_srcdir
+            seqs_fasta = Channel.fromPath("${params.sourcedir}/*", checkIfExists: true).collect()
+            FORGEBSGENOME (
+                Channel.value([[id: 'bsgenome'], forge_seed]),
+                seqs_fasta
             )
         }
 
@@ -34,7 +34,7 @@ workflow PREPARE_CAGER_METADATA {
                 ch_bsgenome_name = params.bsgenome
             }
         } else {
-            ch_bsgenome_file = FORGE_BSGENOME.out.bsgenome
+            ch_bsgenome_file = FORGEBSGENOME.out.tarball.map { meta, tarball -> tarball }
             ch_bsgenome_name = ''
         }
 
