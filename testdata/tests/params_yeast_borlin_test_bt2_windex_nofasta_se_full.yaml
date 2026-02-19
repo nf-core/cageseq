@@ -10,7 +10,7 @@ infolder: "/mnt/biggley/home/slava/projects/leancage_dev/cageflow_test_data/fast
 outdir: "results"
 sample_name_fields: 2
 genome_name: "sacCer3"
-genome: 
+genome:
 index: "yeast_bowtie2_index/bowtie2"
 seq_platform: "illumina"
 seq_center: false
