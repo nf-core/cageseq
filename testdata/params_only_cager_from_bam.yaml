@@ -18,7 +18,7 @@ seq_center: false
 # whether to take the uniquely mapped only
 unique_only: false
 # whether to remove reads that do not start with G
-remove_non_g: false 
+remove_non_g: false
 
 # CAGEr parameters
 # sample file with sorted list of bigwigs or bams, if mapping is run elsewhere

@@ -2,7 +2,7 @@
 // Subworkflow to get the chromsizes
 //
 
-include { CUSTOM_GETCHROMSIZES } from '../../../modules/nf-core/custom/getchromsizes/main.nf'
+include { SAMTOOLS_FAIDX } from '../../../modules/nf-core/samtools/faidx/main.nf'
 
 workflow PREPARE_MAPPING_METADATA {
 
@@ -21,10 +21,13 @@ workflow PREPARE_MAPPING_METADATA {
                 fasta = fasta
                 [new_meta, fasta]
             }.unique()
-            CUSTOM_GETCHROMSIZES( chrom_size_fa )
-            ch_chrom_sizes = CUSTOM_GETCHROMSIZES.out.sizes
+            SAMTOOLS_FAIDX(
+                chrom_size_fa,
+                [[id: 'no_fai'], []],
+                [true] )
+            ch_chrom_sizes = SAMTOOLS_FAIDX.out.sizes
 
-            ch_versions = ch_versions.mix(CUSTOM_GETCHROMSIZES.out.versions)
+            ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
         } else { // a genome index was provided instead
             ch_chrom_sizes = Channel.of([
                 [id:"sizes"],

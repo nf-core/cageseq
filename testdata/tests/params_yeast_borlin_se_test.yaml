@@ -6,7 +6,7 @@ gtf: "cageflow_test_data/sacCer3_genome/sacCer3.ensGene.gtf"
 
 # preprocessing parameters
 samplesheet: "customcageq/testdata/samplesheet_yeast_borlin_2018_se_test.csv"
-infolder: 
+infolder:
 sample_name_fields: 2
 genome_name: "sacCer3"
 fasta: "cageflow_test_data/sacCer3_genome/sacCer3.fa"
@@ -16,7 +16,7 @@ seq_center: false
 # whether to take the uniquely mapped only
 unique_only: true
 # whether to remove reads that do not start with G
-remove_non_g: false 
+remove_non_g: false
 
 # CAGEr parameters
 cager_sample_file: ../borlin_sample_list_test.csv

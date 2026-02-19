@@ -5,18 +5,18 @@ cageronly: false
 gtf: "cageflow_test_data/sacCer3_genome/sacCer3.ensGene.gtf"
 
 # preprocessing parameters
-samplesheet: 
+samplesheet:
 infolder: "cageflow_test_data/fastq/se"
 sample_name_fields: 2
 genome_name: "sacCer3"
-fasta: "cageflow_test_data/sacCer3_genome/sacCer3.fa"
+genome: "cageflow_test_data/sacCer3_genome/sacCer3.fa"
 index: "cageflow_test_data/sacCer3_genome/bowtie2"
 seq_platform: "illumina"
 seq_center: false
 # whether to take the uniquely mapped only
 unique_only: true
 # whether to remove reads that do not start with G
-remove_non_g: false 
+remove_non_g: false
 # whether to trim G or not
 nogtrim: false
 # mapper to use
@@ -37,7 +37,7 @@ norm_range_min: 5
 norm_range_max: 10000
 norm_method: "powerLaw"
 alpha:
-T_norm: 1000000
+t_norm: 1000000
 # parameters for tag clustering
 sample_num_thr: 1
 ctss_thr: 1

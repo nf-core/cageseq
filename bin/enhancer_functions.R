@@ -181,4 +181,3 @@ count_number_of_enhancers <- function(enhancer_expr_per_sample) {
     sample_enhancer_count[["Union"]] <- dim(enhancer_expr_per_sample)[1]
     return(sample_enhancer_count)
 }
-

@@ -33,7 +33,7 @@ process CAGEFIGHTR_ENHANCER_CALLING {
         Bash: \$(echo "\$BASH_VERSION")
         R: \$(R --version | head -1 | awk '{print \$3}')
         R_CAGEr: \$(Rscript -e 'packageVersion("CAGEr")' | awk '{print \$2}' | tr -d "‘’")
-        R_packages: \$(Rscript -e 'sessionInfo(package = NULL)')
+        R_CAGEfightR: \$(Rscript -e 'packageVersion("CAGEfightR")' | tail -1 | awk '{print \$2}' | tr -d "‘’")
     END_VERSIONS
     """
 }
