@@ -173,16 +173,17 @@ save_plot(
 samplename <- names(peakAnno_list)[1]
 
 # Plot sequence distribution at the dominant TSS for each sample
-# "Promoter (<= 1kb)" is a proper annotation if tssRegion in annotatePeak is bigger than 1kb
-# otherwise it would be just "Promoter"
-# If there is only Promoter in the TxDb file, use that
-if (abs(tssregion_up-tssregion_down) < 1000){
-    promoter_annot <- "Promoter"
-}else if ("Promoter (<=1kb)" %in% peakAnno_list[[samplename]]@annoStat$Feature) {
+if (abs(tssregion_up - tssregion_down) < 1000 && 
+    "Promoter (<=1kb)" %in% peakAnno_list[[samplename]]@annoStat$Feature) {
+    # the TSS is within 1 kb from an annotated promoter, 
+    # and such annotation exists
     promoter_annot <- "Promoter (<=1kb)"
-}else{
+} else {
+    # the TSS is either further than 1 kb from an annotated promoter, 
+    # or such annotation does not exist
     promoter_annot <- "Promoter"
 }
+
 for (sample in sampleNames){
     sample_annotation <- peakAnno_list[[sample]]@anno
     tsslogo_plot <- CAGEr::TSSlogo(

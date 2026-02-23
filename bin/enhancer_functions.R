@@ -115,7 +115,7 @@ annotate_enhancers <- function(
         enhancers,
         TxDb = txdb,
         tssRegion = c(tssregion_up, tssregion_down),
-        sameStrand = TRUE,
+        sameStrand = FALSE,
         level = "transcript",
         genomicAnnotationPriority = c(
             "Promoter", "5UTR", "3UTR",
