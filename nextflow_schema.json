@@ -351,12 +351,12 @@
                 "norm_range_min": {
                     "type": "integer",
                     "default": 5,
-                    "description": "Defines the lower thresold for fitting the power-law distribution"
+                    "description": "Defines the lower threshold for fitting the power-law distribution"
                 },
                 "norm_range_max": {
                     "type": "integer",
                     "default": 10000,
-                    "description": "Defines the upper thresold for fitting the power-law distribution"
+                    "description": "Defines the upper threshold for fitting the power-law distribution"
                 },
                 "norm_method": {
                     "type": "string",
@@ -370,7 +370,7 @@
                 "t_norm": {
                     "type": "integer",
                     "default": 1000000,
-                    "description": "Total number of CAGE tags in the reference power-law distribution"
+                    "description": "Total number of CAGE tags in the reference power-law distribution. Setting it to 1,000,000 results in normalized tags per million (TPM) values."
                 },
                 "sample_num_thr": {
                     "type": "integer",
@@ -410,17 +410,17 @@
                 "tssregion_up": {
                     "type": "integer",
                     "default": -3000,
-                    "description": "Upstream distance to consider into TSS region for ChIPseeker annotation"
+                    "description": "Upstream distance to consider into TSS region for ChIPseeker annotation. Should be negative."
                 },
                 "tssregion_down": {
                     "type": "integer",
                     "default": 3000,
-                    "description": "Downstream distance to consider into TSS region for ChIPseeker annotation"
+                    "description": "Downstream distance to consider into TSS region for ChIPseeker annotation. Should be positive."
                 },
                 "tsslogo_upstream": {
                     "type": "integer",
                     "default": 35,
-                    "description": "The number of bases to inlcude upstream of the TSS for TSS logos"
+                    "description": "The number of bases to include upstream of the TSS for TSS logos"
                 },
                 "consensus_thr": {
                     "type": "integer",

@@ -1,17 +1,11 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
 name: "cager_processing"
-description: Tagcluster and consensus cluster calling
+description: Normalise CTSS, call tag clusters and consensus clusters, and export tracks.
 keywords:
   - CAGE
   - tagcluster
   - consensus cluster
 tools:
-  - "optparse":
-      description: "A command-line option parser for R"
-      homepage: "https://CRAN.R-project.org/package=optparse"
-      documentation: "https://cran.r-project.org/web/packages/optparse/refman/optparse.html"
-      doi: "10.32614/CRAN.package.optparse"
-      licence: ["GPL-2 | GPL-3"]
-      identifier: optparse
   - "rlang":
       description: "Functions for Base Types and Core R and 'Tidyverse' Features"
       homepage: "https://cran.r-project.org/web/packages/rlang/index.html"

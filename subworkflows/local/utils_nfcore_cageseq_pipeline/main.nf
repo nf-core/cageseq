@@ -197,8 +197,11 @@ def validateInputParameters() {
         if (!params.input && !params.infolder) {
             error("Provide input reads via --input (samplesheet CSV) or --infolder (directory of FASTQ files).")
         }
-        if (!params.genome && !params.index) {
-            error("A reference genome FASTA (--genome) or a pre-built index directory (--index) must be specified.")
+        if (!params.genome && !params.fasta && !params.index) {
+            error("A reference genome key (--genome), a FASTA file (--fasta), or a pre-built index directory (--index) must be specified.")
+        }
+        if (params.genome && params.fasta) {
+            error("--genome (iGenomes key) and --fasta are mutually exclusive. Use one or the other.")
         }
     }
 

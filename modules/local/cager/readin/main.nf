@@ -4,6 +4,11 @@ process CAGER_READIN {
     label 'process_medium'
     stageInMode 'copy'
 
+    conda "bioconda::bioconductor-cager=2.12.0"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/bioconductor-cager:2.12.0--r44hdfd78af_0' :
+        'biocontainers/bioconductor-cager:2.12.0--r44hdfd78af_0' }"
+
     input:
     path bsgenome_file
     val bsgenome_name
@@ -12,30 +17,23 @@ process CAGER_READIN {
     path ch_collected
 
     output:
-    path "intermediate_cagerobj/initial_cagexp.rds",        emit: rds
-    path "versions.yml", emit: versions
+    path "intermediate_cagerobj/initial_cagexp.rds", emit: rds
+    path "versions.yml",                             emit: versions
 
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    template 'cager_readin.R'
+
+    stub:
     """
-    if [ -z ${bsgenome_name} ]
-    then
-        bsgenome=${bsgenome_file}
-    else
-        bsgenome=${bsgenome_name}
-    fi
-
-    cager_readin.R \
-        --data_type "${data_type}" \
-        --bsgenome \${bsgenome} \
-        --sample_table_list "${sample_table}" \
-        --project_dir ${projectDir} \
-        --num_core ${task.cpus}
-
+    mkdir -p intermediate_cagerobj
+    touch intermediate_cagerobj/initial_cagexp.rds
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Bash: \$(echo "\$BASH_VERSION")
         R: \$(R --version | head -1 | awk '{print \$3}')
-        R_CAGEr: \$(Rscript -e 'packageVersion("CAGEr")' | awk '{print \$2}' | tr -d "‘’")
-        R_BSgenome: \$(Rscript -e 'packageVersion("BSgenome")' | awk '{print \$2}' | tr -d "‘’")
+        CAGEr: \$(Rscript -e 'cat(as.character(packageVersion("CAGEr")))')
     END_VERSIONS
     """
 }

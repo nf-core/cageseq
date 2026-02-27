@@ -80,8 +80,9 @@ workflow CAGESEQ {
             ch_pre_idx = channel.fromPath(params.index, checkIfExists: true)
             sample_meta = ch_fastq.map { meta, fastq -> [meta] }
             ch_index = sample_meta.combine(ch_pre_idx)
-            if (params.genome) {
-                ch_pre_fa = channel.fromPath(params.genome, checkIfExists: true)
+            def fasta_path = params.fasta ?: params.genome
+            if (fasta_path) {
+                ch_pre_fa = channel.fromPath(fasta_path, checkIfExists: true)
                 ch_fasta = ch_genome_name.combine(ch_pre_fa)
             } else {
                 ch_fasta = channel.empty()
@@ -102,9 +103,12 @@ workflow CAGESEQ {
             } else {
                 ch_index = channel.empty()
             }
-        } else {
-            ch_pre_fa = channel.fromPath(params.genome, checkIfExists: true)
+        } else if (params.fasta) {
+            ch_pre_fa = channel.fromPath(params.fasta, checkIfExists: true)
             ch_fasta = ch_genome_name.combine(ch_pre_fa)
+            ch_index = channel.empty()
+        } else {
+            ch_fasta = channel.empty()
             ch_index = channel.empty()
         }
 

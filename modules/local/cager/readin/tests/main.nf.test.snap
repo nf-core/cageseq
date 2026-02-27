@@ -1,0 +1,48 @@
+{
+    "stub": {
+        "content": [
+            {
+                "0": [
+                    "initial_cagexp.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "1": [
+                    "versions.yml:md5,092b00ce6985155229810d84dcf887e4"
+                ],
+                "rds": [
+                    "initial_cagexp.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "versions": [
+                    "versions.yml:md5,092b00ce6985155229810d84dcf887e4"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-02-25T16:15:57.652088"
+    },
+    "bigwig - single sample - BSgenome package": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    
+                ],
+                "rds": [
+                    
+                ],
+                "versions": [
+                    
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-02-25T16:37:31.775081"
+    }
+}

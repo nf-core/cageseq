@@ -1,0 +1,11 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - "bioconda::bioconductor-cager=2.8.0"
+  - "bioconda::bioconductor-genomicfeatures=1.54.1"
+  - "conda-forge::r-ggplot2=3.4.4"
+  - "bioconda::r-gplots=2.17.0"
+  - "conda-forge::r-ggseqlogo=0.2.2"
