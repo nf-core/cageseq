@@ -48,7 +48,7 @@ workflow PARAMETER_CHECKS {
 
         // if index is specified, it is used as input
         if (!params.genome && !params.index) {
-            exit 1, 'Reference genome FASTA file (--fasta) or genome index (--index) should be specified.'
+            exit 1, 'Reference genome FASTA file (--genome) or genome index (--index) should be specified.'
         } else if (params.index) {
             ch_pre_idx = Channel.fromPath(params.index, checkIfExists: true)
             ch_index = sample_meta.combine(ch_pre_idx)

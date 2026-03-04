@@ -1,33 +1,11 @@
-lint:
-  files_exist:
-    - CODE_OF_CONDUCT.md
-    - assets/nf-core-customcage_logo_light.png
-    - docs/images/nf-core-customcage_logo_light.png
-    - docs/images/nf-core-customcage_logo_dark.png
-    - .github/ISSUE_TEMPLATE/config.yml
-    - .github/workflows/awstest.yml
-    - .github/workflows/awsfulltest.yml
-  files_unchanged:
-    - CODE_OF_CONDUCT.md
-    - assets/nf-core-customcage_logo_light.png
-    - docs/images/nf-core-customcage_logo_light.png
-    - docs/images/nf-core-customcage_logo_dark.png
-    - .github/ISSUE_TEMPLATE/bug_report.yml
-  multiqc_config:
-    - report_comment
-  nextflow_config:
-    - manifest.name
-    - manifest.homePage
-nf_core_version: 3.3.2
+nf_core_version: 3.2.0
 repository_type: pipeline
 template:
-  author: Damir Baranasic
-  description: This is the first version of the Lenhard\'s group custom CAGE pipeline
-    implemented in nextflow and nf-core
+  author: Katalin Ferenc, Damir Baranasic
+  description: CAGE-sequencing analysis pipeline with trimming, alignment and counting of CAGE tags.
   force: false
-  is_nfcore: false
-  name: customcage
-  org: ComputationalRegulatoryGenomicsICL
+  is_nfcore: true
+  name: cageseq
+  org: nf-core
   outdir: .
-  skip_features: []
-  version: 1.0dev
+  version: 2.0.0dev
