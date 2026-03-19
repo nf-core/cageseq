@@ -1,8 +1,9 @@
-nf_core_version: 3.2.0
+nf_core_version: 3.5.2
 repository_type: pipeline
 template:
   author: Katalin Ferenc, Damir Baranasic
-  description: CAGE-sequencing analysis pipeline with trimming, alignment and counting of CAGE tags.
+  description: CAGE-sequencing analysis pipeline with trimming, alignment and counting
+    of CAGE tags.
   force: false
   is_nfcore: true
   name: cageseq
