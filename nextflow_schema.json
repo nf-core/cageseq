@@ -279,10 +279,6 @@
                     "type": "string",
                     "description": "Name of the reference genome. It is used as meta information"
                 },
-                "genome": {
-                    "type": "string",
-                    "description": "FASTA file containing a reference genome."
-                },
                 "index": {
                     "type": "string",
                     "description": "Specifies a directory with a genome index"
