@@ -392,7 +392,7 @@
                     "description": "Used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is a non-inclusive lower boundary for the number of samples where the clusters should show bidirectionality."
                 }
             },
-            "required": ["gtf"]
+            "required": ["gtf", "genome"]
         }
     },
     "allOf": [

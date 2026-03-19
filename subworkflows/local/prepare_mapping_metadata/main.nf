@@ -8,12 +8,11 @@ workflow PREPARE_MAPPING_METADATA {
 
     take:
         ch_fasta
-        ch_versions
 
     main:
 
         // prepare chromosome sizes
-        if (params.fasta) {
+        if (params.genome) {
 
             chrom_size_fa = ch_fasta.map{ meta, fasta ->
                 def new_meta = [:]
@@ -27,7 +26,6 @@ workflow PREPARE_MAPPING_METADATA {
                 [true] )
             ch_chrom_sizes = SAMTOOLS_FAIDX.out.sizes
 
-            ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
         } else { // a genome index was provided instead
             ch_chrom_sizes = Channel.of([
                 [id:"sizes"],
@@ -38,5 +36,4 @@ workflow PREPARE_MAPPING_METADATA {
     emit:
         ch_chrom_sizes
         ch_fasta
-        ch_versions
 }

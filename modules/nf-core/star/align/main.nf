@@ -4,8 +4,8 @@ process STAR_ALIGN {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/b4/b425bc2a95806d878993f9a66dae3ae80ac2dafff4c208c5ae01b7a90a32fa91/data' :
-        'community.wave.seqera.io/library/star_samtools_htslib_gawk:10c6e8c834460019' }"
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/26/268b4c9c6cbf8fa6606c9b7fd4fafce18bf2c931d1a809a0ce51b105ec06c89d/data' :
+        'community.wave.seqera.io/library/htslib_samtools_star_gawk:ae438e9a604351a4' }"
 
     input:
     tuple val(meta), path(reads, stageAs: "input*/*")
@@ -19,7 +19,9 @@ process STAR_ALIGN {
     tuple val(meta), path('*Log.final.out')   , emit: log_final
     tuple val(meta), path('*Log.out')         , emit: log_out
     tuple val(meta), path('*Log.progress.out'), emit: log_progress
-    path  "versions.yml"                      , emit: versions
+    tuple val("${task.process}"), val('star'), eval('STAR --version | sed "s/STAR_//"'), emit: versions_star, topic: versions
+    tuple val("${task.process}"), val('samtools'), eval("samtools --version | sed -n '1s/samtools //p'"), emit: versions_samtools, topic: versions
+    tuple val("${task.process}"), val('gawk'), eval("gawk --version | sed -n '1s/GNU Awk \\([0-9.]*\\).*/\\1/p'"), emit: versions_gawk, topic: versions
 
     tuple val(meta), path('*d.out.bam')                              , optional:true, emit: bam
     tuple val(meta), path("${prefix}.sortedByCoord.out.bam")         , optional:true, emit: bam_sorted
@@ -41,38 +43,21 @@ process STAR_ALIGN {
     script:
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
-    def reads1 = [], reads2 = []
-    meta.single_end ? [reads].flatten().each{reads1 << it} : reads.eachWithIndex{ v, ix -> ( ix & 1 ? reads2 : reads1) << v }
+    def reads1 = []
+    def reads2 = []
+    meta.single_end ? [reads].flatten().each{ read -> reads1 << read} : reads.eachWithIndex{ v, ix -> ( ix & 1 ? reads2 : reads1) << v }
     def ignore_gtf      = star_ignore_sjdbgtf ? '' : "--sjdbGTFfile $gtf"
-    def seq_platform    = seq_platform ? "'PL:$seq_platform'" : ""
-    def seq_center      = seq_center ? "'CN:$seq_center'" : ""
-    attrRG          = args.contains("--outSAMattrRGline") ? "" : "--outSAMattrRGline 'ID:$prefix' $seq_center 'SM:$prefix' $seq_platform"
+    def seq_platform_arg  = seq_platform ? "'PL:$seq_platform'" : ""
+    def seq_center_arg    = seq_center ? "'CN:$seq_center'" : ""
+    attrRG          = args.contains("--outSAMattrRGline") ? "" : "--outSAMattrRGline 'ID:$prefix' $seq_center_arg 'SM:$prefix' $seq_platform_arg"
     def out_sam_type    = (args.contains('--outSAMtype')) ? '' : '--outSAMtype BAM Unsorted'
     mv_unsorted_bam = (args.contains('--outSAMtype BAM Unsorted SortedByCoordinate')) ? "mv ${prefix}.Aligned.out.bam ${prefix}.Aligned.unsort.out.bam" : ''
     """
-    taskmemory=`echo "${task.memory}" | \\
-                awk -F" " '{n = \$1; \\
-                            if (\$2 == "KB") { \\
-                                m = 1024 \\
-                            } else { \\
-                                if (\$2 == "MB") { \\
-                                    m = 1024^2 \\
-                                } else { \\
-                                    if (\$2 == "GB") { \\
-                                        m = 1024^3 \\
-                                    } else { \\
-                                        m = 1024^4 \\
-                                    } \\
-                                } \\
-                            }; \\
-                            print n * m}'`
-
     STAR \\
         --genomeDir $index \\
         --readFilesIn ${reads1.join(",")} ${reads2.join(",")} \\
         --runThreadN $task.cpus \\
         --outFileNamePrefix $prefix. \\
-        --limitBAMsortRAM \${taskmemory} \\
         $out_sam_type \\
         $ignore_gtf \\
         $attrRG \\
@@ -88,13 +73,6 @@ process STAR_ALIGN {
         mv ${prefix}.Unmapped.out.mate2 ${prefix}.unmapped_2.fastq
         gzip ${prefix}.unmapped_2.fastq
     fi
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        star: \$(STAR --version | sed -e "s/STAR_//g")
-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
-        gawk: \$(echo \$(gawk --version 2>&1) | sed 's/^.*GNU Awk //; s/, .*\$//')
-    END_VERSIONS
     """
 
     stub:
@@ -117,12 +95,5 @@ process STAR_ALIGN {
     touch ${prefix}.out.sam
     touch ${prefix}.Signal.UniqueMultiple.str1.out.wig
     touch ${prefix}.Signal.UniqueMultiple.str1.out.bg
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        star: \$(STAR --version | sed -e "s/STAR_//g")
-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
-        gawk: \$(echo \$(gawk --version 2>&1) | sed 's/^.*GNU Awk //; s/, .*\$//')
-    END_VERSIONS
     """
 }

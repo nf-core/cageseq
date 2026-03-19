@@ -22,9 +22,8 @@ process UCSC_WIGTOBIGWIG {
     script:
     def args = task.ext.args ?: ''
     def VERSION = '447' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
-
     """
-    # Make a bigWig from the first wig
+     # Make a bigWig from the first wig
     wigToBigWig \\
         $args \\
         ${wig[0]} \\
@@ -45,6 +44,7 @@ process UCSC_WIGTOBIGWIG {
     """
 
     stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '447' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
     touch ${wig[0]}.bw

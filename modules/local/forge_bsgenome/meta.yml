@@ -26,13 +26,27 @@ output:
         type: file
         description: |
           The forged BSgenome package in tar.gz format.
+  versions_forgebsg:
+    - - ${task.process}:
+          type: string
+          description: The process the versions were collected from
+      - BSgenome:
+          type: string
+          description: The name of the tool
+      - "BSgenome --version":
+          type: eval
+          description: The expression to obtain the version of the tool
+topics:
   versions:
-    - versions.yml:
-        type: file
-        description: File containing software versions
-        pattern: "versions.yml"
-        ontologies:
-          - edam: http://edamontology.org/format_3750 # YAML
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - BSgenome:
+          type: string
+          description: The name of the tool
+      - "BSgenome --version":
+          type: eval
+          description: The expression to obtain the version of the tool
 authors:
   - "@sidorov-si"
 maintainers:
