@@ -6,12 +6,12 @@ gtf: "nfcore_testdata/results/seq_dir/sacCer3chrIII.gtf"
 
 # preprocessing parameters
 input: "/mnt/biggley/home/slava/projects/leancage_dev/nfcore_testdata/results/se_chriii_samplesheet.csv"
-infolder: 
+infolder:
 outdir: "results_chriii"
 sample_name_fields: 1
 genome_name: "sacCer3chrIII"
 genome: "nfcore_testdata/results/seq_dir/sacCer3chrIII.fa"
-index: 
+index:
 seq_platform: "illumina"
 seq_center: false
 # whether to take the uniquely mapped only

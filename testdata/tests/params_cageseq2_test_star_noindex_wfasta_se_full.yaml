@@ -6,12 +6,12 @@ gtf: "test-datasets/reference/chr_sub.gtf"
 
 # preprocessing parameters
 input: "/mnt/biggley/home/slava/projects/leancage_dev/test-datasets/samplesheet/v2.0/samplesheet.csv"
-infolder: 
+infolder:
 outdir: "results_nfcore_test"
 sample_name_fields: 1
 genome_name: "chr_sub"
 genome: "test-datasets/reference/chr_sub.fasta"
-index: 
+index:
 seq_platform: "illumina"
 seq_center: false
 # whether to take the uniquely mapped only
