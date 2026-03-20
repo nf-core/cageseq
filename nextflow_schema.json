@@ -260,7 +260,9 @@
                 },
                 "gtf": {
                     "type": "string",
-                    "description": "Genome annotation fiel in GTF format"
+                    "description": "Genome annotation fiel in GTF format",
+                    "format": "file-path",
+                    "exists": true
                 },
                 "infolder": {
                     "type": "string",

@@ -44,11 +44,7 @@ workflow CAGESEQ {
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
 
-    if (params.gtf) {
-            ch_gtf = channel.fromPath(params.gtf, checkIfExists: true)
-        } else {
-            exit 1, "The --gtf argument is mandatory."
-    }
+    ch_gtf = channel.fromPath(params.gtf, checkIfExists: true)
 
     if (!params.maponly && !params.fullpipeline){
         if (!params.cager_sample_file ) {
