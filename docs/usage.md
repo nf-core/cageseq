@@ -275,6 +275,7 @@ with:
 input: './samplesheet.csv'
 outdir: './results/'
 genome: 'GRCh37'
+gtf: reference.gtf
 <...>
 ```
 
