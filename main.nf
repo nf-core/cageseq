@@ -1,9 +1,11 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ComputationalRegulatoryGenomicsICL/customcage
+    nf-core/cageseq
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/ComputationalRegulatoryGenomicsICL/customcage
+    Github : https://github.com/nf-core/cageseq
+    Website: https://nf-co.re/cageseq
+    Slack  : https://nfcore.slack.com/channels/cageseq
 ----------------------------------------------------------------------------------------
 */
 
@@ -13,9 +15,21 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { CUSTOMCAGE  } from './workflows/customcage'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_customcage_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_customcage_pipeline'
+include { CAGESEQ  } from './workflows/cageseq'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_cageseq_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_cageseq_pipeline'
+include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_cageseq_pipeline'
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    GENOME PARAMETER VALUES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+// TODO nf-core: Remove this line if you don't need a FASTA file
+//   This is an example of how to use getGenomeAttribute() to fetch parameters
+//   from igenomes.config using `--genome`
+params.fasta = getGenomeAttribute('fasta')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,29 +37,55 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_cust
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+//
+// WORKFLOW: Run main analysis pipeline depending on type of input
+//
+workflow NFCORE_CAGESEQ {
+
+    take:
+    samplesheet // channel: samplesheet read in from --input
+
+    main:
+
+    //
+    // WORKFLOW: Run pipeline
+    //
+    CAGESEQ (
+        samplesheet
+    )
+    emit:
+    multiqc_report = CAGESEQ.out.multiqc_report // channel: /path/to/multiqc_report.html
+}
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
 workflow {
 
+    main:
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
-    ch_versions = PIPELINE_INITIALISATION (
+    PIPELINE_INITIALISATION (
         params.version,
         params.validate_params,
         params.monochrome_logs,
         args,
-        params.outdir
+        params.outdir,
+        params.input,
+        params.help,
+        params.help_full,
+        params.show_hidden
     )
 
     //
     // WORKFLOW: Run main workflow
     //
-    CUSTOMCAGE(ch_versions)
-
+    NFCORE_CAGESEQ (
+        PIPELINE_INITIALISATION.out.samplesheet
+    )
     //
     // SUBWORKFLOW: Run completion tasks
     //
@@ -56,7 +96,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        CUSTOMCAGE.out.report
+        NFCORE_CAGESEQ.out.multiqc_report
     )
 }
 

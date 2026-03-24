@@ -1,81 +1,14 @@
-// pipeline run settings
-params.fullpipeline = true
-params.maponly = false
-params.cageronly = false
-
-// genome annotation in GTF
-params.gtf = "$projectDir/assets/NO_FILE_GTF"
-
-// preprocessing parameters
-params.input = "$projectDir/assets/NO_FILE_SAMPLESHEET"
-params.infolder = ''
-params.outdir = "results"
-params.sample_name_fields = 1
-params.genome_name = 'unknown'
-params.genome = "$projectDir/assets/NO_FILE_FASTA"
-params.index = "$projectDir/assets/NO_FILE_INDEX"
-params.seq_platform = 'unknown'
-params.seq_center = false
-params.unique_only = true
-params.remove_non_g = false
-
-// TrimGalore! parameters
-params.params_trimgalore = '-v'
-
-// cutadapt parameters
-params.nogtrim = false
-
-// read deduplication parameters
-params.dedup = false
-params.dist = false
-
-// bowtie2 parameters
-params.bowtie2 = false
-
-// CAGEr markdown template location
-params.markdown_path = "$projectDir/assets/cager_report.Rmd"
-
-// BSgenome parameters
-params.bsgenome = false
-params.forgeseed = "$projectDir/assets/NO_FILE_FORGESEED"
-params.sourcedir = ''
-
-// CAGEr parameters
-params.cager_sample_file = "$projectDir/assets/NO_FILE_CAGERSAMPLESHEET"
-params.datatype = "bigwig"
-// parameter for correlation calculation
-params.corrplot_tagCountThreshold = 1
-// parameters for normalization
-params.norm_range_min = 5
-params.norm_range_max = 10000
-params.norm_method = "powerLaw"
-params.alpha = false
-params.t_norm = 1000000
-// parameters for tag clustering
-params.sample_num_thr = 1
-params.ctss_thr = 1
-params.distclu_maxDist = 20
-params.keepSingletonsAbove = 5
-params.iq_low = 0.1
-params.iq_high = 0.9
-// plotting for tagclusters QC
-params.iqw_tpm_threshold = 3
-params.tssregion_up = -3000
-params.tssregion_down = 3000
-params.tsslogo_upstream = 35
-// parameters for consensus clusters
-params.consensus_thr = 2
-params.consensus_dist = 100
-// parameters for enhancer calling
-params.cfBalanceThreshold = 0.95
-params.unexpressed = 0
-params.minSamples = 0
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
 
 // workflow utils
 include { paramsSummaryMap          } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc      } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_customcage_pipeline'
-include { softwareVersionsToYAML      } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_cageseq_pipeline'
+include { softwareVersionsToYAML    } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 
 // input readers
 include { MAPPED_INPUTS } from "../subworkflows/local/mapped_inputs/main.nf"
@@ -95,20 +28,23 @@ include { MULTIQC } from '../modules/nf-core/multiqc/main.nf'
 include { WRITE_SAMPLE_LIST } from '../modules/local/write_sample_list/main.nf'
 include { CAGER } from '../subworkflows/local/cager/main.nf'
 
-def multiqc_report = []
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    RUN MAIN WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
 
-workflow CUSTOMCAGE {
+workflow CAGESEQ {
 
     take:
-    ch_versions
+    ch_samplesheet // channel: samplesheet read in from --input
 
     main:
 
-    if (params.gtf) {
-            ch_gtf = Channel.fromPath(params.gtf, checkIfExists: true)
-        } else {
-            exit 1, "The --gtf argument is mandatory."
-    }
+    ch_versions = channel.empty()
+    ch_multiqc_files = channel.empty()
+
+    ch_gtf = channel.fromPath(params.gtf, checkIfExists: true)
 
     if (!params.maponly && !params.fullpipeline){
         if (!params.cager_sample_file ) {
@@ -116,18 +52,16 @@ workflow CUSTOMCAGE {
         }
         println("Running CAGEr analysis subpipeline")
 
-        ch_cager_sample_file = Channel.fromPath(params.cager_sample_file)
+        ch_cager_sample_file = channel.fromPath(params.cager_sample_file)
         mapped_files_ch = MAPPED_INPUTS(ch_cager_sample_file).collect()
         merged_sample_file = RELATIVISATION(ch_cager_sample_file)
 
     }
 
-    ch_multiqc_files = Channel.empty()
-
     if (params.maponly || params.fullpipeline) {
 
-        ch_fasta = Channel.empty()
-        ch_index = Channel.empty()
+        ch_fasta = channel.empty()
+        ch_index = channel.empty()
 
         PARAMETER_CHECKS(ch_fasta, ch_index)
 
@@ -230,20 +164,12 @@ workflow CUSTOMCAGE {
     //
     // Collate and save software versions
     //
-    softwareVersionsToYAML(ch_versions)
-        .collectFile(
-            storeDir: "${params.outdir}/pipeline_info",
-            name:  'customcage_software_'  + 'mqc_'  + 'versions.yml',
-            sort: true,
-            newLine: true
-        ).set { ch_collated_versions }
-
     def topic_versions = channel.topic("versions")
-      .distinct()
-      .branch { entry ->
-          versions_file: entry instanceof Path
-          versions_tuple: true
-      }
+        .distinct()
+        .branch { entry ->
+            versions_file: entry instanceof Path
+            versions_tuple: true
+        }
 
     def topic_versions_string = topic_versions.versions_tuple
         .map { process, tool, version ->
@@ -254,31 +180,38 @@ workflow CUSTOMCAGE {
             tool_versions.unique().sort()
             "${process}:\n${tool_versions.join('\n')}"
         }
-    ch_collated_versions = softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
+
+    softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
         .mix(topic_versions_string)
+        .collectFile(
+            storeDir: "${params.outdir}/pipeline_info",
+            name: 'nf_core_'  +  'cageseq_software_'  + 'mqc_'  + 'versions.yml',
+            sort: true,
+            newLine: true
+        ).set { ch_collated_versions }
 
 
     //
     // MODULE: MultiQC
     //
-    ch_multiqc_config        = Channel.fromPath(
+    ch_multiqc_config        = channel.fromPath(
         "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config = params.multiqc_config ?
-        Channel.fromPath(params.multiqc_config, checkIfExists: true) :
-        Channel.empty()
+        channel.fromPath(params.multiqc_config, checkIfExists: true) :
+        channel.empty()
     ch_multiqc_logo          = params.multiqc_logo ?
-        Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        Channel.empty()
+        channel.fromPath(params.multiqc_logo, checkIfExists: true) :
+        channel.empty()
 
     summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
-    ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
+    ch_workflow_summary = channel.value(paramsSummaryMultiqc(summary_params))
     ch_multiqc_files = ch_multiqc_files.mix(
         ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
         file(params.multiqc_methods_description, checkIfExists: true) :
         file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description                = Channel.value(
+    ch_methods_description                = channel.value(
         methodsDescriptionText(ch_multiqc_custom_methods_description))
 
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
@@ -298,7 +231,8 @@ workflow CUSTOMCAGE {
         []
     )
 
-    emit:report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    emit:
+    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
 
 }
