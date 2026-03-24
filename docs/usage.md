@@ -242,7 +242,7 @@ This script accepts two additional parameters: `--delimiter` and `--field` speci
 After you cloned this repository, the typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/cageseq --input ./samplesheet.csv --outdir ./results --genome GRCh37 -profile docker
+nextflow run nf-core/cageseq --input ./samplesheet.csv --outdir ./results --genome GRCh37 --gtf reference.gtf -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
