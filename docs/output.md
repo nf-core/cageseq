@@ -14,6 +14,7 @@ Apart from the CAGEexp object and raw 5'-coverage bigWig files (if reads were ma
 ## Output
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
+TODO: clean-up
 
 - [FastQC](#fastqc) - Raw read QC
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
