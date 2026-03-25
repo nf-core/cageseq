@@ -1,0 +1,41 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/environment-schema.json
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  # System / C-level libraries analogous to apt packages
+  - libcurl
+  - openssl
+  - libxml2
+  - fontconfig
+  - freetype
+  - harfbuzz
+  - fribidi
+  - libpng
+  - libtiff
+  - jpeg
+
+  # Build tools
+  - gxx_linux-64
+
+  # Core R
+  - r-base=4.5.0
+
+  # R packages from CRAN
+  - r-rlang
+  - r-tidyr
+  - r-viridis
+  - r-tidyverse
+  - r-ggplot2
+  - r-dplyr
+
+  # Bioconductor version pin
+  - bioconductor-biocversion=3.22.0
+
+  # Bioconductor packages
+  - bioconductor-genomicfeatures
+  - bioconductor-cager
+  - bioconductor-chipseeker
+  - bioconductor-biostrings
