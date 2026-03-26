@@ -1,0 +1,52 @@
+nextflow_process {
+
+    name "Test Process GTF2TXDB"
+    script "../main.nf"
+    process "GTF2TXDB"
+
+    tag "modules"
+    tag "gtf2txdb"
+
+    test("saccer3 - gtf") {
+
+        when {
+            process {
+                """
+                input[0] = file(params.pipelines_testdata_base_path + '/reference/v2/sacCer3chrIII.gtf', checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.txdb.size() == 1 },
+                { assert file(process.out.txdb[0]).name.endsWith('.sqlite') },
+                { assert snapshot(process.out.versions).match() }
+            )
+        }
+
+    }
+
+    test("saccer3 - gtf - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = file(params.pipelines_testdata_base_path + '/reference/v2/sacCer3chrIII.gtf', checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+}
