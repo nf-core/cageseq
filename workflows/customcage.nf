@@ -289,16 +289,17 @@ workflow CUSTOMCAGE {
         )
     )
 
-    MULTIQC (
-        ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList(),
-        [],
-        []
-    )
+    // MULTIQC (
+    //     ch_multiqc_files.collect(),
+    //     ch_multiqc_config.toList(),
+    //     ch_multiqc_custom_config.toList(),
+    //     ch_multiqc_logo.toList(),
+    //     [],
+    //     []
+    // )
 
-    emit:report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    // emit:report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    emit:report = channel.of( 1, 2, 3, 4 ).toList()
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
 
 }
