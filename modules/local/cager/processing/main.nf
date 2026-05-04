@@ -6,6 +6,11 @@ process CAGER_PROCESSING {
     label 'process_verylong'
     stageInMode 'copy'
 
+    conda "${moduleDir}/environment.yml"
+    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/23/23193b56d3e81a11b9b23db31250aa040c7c158f8c346756d2c2a5569e9147dd/data'
+        : 'community.wave.seqera.io/library/bioconductor-cager_bioconductor-genomicfeatures_r-biocmanager_r-dplyr_pruned:f9beb808f71e4139'} "
+
     input:
     path cager_obj
     path bsgenome_file
@@ -13,48 +18,31 @@ process CAGER_PROCESSING {
     path txdb
 
     output:
-    path "intermediate_cagerobj/normalized_clustered_cagexp.rds",        emit: rds
+    path "intermediate_cagerobj/normalized_clustered_cagexp.rds",          emit: rds
     tuple path("plots/*.pdf"), path("plots/*.txt"), path("plots/*plot.rds"), emit: results
-    tuple path("tracks/*.bw"), path("tracks/*.bed"), path("tables/*.csv"), emit: tracks
-    path "versions.yml", emit: versions
+    tuple path("tracks/*.bw"), path("tracks/*.bed"), path("tables/*.csv"),  emit: tracks
+    path "versions.yml",                                                    emit: versions
 
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    template 'cager_processing.R'
+
+    stub:
     """
-    if [ -z ${bsgenome_name} ]
-    then
-        bsgenome=${bsgenome_file}
-    else
-        bsgenome=${bsgenome_name}
-    fi
-
-    cager_processing.R  \
-        --cageexp_object ${cager_obj} \
-        --range_min ${params.norm_range_min} \
-        --range_max ${params.norm_range_max} \
-        --method ${params.norm_method} \
-        --t_norm ${params.t_norm} \
-        --alpha ${params.alpha} \
-        --sample_num_thr ${params.sample_num_thr} \
-        --ctss_thr ${params.ctss_thr} \
-        --distclu_maxDist ${params.distclu_maxDist} \
-        --keepSingletonsAbove ${params.keepSingletonsAbove} \
-        --iq_low ${params.iq_low} \
-        --iq_high ${params.iq_high} \
-        --iqw_tpm_threshold ${params.iqw_tpm_threshold} \
-        --consensus_thr ${params.consensus_thr} \
-        --consensus_dist ${params.consensus_dist} \
-        --annotation ${txdb} \
-        --project_dir ${projectDir} \
-        --bsgenome \${bsgenome} \
-        --num_core ${task.cpus}
-
-    cat tracks/consensusClusters_prefix.bed | awk '{print \$1 "\t" \$2 "\t" \$3 "\t" \$4 "\t" \$5 "\t" \$6 "\t" \$7 }' > tracks/consensusClusters.bed
-    rm tracks/consensusClusters_prefix.bed
-
+    mkdir -p intermediate_cagerobj plots tracks tables
+    touch intermediate_cagerobj/normalized_clustered_cagexp.rds
+    touch plots/normalization_plot.pdf
+    touch plots/normalization_plot.txt
+    touch plots/normalization_plot.rds
+    touch tracks/tagClusters.bw
+    touch tracks/consensusClusters.bed
+    touch tables/consensusClusters.csv
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        Bash: \$(echo "\$BASH_VERSION")
         R: \$(R --version | head -1 | awk '{print \$3}')
-        R_CAGEr: \$(Rscript -e 'packageVersion("CAGEr")' | awk '{print \$2}' | tr -d "‘’")
+        CAGEr: \$(Rscript -e 'cat(as.character(packageVersion("CAGEr")))')
     END_VERSIONS
     """
 }

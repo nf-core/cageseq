@@ -1,16 +1,11 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
 name: "cager_readin"
-description: Importing bigwigs or bams to a CAGEr object
+description: Read BAM or BigWig files into a CAGEr CAGEexp object with raw CTSS counts.
 keywords:
   - CAGE
-  - import
+  - transcription start sites
+  - CAGEr
 tools:
-  - "optparse":
-      description: "A command-line option parser for R"
-      homepage: "https://CRAN.R-project.org/package=optparse"
-      documentation: "https://cran.r-project.org/web/packages/optparse/refman/optparse.html"
-      doi: "10.32614/CRAN.package.optparse"
-      licence: ["GPL-2 | GPL-3"]
-      identifier: optparse
   - "CAGEr":
       description: "Analysis of CAGE (Cap Analysis of Gene Expression) sequencing data for precise mapping of transcription start sites and promoterome mining"
       homepage: "https://www.bioconductor.org/packages/release/bioc/html/CAGEr.html"

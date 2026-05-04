@@ -12,6 +12,7 @@ process RELATIVISATION {
     output:
     path "sample_list_relativepath.csv"
 
+    script:
     """
     make_paths_relative.py -f "${sample_file}"
     """

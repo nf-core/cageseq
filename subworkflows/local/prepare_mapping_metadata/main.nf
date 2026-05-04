@@ -12,7 +12,7 @@ workflow PREPARE_MAPPING_METADATA {
     main:
 
         // prepare chromosome sizes
-        if (params.genome) {
+        if (params.genome || params.fasta) {
 
             chrom_size_fa = ch_fasta.map{ meta, fasta ->
                 def new_meta = [:]

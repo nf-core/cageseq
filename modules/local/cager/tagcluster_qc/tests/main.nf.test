@@ -1,0 +1,157 @@
+nextflow_process {
+
+    name "Test Process CAGER_TAGCLUSTER_QC"
+    script "../main.nf"
+    process "CAGER_TAGCLUSTER_QC"
+
+    tag "modules"
+    tag "cager_tagcluster_qc"
+
+    config "./nextflow.config"
+
+    test("hsapiens - clustered cagerobj - BSgenome package") {
+
+        setup {
+            run("GTF2TXDB") {
+                script "modules/local/gtf2txdb/main.nf"
+                process {
+                    """
+                    input[0] = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.gtf', checkIfExists: true)
+                    """
+                }
+            }
+            run("CAGER_READIN") {
+                script "modules/local/cager/readin/main.nf"
+                process {
+                    """
+                    def bw_str1 = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bigwig/test_S2.RPKM.bw', checkIfExists: true)
+                    def bw_str2 = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bigwig/test_S3.RPKM.bw', checkIfExists: true)
+                    input[0] = []
+                    input[1] = "BSgenome.Hsapiens.UCSC.GRCh37"
+                    input[2] = "[cage1, true, \${bw_str1.name}, \${bw_str2.name}, cage1]"
+                    input[3] = "bigwig"
+                    input[4] = [bw_str1, bw_str2]
+                    """
+                }
+            }
+            run("CAGER_TAG_QC") {
+                script "modules/local/cager/tag_qc/main.nf"
+                process {
+                    """
+                    input[0] = CAGER_READIN.out.rds[0]
+                    input[1] = GTF2TXDB.out.txdb[0]
+                    input[2] = []
+                    input[3] = "BSgenome.Hsapiens.UCSC.GRCh37"
+                    """
+                }
+            }
+            run("CAGER_PROCESSING") {
+                script "modules/local/cager/processing/main.nf"
+                process {
+                    """
+                    input[0] = CAGER_TAG_QC.out.cager_rds[0]
+                    input[1] = []
+                    input[2] = "BSgenome.Hsapiens.UCSC.GRCh37"
+                    input[3] = GTF2TXDB.out.txdb[0]
+                    """
+                }
+            }
+        }
+
+        when {
+            process {
+                """
+                input[0] = CAGER_PROCESSING.out.rds[0]
+                input[1] = GTF2TXDB.out.txdb[0]
+                input[2] = []
+                input[3] = "BSgenome.Hsapiens.UCSC.GRCh37"
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.counts_csv.size() == 1 },
+                { assert process.out.plots.size() == 1 },
+                { assert process.out.correlation_rds.size() == 1 },
+                { assert snapshot(process.out.versions).match() }
+            )
+        }
+
+    }
+
+    test("hsapiens - clustered cagerobj - BSgenome package - stub") {
+
+        options "-stub"
+
+        setup {
+            run("GTF2TXDB") {
+                options "-stub"
+                script "modules/local/gtf2txdb/main.nf"
+                process {
+                    """
+                    input[0] = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.gtf', checkIfExists: true)
+                    """
+                }
+            }
+            run("CAGER_READIN") {
+                options "-stub"
+                script "modules/local/cager/readin/main.nf"
+                process {
+                    """
+                    input[0] = []
+                    input[1] = "BSgenome.Hsapiens.UCSC.GRCh37"
+                    input[2] = "[cage1, true, cage1.str1.bw, cage1.str2.bw, cage1]"
+                    input[3] = "bigwig"
+                    input[4] = []
+                    """
+                }
+            }
+            run("CAGER_TAG_QC") {
+                options "-stub"
+                script "modules/local/cager/tag_qc/main.nf"
+                process {
+                    """
+                    input[0] = CAGER_READIN.out.rds[0]
+                    input[1] = GTF2TXDB.out.txdb[0]
+                    input[2] = []
+                    input[3] = "BSgenome.Hsapiens.UCSC.GRCh37"
+                    """
+                }
+            }
+            run("CAGER_PROCESSING") {
+                options "-stub"
+                script "modules/local/cager/processing/main.nf"
+                process {
+                    """
+                    input[0] = CAGER_TAG_QC.out.cager_rds[0]
+                    input[1] = []
+                    input[2] = "BSgenome.Hsapiens.UCSC.GRCh37"
+                    input[3] = GTF2TXDB.out.txdb[0]
+                    """
+                }
+            }
+        }
+
+        when {
+            process {
+                """
+                input[0] = CAGER_PROCESSING.out.rds[0]
+                input[1] = GTF2TXDB.out.txdb[0]
+                input[2] = []
+                input[3] = "BSgenome.Hsapiens.UCSC.GRCh37"
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+}

@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "cagefightr_enhancercalling"
+description: Enhancer calling using CAGEfightR starting from normalized CAGEr object
+keywords:
+  - CAGE
+  - enhancer calling
+tools:
+  - "CAGEfightR":
+      description: "Tool for performing a wide range of common data analysis tasks for CAGE and 5'-end data in general."
+      homepage: "https://bioconductor.org/packages/devel/bioc/html/CAGEfightR.html"
+      documentation: "https://bioconductor.org/packages/devel/bioc/vignettes/CAGEfightR/inst/doc/Introduction_to_CAGEfightR.html"
+      tool_dev_url: "https://github.com/MalteThodberg/CAGEfightR"
+      doi: "10.1186/s12859-019-3029-5"
+      licence: ["GPL-3 + file"]
+      identifier: cagefightr
+  - "CAGEr":
+      description: "Analysis of CAGE (Cap Analysis of Gene Expression) sequencing data for precise mapping of transcription start sites and promoterome mining"
+      homepage: "https://www.bioconductor.org/packages/release/bioc/html/CAGEr.html"
+      documentation: "https://www.bioconductor.org/packages/release/bioc/vignettes/CAGEr/inst/doc/CAGEexp.html"
+      tool_dev_url: "https://github.com/charles-plessy/CAGEr"
+      doi: "10.18129/B9.bioc.CAGEr"
+      licence: ["GPL-3"]
+      identifier: cager
+  - "GenomicRanges":
+      description: "Representation and manipulation of genomic intervals"
+      homepage: "https://bioconductor.org/packages/devel/bioc/html/GenomicRanges.html"
+      documentation: "https://bioconductor.org/packages/devel/bioc/vignettes/GenomicRanges/inst/doc/GenomicRangesIntroduction.html"
+      tool_dev_url: "https://github.com/Bioconductor/GenomicRanges"
+      doi: "10.1371/journal.pcbi.1003118"
+      licence: ["Artistic-2.0"]
+      identifier: genomicranges
+  - "GenomicFeatures":
+      description: "Query the gene models of a given organism/assembly"
+      homepage: "https://bioconductor.org/packages/devel/bioc/html/GenomicFeatures.html"
+      documentation: "https://bioconductor.org/packages/devel/bioc/vignettes/GenomicFeatures/inst/doc/GenomicFeatures.html"
+      tool_dev_url: "https://github.com/Bioconductor/GenomicFeatures"
+      doi: "10.1371/journal.pcbi.1003118"
+      licence: ["Artistic-2.0"]
+      identifier: genomicfeatures
+  - "dplyr":
+      description: "A grammar of data manipulation"
+      homepage: "https://cloud.r-project.org/web/packages/dplyr/index.html"
+      documentation: "https://dplyr.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/dplyr/"
+      licence: ["MIT + file"]
+      identifier: dplyr
+  - "rtracklayer":
+      description: "R interface to genome annotation files and the UCSC genome browser"
+      homepage: "https://bioconductor.org/packages/devel/bioc/html/rtracklayer.html"
+      documentation: "https://bioconductor.org/packages/devel/bioc/vignettes/rtracklayer/inst/doc/rtracklayer.pdf"
+      tool_dev_url: "https://github.com/lawremi/rtracklayer"
+      doi: "10.1093/bioinformatics/btp328"
+      licence: ["Artistic-2.0 + file"]
+      identifier: rtracklayer
+input:
+  - - cager_obj:
+        type: file
+        description: |
+          CAGEr object with normalized tags and consensus clusters, in RDS format.
+        pattern: "*.{rds}"
+  - - txdb:
+        type: file
+        description: SQLite file of a TxDb object containing transcript annotations.
+        pattern: "*.{sqlite}"
+output:
+  - rds:
+      - "intermediate_cagerobj/supported_enhancers.rds":
+          type: file
+          description: Called supported enhancers in RDS format.
+      - "intermediate_cagerobj/nonTSS_enhancers.rds":
+          type: file
+          description: Enhancers not overlapping called consensus clusters in RDS format.
+  - plots:
+      - "plots/*.pdf":
+          type: file
+          description: PDF files containing plots generated during enhancer calling.
+      - "plots/*plot.rds":
+          type: file
+          description: RDS files containing ggplot objects from enhancer calling.
+  - enhancer_table:
+      - "tables/*.tsv":
+          type: file
+          description: Table with enhancer expression per sample.
+      - "tracks/*.bed":
+          type: file
+          description: BED file of enhancer locations.
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions.
+          pattern: "versions.yml"
+          ontologies:
+            - edam: http://edamontology.org/format_3750 # YAML
+authors:
+  - "@ferenckata"
+maintainers:
+  - "@ferenckata"

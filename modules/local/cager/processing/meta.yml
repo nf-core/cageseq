@@ -1,17 +1,11 @@
 name: "cager_processing"
-description: Tagcluster and consensus cluster calling
+description: Normalise CTSS, call tag clusters and consensus clusters, and
+  export tracks.
 keywords:
   - CAGE
   - tagcluster
   - consensus cluster
 tools:
-  - "optparse":
-      description: "A command-line option parser for R"
-      homepage: "https://CRAN.R-project.org/package=optparse"
-      documentation: "https://cran.r-project.org/web/packages/optparse/refman/optparse.html"
-      doi: "10.32614/CRAN.package.optparse"
-      licence: ["GPL-2 | GPL-3"]
-      identifier: optparse
   - "rlang":
       description: "Functions for Base Types and Core R and 'Tidyverse' Features"
       homepage: "https://cran.r-project.org/web/packages/rlang/index.html"
@@ -20,7 +14,8 @@ tools:
       licence: ["MIT + file"]
       identifier: rlang
   - "CAGEr":
-      description: "Analysis of CAGE (Cap Analysis of Gene Expression) sequencing data for precise mapping of transcription start sites and promoterome mining"
+      description: "Analysis of CAGE (Cap Analysis of Gene Expression) sequencing data
+        for precise mapping of transcription start sites and promoterome mining"
       homepage: "https://www.bioconductor.org/packages/release/bioc/html/CAGEr.html"
       documentation: "https://www.bioconductor.org/packages/release/bioc/vignettes/CAGEr/inst/doc/CAGEexp.html"
       tool_dev_url: "https://github.com/charles-plessy/CAGEr"
@@ -100,63 +95,88 @@ tools:
       licence: ["Artistic-2.0 + file"]
       identifier: rtracklayer
 input:
-  - cager_obj:
-      type: file
-      description: |
-        Path to a CAGEr object file containing annotated CAGE data.
-        The CAGEr object should be saved in RDS format.
-      pattern: "*{.rds}"
-  - bsgenome_file:
-      type: file
-      description: The forged BSgenome package in tar.gz format.
-      pattern: "BSgenome.*.tar.gz"
-  - bsgenome_name:
-      type: val
-      description: Name of an existing BSgenome package to use.
-  - txdb:
-      type: file
-      description: |
-        A TxDb object in SQLite format
+  - - cager_obj:
+        type: file
+        description: |
+          CAGEr object containing annotated CAGE data, saved in RDS format.
+        pattern: "*.rds"
+  - - bsgenome_file:
+        type: file
+        description: Forged BSgenome package in tar.gz format.
+        pattern: "BSgenome.*.tar.gz"
+  - - bsgenome_name:
+        type: string
+        description: Name of an existing BSgenome package to use.
+  - - txdb:
+        type: file
+        description: TxDb object in SQLite format.
+        pattern: "*.sqlite"
 output:
   rds:
-    - "intermediate_cagerobj/normalized_clustered_cagexp.rds":
-        type: file
-        description: |
-          Path to a CAGEr object file containing normalized CAGE data.
+    - - "intermediate_cagerobj/normalized_clustered_cagexp.rds":
+          type: file
+          description: CAGEr object containing normalized and clustered CAGE data,
+            in RDS format.
+          pattern: "*.rds"
   results:
-    - "plots/*.pdf":
-        type: file
-        description: |
-          List of PDF files containing plots generated during normalization and clustering.
-    - "plots/*.plot.rds":
-        type: file
-        description: |
-          List of RDS files containing plots generated during normalization and clustering.
-    - "plots/*.txt":
-        type: file
-        description: |
-          List of txt files generated during normalization and clustering.
+    - - "plots/*.pdf":
+          type: file
+          description: PDF plots generated during normalization and clustering.
+          pattern: "*.pdf"
+      - "plots/*.txt":
+          type: file
+          description: Text files generated during normalization and clustering.
+          pattern: "*.txt"
+      - "plots/*plot.rds":
+          type: file
+          description: RDS plot objects generated during normalization and
+            clustering.
+          pattern: "*.rds"
   tracks:
-    - "tracks/*.bw":
-        type: file
-        description: |
-          Raw and normalized CAGE signal tracks in bigWig format.
-    - "tracks/*.bed":
-        type: file
-        description: |
-          Bed file of taglcuster locations.
-    - "tables/*.csv":
-        type: file
-        description: |
-          Consensus cluster expression per sample in CSV format.
+    - - "tracks/*.bw":
+          type: file
+          description: Raw and normalized CAGE signal tracks in bigWig format.
+          pattern: "*.bw"
+      - "tracks/*.bed":
+          type: file
+          description: BED file of tag cluster locations.
+          pattern: "*.bed"
+      - "tables/*.csv":
+          type: file
+          description: Consensus cluster expression per sample in CSV format.
+          pattern: "*.csv"
   versions:
-    - versions.yml:
-        type: file
-        description: File containing software versions
-        pattern: "versions.yml"
-        ontologies:
-          - edam: http://edamontology.org/format_3750 # YAML
+    - - versions.yml:
+          type: file
+          description: File containing software versions.
+          pattern: "versions.yml"
+          ontologies:
+            - edam: http://edamontology.org/format_3750 # YAML
 authors:
   - "@ferenckata"
 maintainers:
   - "@ferenckata"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/bioconductor-cager_bioconductor-genomicfeatures_r-biocmanager_r-dplyr_pruned:f9beb808f71e4139
+      build_id: bd-f9beb808f71e4139_1
+      scan_id: sc-dc6e7245525f75ff_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/bioconductor-cager_bioconductor-genomicfeatures_r-biocmanager_r-dplyr_pruned:33b031f4f3087c89
+      build_id: bd-33b031f4f3087c89_1
+      scan_id: sc-86eca27ade8da12a_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/bioconductor-cager_bioconductor-genomicfeatures_r-biocmanager_r-dplyr_pruned:900e2a35abbb91c6
+      build_id: bd-900e2a35abbb91c6_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/23/23193b56d3e81a11b9b23db31250aa040c7c158f8c346756d2c2a5569e9147dd/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/bioconductor-cager_bioconductor-genomicfeatures_r-biocmanager_r-dplyr_pruned:8ec638670894449c
+      build_id: bd-8ec638670894449c_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f5/f54677b8d26e7efb17a611ff9508ab376d2b1a006c0cfe415c1a54d2a1e5223c/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/cager/processing/.conda-lock/linux_amd64-bd-f9beb808f71e4139_1.txt
+    linux/arm64:
+      lock_file: modules/local/cager/processing/.conda-lock/linux_arm64-bd-33b031f4f3087c89_1.txt
