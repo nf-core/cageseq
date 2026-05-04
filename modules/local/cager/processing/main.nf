@@ -6,10 +6,10 @@ process CAGER_PROCESSING {
     label 'process_verylong'
     stageInMode 'copy'
 
-    conda "bioconda::bioconductor-cager=2.12.0"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/7a/7a2d31d5909213aff91b251bea788ca05f91609dfe33803d985f0dc9b4aeec64/data' :
-        'bioconductor-cager_bioconductor-genomicfeatures_r-dplyr_r-purrr_pruned:d3d7e0a64babeca7' }"
+    conda "${moduleDir}/environment.yml"
+    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/23/23193b56d3e81a11b9b23db31250aa040c7c158f8c346756d2c2a5569e9147dd/data'
+        : 'community.wave.seqera.io/library/bioconductor-cager_bioconductor-genomicfeatures_r-biocmanager_r-dplyr_pruned:f9beb808f71e4139'} "
 
     input:
     path cager_obj

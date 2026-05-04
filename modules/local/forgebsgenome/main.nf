@@ -2,7 +2,7 @@ process FORGEBSGENOME {
     tag "$meta.id"
     label 'process_medium'
 
-    conda "bioconda::bioconductor-bsgenome=1.70.1"
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bioconductor-bsgenome:1.70.1--r43hdfd78af_0':
         'biocontainers/bioconductor-bsgenome:1.70.1--r43hdfd78af_0' }"
@@ -14,7 +14,7 @@ process FORGEBSGENOME {
     output:
     tuple val(meta), path("*.tar.gz"),  emit: tarball
     tuple val(meta), path("*.Rcheck"),  emit: check_results, optional: true
-    tuple val("${task.process}"), val('BSgenome'), eval('Rscript -e \'cat(as.character(packageVersion("BSgenome")))\' '), emit: versions_bsgenome, topic: versions
+    path "versions.yml", emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

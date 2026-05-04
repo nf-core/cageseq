@@ -2,7 +2,7 @@ process CAGEFIGHTR_ENHANCERCALLING {
     label 'process_verylong'
     stageInMode 'copy'
 
-    conda "bioconda::bioconductor-cagefightr=1.26.0"
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bioconductor-cagefightr:1.26.0--r44hdfd78af_0' :
         'biocontainers/bioconductor-cagefightr:1.26.0--r44hdfd78af_0' }"
@@ -15,7 +15,7 @@ process CAGEFIGHTR_ENHANCERCALLING {
     tuple path("intermediate_cagerobj/supported_enhancers.rds"), path("intermediate_cagerobj/nonTSS_enhancers.rds"), emit: rds
     tuple path("plots/*.pdf"), path("plots/*plot.rds"), emit: plots
     tuple path("tables/*.tsv"), path("tracks/*.bed"), emit: enhancer_table
-    path "versions.yml", emit: versions
+    path "versions.yml", emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when

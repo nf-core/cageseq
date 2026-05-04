@@ -2,7 +2,7 @@ process GTF2TXDB {
     label 'process_medium'
     stageInMode 'copy'
 
-    conda "bioconda::bioconductor-txdbmaker=1.2.0"
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bioconductor-txdbmaker:1.2.0--r44hdfd78af_0' :
         'biocontainers/bioconductor-txdbmaker:1.2.0--r44hdfd78af_0' }"

@@ -45,16 +45,10 @@ output:
           type: directory
           description: R CMD check output directory.
           pattern: "*.Rcheck"
-  - versions_bsgenome:
-      - - ${task.process}:
-            type: string
-            description: The process the versions were collected from
-        - BSgenome:
-            type: string
-            description: The name of the tool
-        - 'Rscript -e ''cat(as.character(packageVersion("BSgenome")))''':
-            type: eval
-            description: The expression to obtain the BSgenome package version
+  - versions:
+      - versions.yml:
+          type: file
+          description: YAML file containing versions of tools used in the module
 
 authors:
   - "@sidorov-si"

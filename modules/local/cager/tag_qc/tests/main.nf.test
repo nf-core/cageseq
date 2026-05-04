@@ -3,16 +3,20 @@ nextflow_process {
     name "Test Process CAGER_TAG_QC"
     script "../main.nf"
     process "CAGER_TAG_QC"
+
+    tag "modules"
+    tag "cager_tag_qc"
+
     config "./nextflow.config"
 
-    test("annotate CTSS and QC - BSgenome package") {
+    test("hsapiens - cagerobj - BSgenome package") {
 
         setup {
             run("GTF2TXDB") {
                 script "modules/local/gtf2txdb/main.nf"
                 process {
                     """
-                    input[0] = file(params.pipelines_testdata_base_path + "cageseq/reference/chr_sub.gtf", checkIfExists: true)
+                    input[0] = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.gtf', checkIfExists: true)
                     """
                 }
             }
@@ -20,8 +24,8 @@ nextflow_process {
                 script "modules/local/cager/readin/main.nf"
                 process {
                     """
-                    def bw_str1 = file(params.modules_testdata_base_path + "genomics/homo_sapiens/illumina/bigwig/test_S2.RPKM.bw", checkIfExists: true)
-                    def bw_str2 = file(params.modules_testdata_base_path + "genomics/homo_sapiens/illumina/bigwig/test_S3.RPKM.bw", checkIfExists: true)
+                    def bw_str1 = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bigwig/test_S2.RPKM.bw', checkIfExists: true)
+                    def bw_str2 = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bigwig/test_S3.RPKM.bw', checkIfExists: true)
                     input[0] = []
                     input[1] = "BSgenome.Hsapiens.UCSC.GRCh37"
                     input[2] = "[cage1, true, \${bw_str1.name}, \${bw_str2.name}, cage1]"
@@ -33,9 +37,6 @@ nextflow_process {
         }
 
         when {
-            params {
-                outdir = "tests/results"
-            }
             process {
                 """
                 input[0] = CAGER_READIN.out.rds[0]
@@ -49,26 +50,49 @@ nextflow_process {
         then {
             assertAll(
                 { assert process.success },
-                { assert process.out.cager_rds[0] != null },
-                { assert process.out.correlation_rds[0] != null },
+                { assert process.out.cager_rds.size() == 1 },
+                { assert process.out.correlation_rds.size() == 1 },
+                { assert process.out.plots.size() == 1 },
                 { assert snapshot(process.out.versions).match() }
             )
         }
 
     }
 
-    test("stub") {
+    test("hsapiens - cagerobj - BSgenome package - stub") {
 
         options "-stub"
 
-        when {
-            params {
-                outdir = "tests/results"
+        setup {
+            run("GTF2TXDB") {
+                options "-stub"
+                script "modules/local/gtf2txdb/main.nf"
+                process {
+                    """
+                    input[0] = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.gtf', checkIfExists: true)
+                    """
+                }
             }
+            run("CAGER_READIN") {
+                options "-stub"
+                script "modules/local/cager/readin/main.nf"
+                process {
+                    """
+                    input[0] = []
+                    input[1] = "BSgenome.Hsapiens.UCSC.GRCh37"
+                    input[2] = "[cage1, true, cage1.str1.bw, cage1.str2.bw, cage1]"
+                    input[3] = "bigwig"
+                    input[4] = []
+                    """
+                }
+            }
+        }
+
+        when {
             process {
                 """
-                input[0] = file("${projectDir}/modules/local/cager/tag_qc/tests/fixtures/dummy.rds")
-                input[1] = file("${projectDir}/modules/local/cager/tag_qc/tests/fixtures/dummy.sqlite")
+                input[0] = CAGER_READIN.out.rds[0]
+                input[1] = GTF2TXDB.out.txdb[0]
                 input[2] = []
                 input[3] = "BSgenome.Hsapiens.UCSC.GRCh37"
                 """

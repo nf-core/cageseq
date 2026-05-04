@@ -59,12 +59,14 @@ sample_idx_to_remove = which(sample_table\$new_name == " ")
 if (length(sample_idx_to_remove) > 0) {
     print("Removing samples with empty new names:")
     print(sample_table[sample_idx_to_remove, ])
-    new_names = stringr::str_squish(sample_table\$new_name[-sample_idx_to_remove])
-    sample_names = stringr::str_squish(sample_table\$id[-sample_idx_to_remove])
-    sample_paths = stringr::str_squish(sample_table\$path[-sample_idx_to_remove])
+    keep         = -sample_idx_to_remove
+    new_names    = stringr::str_squish(sample_table\$new_name[keep])
+    sample_names = stringr::str_squish(sample_table\$id[keep])
+    sample_paths = stringr::str_squish(sample_table\$path[keep])
 } else {
     print("No samples with empty new names found.")
-    new_names = stringr::str_squish(sample_table\$new_name)
+    keep         = seq_len(nrow(sample_table))
+    new_names    = stringr::str_squish(sample_table\$new_name)
     sample_names = stringr::str_squish(sample_table\$id)
     sample_paths = stringr::str_squish(sample_table\$path)
 }
@@ -97,14 +99,10 @@ if (tolower(data_type) == "bam") {
         inputFilesType = bam_type,
         sampleLabels   = sample_names)
 } else if (tolower(data_type) == "bigwig") {
-    bigwigs = unlist(
-        stringr::str_split(
-            stringr::str_remove_all(
-                sample_paths, ","),
-            stringr::fixed(" ")))
+    str1_paths = stringr::str_squish(sample_table\$path1[keep])
     ce <- CAGEexp(
         genomeName     = reference_name,
-        inputFiles     = bigwigs[grep("str1", bigwigs)],
+        inputFiles     = str1_paths,
         inputFilesType = "bigwig",
         sampleLabels   = sample_names)
 } else {
