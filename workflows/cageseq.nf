@@ -4,32 +4,29 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Workflow utils
+// workflow utils
 include { paramsSummaryMap          } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc      } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_cageseq_pipeline'
 include { softwareVersionsToYAML    } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_cageseq_pipeline/main'
-include { getGenomeAttribute        } from '../subworkflows/local/utils_nfcore_cageseq_pipeline/main'
 
-// Input readers
-include { MAPPED_INPUTS             } from '../subworkflows/local/mapped_inputs/main.nf'
-include { RELATIVISATION            } from '../modules/local/relativisation/main.nf'
+// input readers
+include { MAPPED_INPUTS } from "../subworkflows/local/mapped_inputs/main.nf"
+include { RELATIVISATION } from '../modules/local/relativisation/main.nf'
 
-// Pipeline subworkflows and modules
-include { PREPROCESSING             } from '../subworkflows/local/preprocessing/main.nf'
-include { PREPARE_MAPPING_METADATA  } from '../subworkflows/local/prepare_mapping_metadata/main.nf'
-include { PREPARE_CAGER_METADATA    } from '../subworkflows/local/prepare_cager_metadata/main.nf'
-include { STAR                      } from '../subworkflows/local/star/main.nf'
-include { BOWTIE2                   } from '../subworkflows/local/bowtie2/main.nf'
-include { DEDUPLICATION             } from '../subworkflows/local/deduplication/main.nf'
-include { SAMTOOLS_PROCESSING       } from '../subworkflows/local/samtools/main.nf'
-include { BAM_STATS_SAMTOOLS        } from '../subworkflows/nf-core/bam_stats_samtools/main'
-include { WRITE_SAMPLE_LIST         } from '../modules/local/write_sample_list/main.nf'
-include { CAGER                     } from '../subworkflows/local/cager/main.nf'
-
-// Core nf-core modules
-include { FASTQC                    } from '../modules/nf-core/fastqc/main'
-include { MULTIQC                   } from '../modules/nf-core/multiqc/main'
+// pipeline subworkflows and modules
+include { PARAMETER_CHECKS } from '../subworkflows/local/parameter_checks/main.nf'
+include { PREPROCESSING } from '../subworkflows/local/preprocessing/main.nf'
+include { PREPARE_MAPPING_METADATA } from '../subworkflows/local/prepare_mapping_metadata/main.nf'
+include { PREPARE_CAGER_METADATA } from '../subworkflows/local/prepare_cager_metadata/main.nf'
+include { STAR } from '../subworkflows/local/star/main.nf'
+include { BOWTIE2 } from '../subworkflows/local/bowtie2/main.nf'
+include { DEDUPLICATION } from '../subworkflows/local/deduplication/main.nf'
+include { SAMTOOLS_PROCESSING } from '../subworkflows/local/samtools/main.nf'
+include { BAM_STATS_SAMTOOLS } from '../subworkflows/nf-core/bam_stats_samtools/main'
+include { MULTIQC } from '../modules/nf-core/multiqc/main.nf'
+include { WRITE_SAMPLE_LIST } from '../modules/local/write_sample_list/main.nf'
+include { CAGER } from '../subworkflows/local/cager/main.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,96 +44,40 @@ workflow CAGESEQ {
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
 
-    //
-    // Check GTF parameter
-    //
-
     ch_gtf = channel.fromPath(params.gtf, checkIfExists: true)
 
-    //
-    // Handle CAGEr-only mode (no mapping)
-    //
-    if (!params.maponly && !params.fullpipeline) {
+    if (!params.maponly && !params.fullpipeline){
+        if (!params.cager_sample_file ) {
+            exit 1, 'Sample list file is mandatory if mapping is not done within the pipeline.'
+        }
+        println("Running CAGEr analysis subpipeline")
+
         ch_cager_sample_file = channel.fromPath(params.cager_sample_file)
         mapped_files_ch = MAPPED_INPUTS(ch_cager_sample_file).collect()
         merged_sample_file = RELATIVISATION(ch_cager_sample_file)
+
     }
 
-    //
-    // Mapping workflow (maponly or fullpipeline modes)
-    //
     if (params.maponly || params.fullpipeline) {
 
-        //
-        // Use reads channel from pipeline initialisation
-        //
-        ch_fastq = ch_samplesheet
+        ch_fasta = channel.empty()
+        ch_index = channel.empty()
 
-        //
-        // Create genome and index channels from parameters
-        //
-        ch_genome_name = channel.of(params.genome_name)
-        if (params.index) {
-            ch_pre_idx = channel.fromPath(params.index, checkIfExists: true)
-            sample_meta = ch_fastq.map { meta, fastq -> [meta] }
-            ch_index = sample_meta.combine(ch_pre_idx)
-            def fasta_path = params.fasta ?: params.genome
-            if (fasta_path) {
-                ch_pre_fa = channel.fromPath(fasta_path, checkIfExists: true)
-                ch_fasta = ch_genome_name.combine(ch_pre_fa)
-            } else {
-                ch_fasta = channel.empty()
-            }
-        } else if (params.genome) {
-            def fasta_igenomes = getGenomeAttribute('fasta')
-            def index_igenomes = params.bowtie2 ? getGenomeAttribute('bowtie2') : getGenomeAttribute('star')
-            if (fasta_igenomes) {
-                ch_pre_fa = channel.fromPath(fasta_igenomes, checkIfExists: true)
-                ch_fasta  = ch_genome_name.combine(ch_pre_fa)
-            } else {
-                ch_fasta = channel.empty()
-            }
-            if (index_igenomes) {
-                ch_pre_idx  = channel.fromPath(index_igenomes, checkIfExists: true)
-                sample_meta = ch_fastq.map { meta, fastq -> [meta] }
-                ch_index    = sample_meta.combine(ch_pre_idx)
-            } else {
-                ch_index = channel.empty()
-            }
-        } else if (params.fasta) {
-            ch_pre_fa = channel.fromPath(params.fasta, checkIfExists: true)
-            ch_fasta = ch_genome_name.combine(ch_pre_fa)
-            ch_index = channel.empty()
-        } else {
-            ch_fasta = channel.empty()
-            ch_index = channel.empty()
-        }
+        PARAMETER_CHECKS(ch_fasta, ch_index)
 
-        //
-        // MODULE: Run FastQC on raw reads
-        //
-        FASTQC(ch_fastq)
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect { it[1] })
-        ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+        ch_fasta = PARAMETER_CHECKS.out.ch_fasta
+        ch_index = PARAMETER_CHECKS.out.ch_index
+        ch_fastq = PARAMETER_CHECKS.out.ch_fastq
 
-        //
-        // SUBWORKFLOW: Preprocessing (trimming, filtering, etc.)
-        //
         PREPROCESSING(ch_fastq, ch_multiqc_files)
 
         ch_reads_to_align = PREPROCESSING.out.ch_reads_to_align
         ch_multiqc_files = PREPROCESSING.out.ch_multiqc_files
 
-        //
-        // SUBWORKFLOW: Prepare mapping metadata
-        //
-        PREPARE_MAPPING_METADATA(ch_fasta)
+        PREPARE_MAPPING_METADATA( ch_fasta )
         ch_chrom_sizes = PREPARE_MAPPING_METADATA.out.ch_chrom_sizes
         ch_fasta = PREPARE_MAPPING_METADATA.out.ch_fasta
 
-        //
-        // SUBWORKFLOW: Alignment (Bowtie2 or STAR)
-        //
         if (params.bowtie2) {
             BOWTIE2(ch_reads_to_align, ch_fasta, ch_index, ch_multiqc_files)
 
@@ -154,11 +95,8 @@ workflow CAGESEQ {
             ch_multiqc_files = STAR.out.ch_multiqc_files
         }
 
-        //
-        // SUBWORKFLOW: Deduplication or SAMtools processing
-        //
         if (params.dedup) {
-            DEDUPLICATION(ch_aligned, ch_for_cager, ch_fasta)
+            DEDUPLICATION(ch_aligned, ch_for_cager)
 
             ch_for_cager = DEDUPLICATION.out.ch_for_cager
             ch_bam_bai = DEDUPLICATION.out.ch_bam_bai
@@ -169,35 +107,25 @@ workflow CAGESEQ {
             ch_bam_bai = SAMTOOLS_PROCESSING.out.ch_bam_bai
         }
 
-        //
-        // SUBWORKFLOW: BAM statistics
-        //
         ch_meta_fasta = ch_bam_bai
             .combine(ch_fasta)
-            .map { tuple -> [tuple[3], tuple[4]] }
+            .map{[it[3], it[4]]}
 
         BAM_STATS_SAMTOOLS(ch_bam_bai, ch_meta_fasta)
 
-        //
-        // Collect mapped files for CAGEr
-        //
         if (params.bowtie2) {
-            mapped_files_ch = ch_for_cager
-                .map { meta, paths -> [paths] }
+            mapped_files_ch = ch_for_cager.map{ meta, paths ->
+                [paths]}
                 .collect()
         } else {
-            mapped_files_ch = ch_for_cager
-                .map { meta, paths ->
-                    def file1 = paths[0]
-                    def file2 = paths[1]
-                    [file1, file2]
-                }
+            mapped_files_ch = ch_for_cager.map{ meta, paths ->
+                file1 = paths[0]
+                file2 = paths[1]
+                [file1, file2]}
                 .collect()
         }
 
-        //
-        // MODULE: Write sample list for CAGEr
-        //
+
         ch_sample_files = WRITE_SAMPLE_LIST(ch_for_cager)
         def header = "id,single_end,path,new_name"
 
@@ -220,9 +148,6 @@ workflow CAGESEQ {
         ch_bsgenome_name = PREPARE_CAGER_METADATA.out.ch_bsgenome_name
         ch_txdb_file = PREPARE_CAGER_METADATA.out.ch_txdb_file
 
-        //
-        // SUBWORKFLOW: CAGEr analysis
-        //
         CAGER(
             ch_bsgenome_file,
             ch_bsgenome_name,
