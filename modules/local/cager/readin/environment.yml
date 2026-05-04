@@ -5,6 +5,7 @@ channels:
   - bioconda
 dependencies:
   - "bioconda::bioconductor-cager=2.16.0"
+  - "bioconda::bioconductor-bsgenome=1.78.0"
   - "bioconda::bioconductor-genomicfeatures=1.62.0"
   - "conda-forge::r-biocmanager=1.30.27"
   - "conda-forge::r-dplyr=1.1.4"
