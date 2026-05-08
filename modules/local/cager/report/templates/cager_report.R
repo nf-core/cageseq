@@ -26,4 +26,4 @@ unexpressed                <- "${params.unexpressed}"
 minSamples                 <- "${params.minSamples}"
 ce                         <- readRDS("${cageexp_object}")
 
-rmarkdown::render("${rmarkd_template}")
+rmarkdown::render("cager_report.Rmd")

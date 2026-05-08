@@ -1,0 +1,55 @@
+{
+    "hsapiens - cagerobj - BSgenome package": {
+        "content": [
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-05-08T11:32:45.546932216",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.0"
+        }
+    },
+    "hsapiens - cagerobj - BSgenome package - stub": {
+        "content": [
+            {
+                "0": [
+                    "annotated_cagexp.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "1": [
+                    "CTSS_correlations_matrix.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "2": [
+                    [
+                        "tag_region_annotation_plot.pdf:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "tag_region_annotation_plot.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    "versions.yml:md5,7eb4ca411e58a82951909667061209b0"
+                ],
+                "cager_rds": [
+                    "annotated_cagexp.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "correlation_rds": [
+                    "CTSS_correlations_matrix.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "plots": [
+                    [
+                        "tag_region_annotation_plot.pdf:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "tag_region_annotation_plot.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,7eb4ca411e58a82951909667061209b0"
+                ]
+            }
+        ],
+        "timestamp": "2026-05-08T11:32:52.43216563",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.0"
+        }
+    }
+}

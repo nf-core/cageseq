@@ -12,12 +12,13 @@ nextflow_process {
         when {
             process {
                 """
-                def bw_str1 = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bigwig/test_S2.RPKM.bw', checkIfExists: true)
-                input[0] = []
-                input[1] = "BSgenome.Hsapiens.UCSC.hg38"
-                input[2] = "[cage1, false, \${bw_str1.name}, ,cage1]"
+                def bw_str1 = file(params.pipelines_testdata_base_path + '/testdata/v2/bigwig/S1.Signal.Unique.str1.out.wig.bw', checkIfExists: true)
+                def bw_str2 = file(params.pipelines_testdata_base_path + '/testdata/v2/bigwig/S1.Signal.Unique.str2.out.wig.bw', checkIfExists: true)
+                input[0] = file(params.pipelines_testdata_base_path + '/reference/v2/BSgenome.sacCer3ChrIII.Test.sacCer3ChrIII_1.0.tar.gz')
+                input[1] = ""
+                input[2] = "[S1, false, \${bw_str1.name}, \${bw_str2.name} , S1]"
                 input[3] = "bigwig"
-                input[4] = [bw_str1]
+                input[4] = [bw_str1, bw_str2]
                 """
             }
         }

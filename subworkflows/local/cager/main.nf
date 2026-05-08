@@ -71,10 +71,7 @@ workflow CAGER {
         // enhancer calling plots
         enhancer_plots = CAGEFIGHTR_ENHANCERCALLING.out.plots
 
-        ch_template = Channel.fromPath(params.markdown_path)
-
         ch_html = CAGER_REPORT(
-            ch_template,
             tra_ch_tss,
             tag_corr_data,
             ch_preproc_res,

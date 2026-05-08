@@ -16,23 +16,23 @@
                 ]
             }
         ],
+        "timestamp": "2026-04-09T13:02:30.263264",
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "25.10.4"
-        },
-        "timestamp": "2026-04-09T13:02:30.263264"
+        }
     },
     "hsapiens - bigwig - BSgenome package - single_end": {
         "content": [
             [
-                
+                "versions.yml:md5,f2018f34ef193111720eca1fa9bdcae7"
             ]
         ],
+        "timestamp": "2026-05-08T11:05:03.907093953",
         "meta": {
-            "nf-test": "0.9.3",
-            "nextflow": "25.10.4"
-        },
-        "timestamp": "2026-04-09T13:02:22.760134"
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.0"
+        }
     },
     "hsapiens - bigwig - BSgenome package - stub": {
         "content": [
@@ -51,11 +51,11 @@
                 ]
             }
         ],
+        "timestamp": "2026-04-09T10:45:57.312772",
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "25.10.4"
-        },
-        "timestamp": "2026-04-09T10:45:57.312772"
+        }
     },
     "hsapiens - bigwig - BSgenome package": {
         "content": [
@@ -63,10 +63,10 @@
                 
             ]
         ],
+        "timestamp": "2026-04-09T10:45:50.160742",
         "meta": {
             "nf-test": "0.9.3",
             "nextflow": "25.10.4"
-        },
-        "timestamp": "2026-04-09T10:45:50.160742"
+        }
     }
 }

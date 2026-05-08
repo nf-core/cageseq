@@ -39,12 +39,6 @@ tools:
       licence: ["GPL-2"]
       identifier: gplots
 input:
-  - rmarkd_template:
-      type: file
-      description: |
-        Rmarkdown template for the CAGEr QC report.
-        This file is used to generate the HTML report.
-      pattern: "*{.Rmd}"
   - tss_hm_ta_plots:
       type: file
       description: |
@@ -80,7 +74,7 @@ input:
   - tagcluster_corr_m:
       type: file
       description: |
-        Path to a R object containing normaized sample correlation matrix.
+        Path to a R object containing normalized sample correlation matrix.
   - enhancer_plots:
       type: file
       description: |

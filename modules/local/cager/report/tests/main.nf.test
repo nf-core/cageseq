@@ -9,76 +9,48 @@ nextflow_process {
 
     config "./nextflow.config"
 
-    test("hsapiens - full pipeline output - stub") {
-
-        options "-stub"
+    test("hsapiens - full pipeline output") {
 
         setup {
-            run("GTF2TXDB") {
-                options "-stub"
-                script "modules/local/gtf2txdb/main.nf"
-                process {
-                    """
-                    input[0] = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.gtf', checkIfExists: true)
-                    """
-                }
-            }
-            run("CAGER_READIN") {
-                options "-stub"
-                script "modules/local/cager/readin/main.nf"
-                process {
-                    """
-                    input[0] = []
-                    input[1] = "BSgenome.Hsapiens.UCSC.GRCh37"
-                    input[2] = "[cage1, true, cage1.str1.bw, cage1.str2.bw, cage1]"
-                    input[3] = "bigwig"
-                    input[4] = []
-                    """
-                }
-            }
             run("CAGER_TAG_QC") {
-                options "-stub"
                 script "modules/local/cager/tag_qc/main.nf"
                 process {
                     """
-                    input[0] = CAGER_READIN.out.rds[0]
-                    input[1] = GTF2TXDB.out.txdb[0]
+                    input[0] = file(params.pipelines_testdata_base_path + '/testdata/v2/intermediate_cagerobj/initial_cagexp.rds')
+                    input[1] = file(params.pipelines_testdata_base_path + '/testdata/v2/txdb/annotation_from_gtf.sqlite')
                     input[2] = []
                     input[3] = "BSgenome.Hsapiens.UCSC.GRCh37"
                     """
                 }
             }
             run("CAGER_PROCESSING") {
-                options "-stub"
                 script "modules/local/cager/processing/main.nf"
                 process {
                     """
                     input[0] = CAGER_TAG_QC.out.cager_rds[0]
                     input[1] = []
                     input[2] = "BSgenome.Hsapiens.UCSC.GRCh37"
-                    input[3] = GTF2TXDB.out.txdb[0]
+                    input[3] = file(params.pipelines_testdata_base_path + '/testdata/v2/txdb/annotation_from_gtf.sqlite')
                     """
                 }
             }
             run("CAGER_TAGCLUSTER_QC") {
-                options "-stub"
                 script "modules/local/cager/tagcluster_qc/main.nf"
                 process {
                     """
                     input[0] = CAGER_PROCESSING.out.rds[0]
-                    input[1] = GTF2TXDB.out.txdb[0]
+                    input[1] = file(params.pipelines_testdata_base_path + '/testdata/v2/txdb/annotation_from_gtf.sqlite')
                     input[2] = []
                     input[3] = "BSgenome.Hsapiens.UCSC.GRCh37"
                     """
                 }
             }
             run("CAGEFIGHTR_ENHANCERCALLING") {
-                options "-stub"
                 script "modules/local/cagefightr/enhancercalling/main.nf"
                 process {
                     """
                     input[0] = CAGER_PROCESSING.out.rds[0]
-                    input[1] = GTF2TXDB.out.txdb[0]
+                    input[1] = file(params.pipelines_testdata_base_path + '/testdata/v2/txdb/annotation_from_gtf.sqlite')
                     """
                 }
             }
@@ -87,14 +59,13 @@ nextflow_process {
         when {
             process {
                 """
-                input[0] = file("${projectDir}/assets/cager_report.Rmd")
-                input[1] = CAGER_TAG_QC.out.plots[0]
-                input[2] = CAGER_TAG_QC.out.correlation_rds[0]
-                input[3] = CAGER_PROCESSING.out.results[0]
-                input[4] = CAGER_TAGCLUSTER_QC.out.plots[0]
-                input[5] = CAGER_TAGCLUSTER_QC.out.correlation_rds[0]
-                input[6] = CAGEFIGHTR_ENHANCERCALLING.out.plots[0]
-                input[7] = CAGER_READIN.out.rds[0]
+                input[0] = CAGER_TAG_QC.out.plots
+                input[1] = CAGER_TAG_QC.out.correlation_rds
+                input[2] = CAGER_PROCESSING.out.results
+                input[3] = CAGER_TAGCLUSTER_QC.out.plots
+                input[4] = CAGER_TAGCLUSTER_QC.out.correlation_rds
+                input[5] = CAGEFIGHTR_ENHANCERCALLING.out.plots
+                input[6] = CAGER_PROCESSING.out.rds
                 """
             }
         }

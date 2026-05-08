@@ -11,7 +11,6 @@ process CAGER_REPORT {
 
 
     input:
-    path rmarkd_template
     tuple path(tss_hm_ta_plots), path(tss_hm_ta_data)
     path tag_corr_m
     tuple path(cc_iqw_rc_plots), path(cc_txt), path(cc_iqw_rc_data)
