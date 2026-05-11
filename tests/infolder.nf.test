@@ -1,6 +1,6 @@
 nextflow_pipeline {
 
-    name "Test pipeline"
+    name "Test the full pipeline with input from folder"
     script "../main.nf"
     tag "pipeline"
 
@@ -9,24 +9,26 @@ nextflow_pipeline {
         when {
             params {
                 outdir = "$outputDir"
+                infolder = params.pipelines_testdata_base_path + "cageseq/testdata/v2/fastq"
+                input = null
                 bsgenome = params.pipelines_testdata_base_path + "cageseq/reference/v2/BSgenome.sacCer3ChrIII.Test.sacCer3ChrIII_1.0.tar.gz"
             }
         }
 
         then {
-            // stable_path: All files + folders in ${params.outdir}/ with a stable path (including file name)
-            def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
-            // stable_content: All files in ${params.outdir}/ with stable content
-            def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
-            assert workflow.success
+            // stable_name: All files + folders in ${params.outdir}/ with a stable name
+            def stable_name = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
+            // stable_path: All files in ${params.outdir}/ with stable content
+            def stable_path = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
             assertAll(
+                { assert workflow.success},
                 { assert snapshot(
                     // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
                     removeNextflowVersion("$outputDir/pipeline_info/nf_core_cageseq_software_mqc_versions.yml"),
                     // All stable path name, with a relative path
-                    stable_path,
+                    stable_name,
                     // All files with stable contents
-                    stable_content
+                    stable_path
                 ).match() }
             )
         }
