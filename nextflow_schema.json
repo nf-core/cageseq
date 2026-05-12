@@ -10,7 +10,9 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": [
+                "outdir"
+            ],
             "properties": {
                 "input": {
                     "type": "string",
@@ -22,6 +24,14 @@
                     "description": "Path to comma-separated file containing information about the samples in the experiment. Mutually exclusive with `infolder`.",
                     "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/cageseq/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv"
+                },
+                "infolder": {
+                    "type": "string",
+                    "description": "Path to the folder with fastq files. Mutually exclusive with input"
+                },
+                "sample_name_fields": {
+                    "type": "integer",
+                    "description": "Number of underscore separated fields  denoting sample name when infolder is used"
                 },
                 "outdir": {
                     "type": "string",
@@ -149,7 +159,14 @@
                     "description": "Method used to save pipeline results to output directory.",
                     "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files. See [Nextflow docs](https://www.nextflow.io/docs/latest/process.html#publishdir) for details.",
                     "fa_icon": "fas fa-copy",
-                    "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
+                    "enum": [
+                        "symlink",
+                        "rellink",
+                        "link",
+                        "copy",
+                        "copyNoFollow",
+                        "move"
+                    ],
                     "hidden": true
                 },
                 "email_on_fail": {
@@ -226,7 +243,10 @@
                     "hidden": true
                 },
                 "help": {
-                    "type": ["boolean", "string"],
+                    "type": [
+                        "boolean",
+                        "string"
+                    ],
                     "description": "Display the help message."
                 },
                 "help_full": {
@@ -239,52 +259,37 @@
                 }
             }
         },
-        "pipeline_parameters": {
-            "title": "Pipeline parameters",
+        "preprocessing_options": {
+            "title": "Preprocessing options",
             "type": "object",
-            "description": "",
+            "description": "Parameters for options prior to mapping",
             "default": "",
             "properties": {
-                "fullpipeline": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Run the whole pipeline"
-                },
-                "maponly": {
-                    "type": "boolean",
-                    "description": "Run only the mapping part until bigiwgs or bams"
-                },
-                "cageronly": {
-                    "type": "boolean",
-                    "description": "Run only the CAGEr processing part from bigiwgs or bams"
-                },
-                "gtf": {
-                    "type": "string",
-                    "description": "Genome annotation fiel in GTF format",
-                    "format": "file-path",
-                    "exists": true
-                },
-                "infolder": {
-                    "type": "string",
-                    "description": "Path to the folder with fastq files. Mutually exclusive with input"
-                },
                 "save_merged_fastq": {
                     "type": "boolean",
                     "default": true,
                     "description": "Whether to save merged fasta files"
                 },
-                "sample_name_fields": {
-                    "type": "integer",
-                    "description": "Number of underscore separated fields  denoting sample name when infolder is used"
+                "remove_non_g": {
+                    "type": "boolean",
+                    "description": "Whether to keep only those reads that start with G base"
                 },
-                "genome_name": {
+                "params_trimgalore": {
                     "type": "string",
-                    "description": "Name of the reference genome. It is used as meta information"
+                    "description": "Additional parameters that can be passed to TrimGalore!"
                 },
-                "index": {
-                    "type": "string",
-                    "description": "Specifies a directory with a genome index"
-                },
+                "nogtrim": {
+                    "type": "boolean",
+                    "description": "Makes the pipeline skip the G-trimming step in preprocessing"
+                }
+            }
+        },
+        "mapping_options": {
+            "title": "Mapping options",
+            "type": "object",
+            "description": "Parameters for mapping",
+            "default": "",
+            "properties": {
                 "seq_platform": {
                     "type": "string",
                     "description": "Sequencing platform used. Required for mapping with STAR"
@@ -298,18 +303,6 @@
                     "default": true,
                     "description": "Whether only uniquely mapped reads should be considered for downstream analysis."
                 },
-                "remove_non_g": {
-                    "type": "boolean",
-                    "description": "Whether to keep only those reads that start with G base"
-                },
-                "params_trimgalore": {
-                    "type": "string",
-                    "description": "Additional parameters that can be passed to TrimGalore!"
-                },
-                "nogtrim": {
-                    "type": "boolean",
-                    "description": "Makes the pipeline skip the G-trimming step in preprocessing"
-                },
                 "bowtie2": {
                     "type": "boolean",
                     "description": "Switches the aligner from STAR to bowtie2"
@@ -321,15 +314,28 @@
                 "dist": {
                     "type": "integer",
                     "description": "Sets an optical duplicate distance, used together with dedup"
-                },
-                "cager_sample_file": {
+                }
+            }
+        },
+        "reference_preparation_options": {
+            "title": "Reference preparation options",
+            "type": "object",
+            "description": "Parameters for creating references",
+            "default": "",
+            "properties": {
+                "gtf": {
                     "type": "string",
-                    "description": "The input CSV samplesheet including the name of the samples, their pairedness status, and the location of bigwig or bam files. Required when cageronly is true."
+                    "description": "Genome annotation file in GTF format",
+                    "format": "file-path",
+                    "exists": true
                 },
-                "datatype": {
+                "index": {
                     "type": "string",
-                    "description": "Format of the mapping data file passed to the TSS analysis part when STAR is used (either 'bam' or 'bigwig').",
-                    "default": "bigwig"
+                    "description": "Specifies a directory with a genome index"
+                },
+                "genome_name": {
+                    "type": "string",
+                    "description": "Name of the reference genome. It is used as meta information"
                 },
                 "forgeseed": {
                     "type": "string",
@@ -342,11 +348,36 @@
                 "bsgenome": {
                     "type": "string",
                     "description": "BSgenome R package to use (if not forged)"
+                }
+            },
+            "required": [
+                "gtf"
+            ]
+        },
+        "cager_options": {
+            "title": "CAGEr options",
+            "type": "object",
+            "description": "Parameters for the underlying CAGEr package",
+            "default": "",
+            "properties": {
+                "cager_sample_file": {
+                    "type": "string",
+                    "description": "The input CSV samplesheet including the name of the samples, their pairedness status, and the location of bigwig or bam files. Required when cageronly is true."
+                },
+                "datatype": {
+                    "type": "string",
+                    "description": "Format of the mapping data file passed to the TSS analysis part when STAR is used (either 'bam' or 'bigwig').",
+                    "default": "bigwig"
                 },
                 "corrplot_tagCountThreshold": {
                     "type": "integer",
                     "default": 1,
                     "description": "Threshold above which raw and normalized CTSS are considered for the correlation plot"
+                },
+                "norm_method": {
+                    "type": "string",
+                    "default": "powerLaw",
+                    "description": "Method used for normalizing the samples: powerLaw, simpleTpm, and none are supported"
                 },
                 "norm_range_min": {
                     "type": "integer",
@@ -357,11 +388,6 @@
                     "type": "integer",
                     "default": 10000,
                     "description": "Defines the upper threshold for fitting the power-law distribution"
-                },
-                "norm_method": {
-                    "type": "string",
-                    "default": "powerLaw",
-                    "description": "Method used for normalizing the samples: powerLaw, simpleTpm, and none are supported"
                 },
                 "alpha": {
                     "type": "string",
@@ -431,7 +457,15 @@
                     "type": "integer",
                     "default": 100,
                     "description": "Used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquartile ranges of tag clusters to be joined together into consensus clusters."
-                },
+                }
+            }
+        },
+        "cagefightr_options": {
+            "title": "CAGEfightR options",
+            "type": "object",
+            "description": "Parameters for the underlying CAGEfightR package from which enhancer calling is used",
+            "default": "",
+            "properties": {
                 "cfBalanceThreshold": {
                     "type": "number",
                     "default": 0.95,
@@ -447,8 +481,28 @@
                     "default": 0,
                     "description": "Used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is a non-inclusive lower boundary for the number of samples where the clusters should show bidirectionality."
                 }
-            },
-            "required": ["gtf"]
+            }
+        },
+        "pipeline_parameters": {
+            "title": "Pipeline parameters",
+            "type": "object",
+            "description": "Which mode the pipeline should run in",
+            "default": "",
+            "properties": {
+                "fullpipeline": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run the whole pipeline"
+                },
+                "maponly": {
+                    "type": "boolean",
+                    "description": "Run only the mapping part until bigiwgs or bams"
+                },
+                "cageronly": {
+                    "type": "boolean",
+                    "description": "Run only the CAGEr and CAGEfightR processing parts from bigiwgs or bams"
+                }
+            }
         }
     },
     "allOf": [
@@ -463,6 +517,21 @@
         },
         {
             "$ref": "#/$defs/generic_options"
+        },
+        {
+            "$ref": "#/$defs/preprocessing_options"
+        },
+        {
+            "$ref": "#/$defs/mapping_options"
+        },
+        {
+            "$ref": "#/$defs/reference_preparation_options"
+        },
+        {
+            "$ref": "#/$defs/cager_options"
+        },
+        {
+            "$ref": "#/$defs/cagefightr_options"
         },
         {
             "$ref": "#/$defs/pipeline_parameters"
