@@ -1,0 +1,37 @@
+{
+    "saccer3 - gtf": {
+        "content": [
+            [
+                "versions.yml:md5,c0dbf921ad5ee08e44017cb48c65b1da"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-26T16:27:10.178631"
+    },
+    "saccer3 - gtf - stub": {
+        "content": [
+            {
+                "0": [
+                    "annotation_from_gtf.sqlite:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "1": [
+                    "versions.yml:md5,2a45ee68f454734ac0d36caba397deb1"
+                ],
+                "txdb": [
+                    "annotation_from_gtf.sqlite:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "versions": [
+                    "versions.yml:md5,2a45ee68f454734ac0d36caba397deb1"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-26T16:27:17.302805"
+    }
+}

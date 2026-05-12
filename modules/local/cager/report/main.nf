@@ -4,6 +4,12 @@ process CAGER_REPORT {
     label 'process_medium'
     stageInMode 'copy'
 
+    conda "${moduleDir}/environment.yml"
+    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/23/23193b56d3e81a11b9b23db31250aa040c7c158f8c346756d2c2a5569e9147dd/data'
+        : 'community.wave.seqera.io/library/bioconductor-cager_bioconductor-genomicfeatures_r-biocmanager_r-dplyr_pruned:f9beb808f71e4139'} "
+
+
     input:
     path rmarkd_template
     tuple path(tss_hm_ta_plots), path(tss_hm_ta_data)
@@ -17,33 +23,14 @@ process CAGER_REPORT {
     output:
     path "*.html"
 
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    template 'cager_report.R'
+
+    stub:
     """
-    #!/usr/bin/env Rscript
-    library(rmarkdown)
-
-    corrplot_tagCountThreshold <- '${params.corrplot_tagCountThreshold}'
-    norm_range_min <- '${params.norm_range_min}'
-    norm_range_max <- '${params.norm_range_max}'
-    norm_method <- '${params.norm_method}'
-    t_norm <- '${params.t_norm}'
-    alpha <- '${params.alpha}'
-    sample_num_thr <- '${params.sample_num_thr}'
-    ctss_thr <- '${params.ctss_thr}'
-    distclu_maxDist <- '${params.distclu_maxDist}'
-    keepSingletonsAbove <- '${params.keepSingletonsAbove}'
-    iq_low <- '${params.iq_low}'
-    iq_high <- '${params.iq_high}'
-    iqw_tpm_threshold <- '${params.iqw_tpm_threshold}'
-    tssregion_up <- '${params.tssregion_up}'
-    tssregion_down <- '${params.tssregion_down}'
-    tsslogo_upstream <- '${params.tsslogo_upstream}'
-    consensus_dist <- '${params.consensus_dist}'
-    consensus_thr <- '${params.consensus_thr}'
-    cfBalanceThreshold <- '${params.cfBalanceThreshold}'
-    unexpressed <- '${params.unexpressed}'
-    minSamples <- '${params.minSamples}'
-    ce <- readRDS('${cageexp_object}')
-
-    rmarkdown::render('${rmarkd_template}')
+    touch cager_report.html
     """
 }

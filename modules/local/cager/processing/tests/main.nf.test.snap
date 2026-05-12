@@ -1,0 +1,65 @@
+{
+    "hsapiens - annotated cagerobj - BSgenome package": {
+        "content": [
+            [
+                
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-03-26T17:32:33.792153"
+    },
+    "hsapiens - annotated cagerobj - BSgenome package - stub": {
+        "content": [
+            {
+                "0": [
+                    "normalized_clustered_cagexp.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "1": [
+                    [
+                        "normalization_plot.pdf:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "normalization_plot.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "normalization_plot.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        "tagClusters.bw:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "consensusClusters.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "consensusClusters.csv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    "versions.yml:md5,59f45daf2dca9d9db02bc336f9b96fb8"
+                ],
+                "rds": [
+                    "normalized_clustered_cagexp.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "results": [
+                    [
+                        "normalization_plot.pdf:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "normalization_plot.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "normalization_plot.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "tracks": [
+                    [
+                        "tagClusters.bw:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "consensusClusters.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "consensusClusters.csv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,59f45daf2dca9d9db02bc336f9b96fb8"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-04-09T10:36:30.518082"
+    }
+}

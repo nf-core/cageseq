@@ -1,17 +1,11 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
 name: "cager_tagcluster_qc"
-description: Annotation and quality checks on the tag clusters
+description: Annotate tag clusters with ChIPseeker and perform QC on nucleotide composition and consensus clusters.
 keywords:
   - CAGE
   - annotation
   - QC
 tools:
-  - "optparse":
-      description: "A command-line option parser for R"
-      homepage: "https://CRAN.R-project.org/package=optparse"
-      documentation: "https://cran.r-project.org/web/packages/optparse/refman/optparse.html"
-      doi: "10.32614/CRAN.package.optparse"
-      licence: ["GPL-2 | GPL-3"]
-      identifier: optparse
   - "rlang":
       description: "Functions for Base Types and Core R and 'Tidyverse' Features"
       homepage: "https://cran.r-project.org/web/packages/rlang/index.html"

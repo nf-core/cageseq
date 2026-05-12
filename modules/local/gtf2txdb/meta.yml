@@ -1,17 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
 name: "gtf2txdb"
-description: Convert GTF files to TxDb objects
+description: Convert a GTF annotation file to a TxDb object stored as SQLite.
 keywords:
   - GTF
   - TxDb
-  - Genomic Annotations
+  - annotation
+  - genomics
 tools:
-  - "optparse":
-      description: "A command-line option parser for R"
-      homepage: "https://CRAN.R-project.org/package=optparse"
-      documentation: "https://cran.r-project.org/web/packages/optparse/refman/optparse.html"
-      doi: "10.32614/CRAN.package.optparse"
-      licence: ["GPL-2 | GPL-3"]
-      identifier: optparse
   - "txdbmaker":
       description: "A set of tools for making TxDb objects from genomic annotations from various sources (e.g. UCSC, Ensembl, and GFF files)."
       homepage: "https://www.bioconductor.org/packages/release/bioc/html/txdbmaker.html"
@@ -19,23 +14,30 @@ tools:
       tool_dev_url: "https://github.com/Bioconductor/txdbmaker"
       doi: "10.18129/B9.bioc.txdbmaker"
       licence: ["Artistic-2.0"]
-      identifier: txdbmaker
+
 input:
-  - gtf:
-      type: file
-      description: |
-        GTF file containing genomic annotations to be converted into a TxDb object.
-      pattern: "*.gtf"
+  - - gtf:
+        type: file
+        description: GTF file containing genomic annotations to be converted into a TxDb object.
+        pattern: "*.gtf"
+
 output:
   txdb:
     - "*.sqlite":
         type: file
-        description: |
-          A TxDb object in SQLite format, which can be imported to R.
+        description: A TxDb object serialised as an SQLite database, importable into R.
+        pattern: "*.sqlite"
   versions:
-    - versions.yml:
-        type: file
-        description: YAML file containing versions of tools used in the module
+    - - ${task.process}:
+          type: string
+          description: The process the versions were collected from
+      - txdbmaker:
+          type: string
+          description: The name of the tool
+      - 'Rscript -e ''cat(as.character(packageVersion("txdbmaker")))''':
+          type: eval
+          description: The expression to obtain the txdbmaker package version
+
 authors:
   - "@sidorov-si"
 maintainers:

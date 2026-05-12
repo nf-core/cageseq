@@ -1,9 +1,10 @@
-name: "cager_tagcluster_qc"
-description: Annotation and quality checks on the tag clusters
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "cager_report"
+description: Render an HTML report summarising all CAGEr QC and analysis results.
 keywords:
   - CAGE
-  - annotation
-  - QC
+  - report
+  - rmarkdown
 tools:
   - "rmarkdown":
       description: "Dynamic Documents for R"

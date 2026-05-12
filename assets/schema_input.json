@@ -17,22 +17,17 @@
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q(\\.gz)?$",
+                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq', '.fastq', '.fq.gz' or '.fastq.gz'"
             },
             "fastq_2": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
-            },
-            "single_end": {
-                "type": "boolean",
-                "exists": true,
-                "errorMessage": "Pairedness missing"
+                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q(\\.gz)?$",
+                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq', '.fastq', '.fq.gz' or '.fastq.gz'"
             }
         },
-        "required": ["sample", "fastq_1", "single_end"]
+        "required": ["sample", "fastq_1"]
     }
 }

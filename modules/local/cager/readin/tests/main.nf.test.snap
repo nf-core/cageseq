@@ -1,0 +1,72 @@
+{
+    "hsapiens - bigwig - BSgenome package - single_end - stub": {
+        "content": [
+            {
+                "0": [
+                    "initial_cagexp.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "1": [
+                    "versions.yml:md5,feae3d4c863119a3d009e6bd25a02c2a"
+                ],
+                "rds": [
+                    "initial_cagexp.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "versions": [
+                    "versions.yml:md5,feae3d4c863119a3d009e6bd25a02c2a"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-04-09T13:02:30.263264"
+    },
+    "hsapiens - bigwig - BSgenome package - single_end": {
+        "content": [
+            [
+                
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-04-09T13:02:22.760134"
+    },
+    "hsapiens - bigwig - BSgenome package - stub": {
+        "content": [
+            {
+                "0": [
+                    "initial_cagexp.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "1": [
+                    "versions.yml:md5,feae3d4c863119a3d009e6bd25a02c2a"
+                ],
+                "rds": [
+                    "initial_cagexp.rds:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ],
+                "versions": [
+                    "versions.yml:md5,feae3d4c863119a3d009e6bd25a02c2a"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-04-09T10:45:57.312772"
+    },
+    "hsapiens - bigwig - BSgenome package": {
+        "content": [
+            [
+                
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-04-09T10:45:50.160742"
+    }
+}
