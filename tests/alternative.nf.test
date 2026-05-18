@@ -8,15 +8,15 @@ nextflow_pipeline {
 
         when {
             params {
-                outdir = "$outputDir"
+                outdir      = "$outputDir"
                 unique_only = false
-                bowtie2 = true
-                dedup = true
-                dist = 100
-                datatype = "bam"
-                forgeseed = params.pipelines_testdata_base_path + "cageseq/reference/v2/BSgenome.sacCer3ChrIII.Test.sacCer3ChrIII-seed"
-                sourcedir = params.pipelines_testdata_base_path + "cageseq/reference/v2/seq_dir"
-                bsgenome = null
+                bowtie2     = true
+                dedup       = true
+                dist        = 100
+                datatype    = "bam"
+                forgeseed   = params.pipelines_testdata_base_path + "cageseq/reference/v2/BSgenome.sacCer3ChrIII.Test.sacCer3ChrIII-seed"
+                sourcedir   = params.pipelines_testdata_base_path + "cageseq/reference/v2/seq_dir"
+                bsgenome    = null
             }
         }
 

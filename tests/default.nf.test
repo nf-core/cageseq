@@ -1,6 +1,6 @@
 nextflow_pipeline {
 
-    name "Test pipeline: default"
+    name "Test the full pipeline with default parameters"
     script "../main.nf"
     tag "pipeline"
 

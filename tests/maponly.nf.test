@@ -8,10 +8,10 @@ nextflow_pipeline {
 
         when {
             params {
-                outdir = "$outputDir"
+                outdir       = "$outputDir"
                 fullpipeline = false
-                maponly = true
-                nogtrim = true
+                maponly      = true
+                nogtrim      = true
             }
         }
 
