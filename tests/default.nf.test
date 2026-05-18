@@ -9,7 +9,6 @@ nextflow_pipeline {
         when {
             params {
                 outdir = "$outputDir"
-                bsgenome = params.pipelines_testdata_base_path + "cageseq/reference/v2/BSgenome.sacCer3ChrIII.Test.sacCer3ChrIII_1.0.tar.gz"
             }
         }
 
