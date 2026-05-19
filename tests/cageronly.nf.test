@@ -10,7 +10,6 @@ nextflow_pipeline {
             params {
                 outdir            = "$outputDir"
                 cager_sample_file = params.pipelines_testdata_base_path + "cageseq/samplelist/cageseq2_sample_list_test.csv"
-                bsgenome          = params.pipelines_testdata_base_path + "cageseq/reference/v2/BSgenome.sacCer3ChrIII.Test.sacCer3ChrIII_1.0.tar.gz"
                 fullpipeline      = false
                 cageronly         = true
             }
