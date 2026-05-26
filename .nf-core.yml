@@ -7,6 +7,8 @@ lint:
         - params.markdown_path
   merge_markers:
     - modules/nf-core/bowtie2/align/tests/main.nf.test.snap
+  files_unchanged:
+    - .github/PULL_REQUEST_TEMPLATE.md
 template:
   author: Katalin Ferenc, Sviatoslav Sidorov, Damir Baranasic
   description: CAGE-sequencing analysis pipeline with trimming, alignment and counting
