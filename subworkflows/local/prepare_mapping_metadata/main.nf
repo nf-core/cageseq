@@ -33,6 +33,6 @@ workflow PREPARE_MAPPING_METADATA {
         }
 
     emit:
-        ch_chrom_sizes
-        ch_fasta
+        ch_chrom_sizes = ch_chrom_sizes
+        ch_fasta = ch_fasta
 }

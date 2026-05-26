@@ -45,7 +45,7 @@ workflow BOWTIE2 {
 
         SAMTOOLS_VIEW (
             BOWTIE2_ALIGN.out.bam.map { meta, bam -> [ meta, bam, [] ] },
-            [ [:], [] ],
+            [ [:], [], [] ],
             [ [:], [] ],
             [ [:], [] ],
             null

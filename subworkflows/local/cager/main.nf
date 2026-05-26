@@ -85,7 +85,7 @@ workflow CAGER {
 
     emit:
         ch_html = ch_html
-        ch_versions
+        ch_versions = ch_versions
 
 }
 

@@ -20,7 +20,7 @@ workflow DEDUPLICATION {
         println("Deduplicating reads")
         SORT_FOR_FIXMATE (
             ch_aligned,
-            [[id: null], []],
+            [[id: null], [], []],
             ''
         )
         SAMTOOLS_FIXMATE (
@@ -28,7 +28,7 @@ workflow DEDUPLICATION {
         )
         ch_bam_to_sort = SAMTOOLS_FIXMATE.out.bam
 
-        SORT_AFTER_FIXMATE(ch_bam_to_sort, [[id: null], []], '')
+        SORT_AFTER_FIXMATE(ch_bam_to_sort, [[id: null], [], []], '')
 
         // Prepare fasta channel for SAMTOOLS_MARKDUP
         ch_fasta_indexed = ch_fasta
@@ -44,7 +44,7 @@ workflow DEDUPLICATION {
         )
         INDEX_DEDUP (SAMTOOLS_MARKDUP.out.bam)
 
-        ch_bam_bai = SAMTOOLS_MARKDUP.out.bam.join(INDEX_DEDUP.out.bai)
+        ch_bam_bai = SAMTOOLS_MARKDUP.out.bam.join(INDEX_DEDUP.out.index)
 
         if (params.bowtie2) {
             ch_for_cager = SAMTOOLS_MARKDUP.out.bam

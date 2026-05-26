@@ -78,9 +78,9 @@ workflow PARAMETER_CHECKS {
 
 
     emit:
-        ch_fasta
-        ch_index
-        ch_fastq
+        ch_fasta = ch_fasta
+        ch_index = ch_index
+        ch_fastq = ch_fastq
 
 }
 

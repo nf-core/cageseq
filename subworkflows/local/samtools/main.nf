@@ -15,9 +15,9 @@ workflow SAMTOOLS_PROCESSING {
 
         ch_index_format = channel.value("bai")
 
-        SAMTOOLS_SORT(ch_aligned, ch_fasta, ch_index_format)
+        SAMTOOLS_SORT(ch_aligned, ch_fasta.map { meta, fasta -> [meta, fasta, []] }, ch_index_format)
         SAMTOOLS_INDEX (SAMTOOLS_SORT.out.bam)
-        ch_bam_bai = SAMTOOLS_SORT.out.bam.join(SAMTOOLS_INDEX.out.bai)
+        ch_bam_bai = SAMTOOLS_SORT.out.bam.join(SAMTOOLS_INDEX.out.index)
         if (params.bowtie2) {
             ch_for_cager = SAMTOOLS_SORT.out.bam
         }
