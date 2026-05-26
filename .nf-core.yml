@@ -1,6 +1,7 @@
 nf_core_version: 4.0.2
 repository_type: pipeline
 lint:
+  container_configs: false
   nextflow_config:
     - config_defaults:
         - params.markdown_path
