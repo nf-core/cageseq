@@ -44,7 +44,7 @@ workflow PARAMETER_CHECKS {
             meta = meta
             [meta]}
 
-        ch_genome_name = Channel.of(params.genome_name)
+        ch_genome_name = channel.of(params.genome_name)
 
         // if index is specified, it is used as input
         if (!params.genome && !params.index) {

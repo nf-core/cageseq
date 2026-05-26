@@ -12,18 +12,18 @@ workflow MAPPED_INPUTS {
         .map { create_sample_channel(it) }
 
     emit:
-    input_files
+    input_files = input_files
 }
 
 def create_sample_channel(LinkedHashMap row) {
-    files_in = row.path
-    files = files_in.split(' ')
+    def files_in = row.path
+    def files = files_in.split(' ')
     if (files.size() == 2){
-        bigwig_1 = file(files[0].minus('['))
-        bigwig_2 = file(files[1].minus(']'))
+        def bigwig_1 = file(files[0].minus('['))
+        def bigwig_2 = file(files[1].minus(']'))
         return [bigwig_1, bigwig_2]
     } else if (files.size() == 1){
-        bam = file(files[0].minus('[').minus(']'))
+        def bam = file(files[0].minus('[').minus(']'))
         return [bam]
     } else {
         throw new IllegalArgumentException(

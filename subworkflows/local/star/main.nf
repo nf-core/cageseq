@@ -18,9 +18,9 @@ workflow STAR {
 
     main:
 
-        ch_genome_name = Channel.of(params.genome_name)
+        ch_genome_name = channel.of(params.genome_name)
 
-        sample_meta = ch_reads_to_align.map{ meta, fastq ->
+        sample_meta = ch_reads_to_align.map{ meta, _fastq ->
             meta = meta
             [meta]}
 
@@ -29,7 +29,7 @@ workflow STAR {
                 ch_fasta,
                 ch_genome_name.combine(ch_gtf)
             )
-            ch_index = sample_meta.combine(STAR_GENOMEGENERATE.out.index.map { it[1] })
+            ch_index = sample_meta.combine(STAR_GENOMEGENERATE.out.index.map { _genome_name, index -> index })
         }
 
         STAR_ALIGN (
@@ -43,24 +43,24 @@ workflow STAR {
 
         ch_aligned = STAR_ALIGN.out.bam_sorted_aligned
 
-        ch_multiqc_files = ch_multiqc_files.mix(STAR_ALIGN.out.log_final.collect{it[1]})
+        ch_multiqc_files = ch_multiqc_files.mix(STAR_ALIGN.out.log_final.collect{log -> log[1]})
 
-        ch_chrom_sizes_for_wig = ch_chrom_sizes.map{meta, sizes ->
+        ch_chrom_sizes_for_wig = ch_chrom_sizes.map{_meta, sizes ->
             sizes = sizes
             sizes}
 
         wigs = STAR_ALIGN.out.wig
 
         if (params.unique_only){
-            wigs_for_conversion = wigs.map{ meta, wigs ->
+            wigs_for_conversion = wigs.map{ meta, wig ->
                 meta = meta
-                wigs_to_use = [wigs[0], wigs[1]]
+                def wigs_to_use = [wig[0], wig[1]]
                 [meta, wigs_to_use]
             }
         } else {
-            wigs_for_conversion = wigs.map{ meta, wigs ->
+            wigs_for_conversion = wigs.map{ meta, wig ->
                 meta = meta
-                wigs_to_use = [wigs[2], wigs[3]]
+                def wigs_to_use = [wig[2], wig[3]]
                 [meta, wigs_to_use]
             }
         }
@@ -73,7 +73,7 @@ workflow STAR {
         bigwig_ch_for_cager = UCSC_WIGTOBIGWIG.out.bw
 
     emit:
-        bigwig_ch_for_cager
-        ch_aligned
-        ch_multiqc_files
+        bigwig_ch_for_cager = bigwig_ch_for_cager
+        ch_aligned = ch_aligned
+        ch_multiqc_files = ch_multiqc_files
 }

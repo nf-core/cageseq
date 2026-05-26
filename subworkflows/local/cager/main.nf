@@ -30,7 +30,7 @@ workflow CAGER {
 
         sample_table = ch_sample_file
             .splitCsv( header:true , sep:',')
-            .map { create_mapping_channel(it) }
+            .map { row -> create_mapping_channel(row) }
             .collect()
 
         CAGER_READIN (
@@ -71,7 +71,7 @@ workflow CAGER {
         // enhancer calling plots
         enhancer_plots = CAGEFIGHTR_ENHANCERCALLING.out.plots
 
-        ch_template = Channel.fromPath(params.markdown_path)
+        ch_template = channel.fromPath(params.markdown_path)
 
         ch_html = CAGER_REPORT(
             ch_template,
@@ -84,18 +84,18 @@ workflow CAGER {
             cager_rds)
 
     emit:
-        ch_html
+        ch_html = ch_html
         ch_versions
 
 }
 
 def create_mapping_channel(LinkedHashMap row) {
-    id = row.id
-    single_end = row.single_end
-    str1_bw = row.path.split(" ")[0].minus('[')
-    new_name = row.new_name
+    def id = row.id
+    def single_end = row.single_end
+    def str1_bw = row.path.split(" ")[0].minus('[')
+    def new_name = row.new_name
     if (str1_bw.split("\\.")[-1].minus(']') != "bam") {
-        str2_bw = row.path.split(" ")[1].minus(']')
+        def str2_bw = row.path.split(" ")[1].minus(']')
         return [id, single_end, str1_bw, str2_bw, new_name]
     }
     return [id, single_end, str1_bw, new_name]

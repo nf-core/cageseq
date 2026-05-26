@@ -17,7 +17,7 @@ workflow PREPARE_CAGER_METADATA {
             forge_seed = file(params.forgeseed, checkIfExists: true)
             seqs_fasta = Channel.fromPath("${params.sourcedir}/*", checkIfExists: true).collect()
             FORGEBSGENOME (
-                Channel.value([[id: 'bsgenome'], forge_seed]),
+                channel.value([[id: 'bsgenome'], forge_seed]),
                 seqs_fasta
             )
         }

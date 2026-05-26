@@ -37,7 +37,7 @@ include { CAGER } from '../subworkflows/local/cager/main.nf'
 workflow CAGESEQ {
 
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    _ch_samplesheet // channel: samplesheet read in from --input
     multiqc_config
     multiqc_logo
     multiqc_methods_description
@@ -100,7 +100,7 @@ workflow CAGESEQ {
         }
 
         if (params.dedup) {
-            DEDUPLICATION(ch_aligned, ch_for_cager)
+            DEDUPLICATION(ch_aligned, ch_for_cager, ch_fasta.map{ _meta, fasta -> fasta })
 
             ch_for_cager = DEDUPLICATION.out.ch_for_cager
             ch_bam_bai = DEDUPLICATION.out.ch_bam_bai
@@ -113,27 +113,27 @@ workflow CAGESEQ {
 
         ch_meta_fasta = ch_bam_bai
             .combine(ch_fasta)
-            .map{[it[3], it[4]]}
+            .map{file -> [file[3], file[4]]}
 
         BAM_STATS_SAMTOOLS(ch_bam_bai, ch_meta_fasta)
 
         if (params.bowtie2) {
-            mapped_files_ch = ch_for_cager.map{ meta, paths ->
+            mapped_files_ch = ch_for_cager.map{ _meta, paths ->
                 [paths]}
                 .collect()
         } else {
-            mapped_files_ch = ch_for_cager.map{ meta, paths ->
-                file1 = paths[0]
-                file2 = paths[1]
+            mapped_files_ch = ch_for_cager.map{ _meta, paths ->
+                def file1 = paths[0]
+                def file2 = paths[1]
                 [file1, file2]}
                 .collect()
         }
 
 
-        ch_sample_files = WRITE_SAMPLE_LIST(ch_for_cager)
+        WRITE_SAMPLE_LIST(ch_for_cager, outdir)
         def header = "id,single_end,path,new_name"
 
-        ch_collected = ch_sample_files
+        ch_collected = WRITE_SAMPLE_LIST.out.sample_list
         .reduce( header ) { acc, table_line ->
             acc + '\n' + table_line.readLines()[0]}
 
