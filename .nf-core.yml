@@ -1,5 +1,9 @@
 nf_core_version: 4.0.2
 repository_type: pipeline
+lint:
+  nextflow_config:
+    - config_defaults:
+        - params.markdown_path
 template:
   author: Katalin Ferenc, Sviatoslav Sidorov, Damir Baranasic
   description: CAGE-sequencing analysis pipeline with trimming, alignment and counting
