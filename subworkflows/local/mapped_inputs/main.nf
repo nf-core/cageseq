@@ -9,7 +9,7 @@ workflow MAPPED_INPUTS {
     main:
     input_files = sample_file
         .splitCsv( header:true , sep:',')
-        .map { create_sample_channel(it) }
+        .map { row -> create_sample_channel(row) }
 
     emit:
     input_files = input_files

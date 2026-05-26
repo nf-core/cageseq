@@ -20,13 +20,13 @@ workflow PARAMETER_CHECKS {
 
             println("Reading in samplesheet")
 
-            input_handler = Channel.fromPath(params.input, checkIfExists: true)
+            input_handler = channel.fromPath(params.input, checkIfExists: true)
 
             println("Creating channel from samplesheet")
 
             ch_fastq = input_handler
                 .splitCsv ( header:true, sep:',' )
-                .map { create_fastq_channel(it) }
+                .map { row -> create_fastq_channel(row) }
                 .groupTuple(by: [0])
                 .map{ meta, fastq -> [ meta, fastq.flatten() ] }
 
@@ -40,7 +40,7 @@ workflow PARAMETER_CHECKS {
         }
 
         println("Initializing channels")
-        sample_meta = ch_fastq.map{ meta, fastq ->
+        sample_meta = ch_fastq.map{ meta, _fastq ->
             meta = meta
             [meta]}
 
@@ -50,18 +50,18 @@ workflow PARAMETER_CHECKS {
         if (!params.genome && !params.index) {
             exit 1, 'Reference genome FASTA file (--genome) or genome index (--index) should be specified.'
         } else if (params.index) {
-            ch_pre_idx = Channel.fromPath(params.index, checkIfExists: true)
+            ch_pre_idx = channel.fromPath(params.index, checkIfExists: true)
             ch_index = sample_meta.combine(ch_pre_idx)
             if (params.genome) {
-                ch_pre_fa = Channel.fromPath(params.genome, checkIfExists: true)
+                ch_pre_fa = channel.fromPath(params.genome, checkIfExists: true)
                 ch_fasta = ch_genome_name.combine(ch_pre_fa)
             } else {
-                ch_fasta = Channel.empty()
+                ch_fasta = channel.empty()
             }
         } else {
-            ch_pre_fa = Channel.fromPath(params.genome, checkIfExists: true)
+            ch_pre_fa = channel.fromPath(params.genome, checkIfExists: true)
             ch_fasta = ch_genome_name.combine(ch_pre_fa)
-            ch_index = Channel.empty()
+            ch_index = channel.empty()
         }
 
         if (params.dist) {

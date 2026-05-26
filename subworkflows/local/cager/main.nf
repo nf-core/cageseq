@@ -23,9 +23,9 @@ workflow CAGER {
 
         // CAGEr analysis steps
         if (params.bowtie2) {
-            ch_data_type = Channel.of("bam")
+            ch_data_type = channel.of("bam")
         } else {
-            ch_data_type = Channel.of(params.datatype)
+            ch_data_type = channel.of(params.datatype)
         }
 
         sample_table = ch_sample_file
