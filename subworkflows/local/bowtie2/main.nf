@@ -15,7 +15,7 @@ workflow BOWTIE2 {
         ch_multiqc_files
 
     main:
-        sample_meta = ch_reads_to_align.map{ meta, fastq ->
+        sample_meta = ch_reads_to_align.map{ meta, _fastq ->
             meta = meta
             [meta]}
 
@@ -23,13 +23,13 @@ workflow BOWTIE2 {
             BOWTIE2_BUILD (
                 ch_fasta
             )
-            ch_index = sample_meta.combine(BOWTIE2_BUILD.out.index.map { genome_name, index -> index } )
+            ch_index = sample_meta.combine(BOWTIE2_BUILD.out.index.map { _genome_name, index -> index } )
         } else {
-            ch_index = sample_meta.combine(ch_index.map { genome_name, index -> index })
+            ch_index = sample_meta.combine(ch_index.map { _genome_name, index -> index })
         }
 
         if (params.genome) {
-            ch_fasta = sample_meta.combine(ch_fasta.map { genome_name, fasta -> fasta } )
+            ch_fasta = sample_meta.combine(ch_fasta.map { _genome_name, fasta -> fasta } )
         } else {
             ch_fasta = sample_meta.combine(channel.fromPath("$projectDir/assets/NO_FILE_FASTA", checkIfExists: true))
         }
@@ -41,19 +41,20 @@ workflow BOWTIE2 {
             false,
             false
         )
-        ch_multiqc_files = ch_multiqc_files.mix(BOWTIE2_ALIGN.out.log.collect{it[1]})
+        ch_multiqc_files = ch_multiqc_files.mix(BOWTIE2_ALIGN.out.log)
 
         SAMTOOLS_VIEW (
             BOWTIE2_ALIGN.out.bam.map { meta, bam -> [ meta, bam, [] ] },
             [ [:], [] ],
-            [],
+            [ [:], [] ],
+            [ [:], [] ],
             null
         )
 
         ch_aligned = SAMTOOLS_VIEW.out.bam
 
     emit:
-        ch_aligned
-        ch_multiqc_files
+        ch_aligned = ch_aligned
+        ch_multiqc_files = ch_multiqc_files
 
 }

@@ -36,9 +36,7 @@ workflow STAR {
             ch_reads_to_align,
             ch_index,
             sample_meta.combine(ch_gtf),
-            false,
-            params.seq_platform,
-            params.seq_center
+            false
         )
 
         ch_aligned = STAR_ALIGN.out.bam_sorted_aligned
