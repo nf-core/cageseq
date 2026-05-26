@@ -37,7 +37,11 @@ include { CAGER } from '../subworkflows/local/cager/main.nf'
 workflow CAGESEQ {
 
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    _ch_samplesheet // channel: samplesheet read in from --input
+    multiqc_config
+    multiqc_logo
+    multiqc_methods_description
+    outdir
 
     main:
 
@@ -96,7 +100,7 @@ workflow CAGESEQ {
         }
 
         if (params.dedup) {
-            DEDUPLICATION(ch_aligned, ch_for_cager)
+            DEDUPLICATION(ch_aligned, ch_for_cager, ch_fasta.map{ _meta, fasta -> fasta })
 
             ch_for_cager = DEDUPLICATION.out.ch_for_cager
             ch_bam_bai = DEDUPLICATION.out.ch_bam_bai
@@ -109,27 +113,27 @@ workflow CAGESEQ {
 
         ch_meta_fasta = ch_bam_bai
             .combine(ch_fasta)
-            .map{[it[3], it[4]]}
+            .map{file -> [file[3], file[4]]}
 
         BAM_STATS_SAMTOOLS(ch_bam_bai, ch_meta_fasta)
 
         if (params.bowtie2) {
-            mapped_files_ch = ch_for_cager.map{ meta, paths ->
+            mapped_files_ch = ch_for_cager.map{ _meta, paths ->
                 [paths]}
                 .collect()
         } else {
-            mapped_files_ch = ch_for_cager.map{ meta, paths ->
-                file1 = paths[0]
-                file2 = paths[1]
+            mapped_files_ch = ch_for_cager.map{ _meta, paths ->
+                def file1 = paths[0]
+                def file2 = paths[1]
                 [file1, file2]}
                 .collect()
         }
 
 
-        ch_sample_files = WRITE_SAMPLE_LIST(ch_for_cager)
+        WRITE_SAMPLE_LIST(ch_for_cager, outdir)
         def header = "id,single_end,path,new_name"
 
-        ch_collected = ch_sample_files
+        ch_collected = WRITE_SAMPLE_LIST.out.sample_list
         .reduce( header ) { acc, table_line ->
             acc + '\n' + table_line.readLines()[0]}
 
@@ -181,60 +185,44 @@ workflow CAGESEQ {
             "${process}:\n${tool_versions.join('\n')}"
         }
 
-    softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
+    def ch_collated_versions = softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
         .mix(topic_versions_string)
         .collectFile(
-            storeDir: "${params.outdir}/pipeline_info",
+            storeDir: "${outdir}/pipeline_info",
             name: 'nf_core_'  +  'cageseq_software_'  + 'mqc_'  + 'versions.yml',
             sort: true,
             newLine: true
-        ).set { ch_collated_versions }
-
+        )
 
     //
     // MODULE: MultiQC
     //
-    ch_multiqc_config        = channel.fromPath(
-        "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-    ch_multiqc_custom_config = params.multiqc_config ?
-        channel.fromPath(params.multiqc_config, checkIfExists: true) :
-        channel.empty()
-    ch_multiqc_logo          = params.multiqc_logo ?
-        channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        channel.empty()
-
-    summary_params      = paramsSummaryMap(
-        workflow, parameters_schema: "nextflow_schema.json")
-    ch_workflow_summary = channel.value(paramsSummaryMultiqc(summary_params))
-    ch_multiqc_files = ch_multiqc_files.mix(
-        ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
-        file(params.multiqc_methods_description, checkIfExists: true) :
-        file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description                = channel.value(
-        methodsDescriptionText(ch_multiqc_custom_methods_description))
-
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
-    ch_multiqc_files = ch_multiqc_files.mix(
-        ch_methods_description.collectFile(
-            name: 'methods_description_mqc.yaml',
-            sort: true
-        )
+    def ch_summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+    def ch_workflow_summary = channel.value(paramsSummaryMultiqc(ch_summary_params))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+    def ch_multiqc_custom_methods_description = multiqc_methods_description
+        ? file(multiqc_methods_description, checkIfExists: true)
+        : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
+    def ch_methods_description = channel.value(methodsDescriptionText(ch_multiqc_custom_methods_description))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: true))
+    MULTIQC(
+        ch_multiqc_files.flatten().collect().map { files ->
+            [
+                [id: 'cageseq'],
+                files,
+                multiqc_config
+                    ? file(multiqc_config, checkIfExists: true)
+                    : file("${projectDir}/assets/multiqc_config.yml", checkIfExists: true),
+                multiqc_logo ? file(multiqc_logo, checkIfExists: true) : [],
+                [],
+                [],
+            ]
+        }
     )
-
-    MULTIQC (
-        ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList(),
-        [],
-        []
-    )
-
     emit:
-    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
-
 }
 
 /*

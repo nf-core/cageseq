@@ -4,7 +4,8 @@
 
 include { STAR_ALIGN } from '../../../modules/nf-core/star/align/main.nf'
 include { STAR_GENOMEGENERATE } from '../../../modules/nf-core/star/genomegenerate/main.nf'
-include { UCSC_WIGTOBIGWIG } from '../../../modules/nf-core/ucsc/wigtobigwig/main.nf'
+include { UCSC_WIGTOBIGWIG as UCSC_WIGTOBIGWIG_STR1 } from '../../../modules/nf-core/ucsc/wigtobigwig/main.nf'
+include { UCSC_WIGTOBIGWIG as UCSC_WIGTOBIGWIG_STR2 } from '../../../modules/nf-core/ucsc/wigtobigwig/main.nf'
 
 workflow STAR {
 
@@ -18,9 +19,9 @@ workflow STAR {
 
     main:
 
-        ch_genome_name = Channel.of(params.genome_name)
+        ch_genome_name = channel.of(params.genome_name)
 
-        sample_meta = ch_reads_to_align.map{ meta, fastq ->
+        sample_meta = ch_reads_to_align.map{ meta, _fastq ->
             meta = meta
             [meta]}
 
@@ -29,51 +30,41 @@ workflow STAR {
                 ch_fasta,
                 ch_genome_name.combine(ch_gtf)
             )
-            ch_index = sample_meta.combine(STAR_GENOMEGENERATE.out.index.map { it[1] })
+            ch_index = sample_meta.combine(STAR_GENOMEGENERATE.out.index.map { _genome_name, index -> index })
         }
 
         STAR_ALIGN (
             ch_reads_to_align,
             ch_index,
             sample_meta.combine(ch_gtf),
-            false,
-            params.seq_platform,
-            params.seq_center
+            false
         )
 
         ch_aligned = STAR_ALIGN.out.bam_sorted_aligned
 
-        ch_multiqc_files = ch_multiqc_files.mix(STAR_ALIGN.out.log_final.collect{it[1]})
+        ch_multiqc_files = ch_multiqc_files.mix(STAR_ALIGN.out.log_final.collect{log -> log[1]})
 
-        ch_chrom_sizes_for_wig = ch_chrom_sizes.map{meta, sizes ->
-            sizes = sizes
-            sizes}
+        ch_chrom_sizes_for_wig = ch_chrom_sizes.map{ _meta, sizes -> sizes }.first()
 
         wigs = STAR_ALIGN.out.wig
 
-        if (params.unique_only){
-            wigs_for_conversion = wigs.map{ meta, wigs ->
-                meta = meta
-                wigs_to_use = [wigs[0], wigs[1]]
-                [meta, wigs_to_use]
-            }
+        if (params.unique_only) {
+            ch_wig_str1 = wigs.map { meta, wig -> [meta, wig[0]] }
+            ch_wig_str2 = wigs.map { meta, wig -> [meta, wig[1]] }
         } else {
-            wigs_for_conversion = wigs.map{ meta, wigs ->
-                meta = meta
-                wigs_to_use = [wigs[2], wigs[3]]
-                [meta, wigs_to_use]
-            }
+            ch_wig_str1 = wigs.map { meta, wig -> [meta, wig[2]] }
+            ch_wig_str2 = wigs.map { meta, wig -> [meta, wig[3]] }
         }
 
-        UCSC_WIGTOBIGWIG (
-            wigs_for_conversion,
-            ch_chrom_sizes_for_wig
-        )
+        UCSC_WIGTOBIGWIG_STR1(ch_wig_str1, ch_chrom_sizes_for_wig)
+        UCSC_WIGTOBIGWIG_STR2(ch_wig_str2, ch_chrom_sizes_for_wig)
 
-        bigwig_ch_for_cager = UCSC_WIGTOBIGWIG.out.bw
+        bigwig_ch_for_cager = UCSC_WIGTOBIGWIG_STR1.out.bw
+            .mix(UCSC_WIGTOBIGWIG_STR2.out.bw)
+            .groupTuple(size: 2)
 
     emit:
-        bigwig_ch_for_cager
-        ch_aligned
-        ch_multiqc_files
+        bigwig_ch_for_cager = bigwig_ch_for_cager
+        ch_aligned = ch_aligned
+        ch_multiqc_files = ch_multiqc_files
 }

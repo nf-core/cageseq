@@ -27,13 +27,15 @@ workflow INPUT_FROM_FOLDER {
         .map{
             old_meta, fastq ->
                 def meta = [:]
-                num_fields_of_interest = "$params.sample_name_fields".toInteger()
-                split_field_num = old_meta.split('_').size()
+                def num_fields_of_interest = "$params.sample_name_fields".toInteger()
+                def split_field_num = old_meta.split('_').size()
+                def sample_name = ""
+                def lane_n_fastq = []
                 if (split_field_num == 1 ){
                     sample_name = old_meta
                     lane_n_fastq = tuple(fastq.name, fastq)
                 } else {
-                    num_fields_to_cut = split_field_num - num_fields_of_interest
+                    def num_fields_to_cut = split_field_num - num_fields_of_interest
                     num_fields_to_cut = num_fields_to_cut == 0 ? 2 : num_fields_to_cut + 1
                     sample_name = old_meta.split('_')[0..-num_fields_to_cut].join('_')
                     lane_n_fastq = tuple((fastq.name =~ /L00\d/)[0], fastq)
@@ -45,9 +47,9 @@ workflow INPUT_FROM_FOLDER {
         .map{
             meta, lane_n_fastq ->
                 meta = meta
-                fastq = lane_n_fastq*.getAt(1).flatten()
+                def fastq = lane_n_fastq*.getAt(1).flatten()
                 [meta, fastq] }
 
     emit:
-    ch_fastq
+    ch_fastq = ch_fastq
 }

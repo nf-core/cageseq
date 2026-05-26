@@ -3,22 +3,31 @@
 //
 
 process WRITE_SAMPLE_LIST {
+    tag "$meta.id"
+    label 'process_single'
 
     input:
     tuple val(meta), path(bw_or_bam)
+    val outdir
 
     output:
-    path("sample_list.csv")
+    path "sample_list.csv", emit: sample_list
+
+    when:
+    task.ext.when == null || task.ext.when
 
     script:
     if ( bw_or_bam[1] != null )
         """
-        line="${meta.id},${meta.single_end},[${PWD}/${params.outdir}/bigwig/${bw_or_bam[0]} ${PWD}/${params.outdir}/bigwig/${bw_or_bam[1]}],${meta.id}"
-        echo \$line > sample_list.csv
+        echo "${meta.id},${meta.single_end},[${outdir}/bigwig/${bw_or_bam[0]} ${outdir}/bigwig/${bw_or_bam[1]}],${meta.id}" > sample_list.csv
         """
     else
         """
-        line="${meta.id},${meta.single_end},${PWD}/${params.outdir}/samtools_sort/${bw_or_bam[0]},${meta.id}"
-        echo \$line > sample_list.csv
+        echo "${meta.id},${meta.single_end},${outdir}/samtools_sort/${bw_or_bam[0]},${meta.id}" > sample_list.csv
         """
+
+    stub:
+    """
+    touch sample_list.csv
+    """
 }
