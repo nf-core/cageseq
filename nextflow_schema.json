@@ -423,7 +423,7 @@
                 },
                 "tsslogo_upstream": {
                     "type": "integer",
-                    "default": 35,
+                    "default": 45,
                     "description": "The number of bases to include upstream of the TSS for TSS logos"
                 },
                 "consensus_thr": {
@@ -438,7 +438,7 @@
                 },
                 "consensus_dist": {
                     "type": "integer",
-                    "default": 100,
+                    "default": 20,
                     "description": "Used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquartile ranges of tag clusters to be joined together into consensus clusters."
                 }
             }
