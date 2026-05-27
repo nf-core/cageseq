@@ -16,7 +16,7 @@ workflow PREPARE_CAGER_METADATA {
         if (params.forgeseed) {
             forge_seed = file(params.forgeseed, checkIfExists: true)
             seqs_fasta = channel.fromPath("${params.sourcedir}/*", checkIfExists: true).collect()
-            FORGEBSGENOME (
+            forge_out = FORGEBSGENOME (
                 channel.value([[id: 'bsgenome'], forge_seed]),
                 seqs_fasta
             )
@@ -34,11 +34,11 @@ workflow PREPARE_CAGER_METADATA {
                 ch_bsgenome_name = params.bsgenome
             }
         } else {
-            ch_bsgenome_file = FORGEBSGENOME.out.tarball.map { _meta, tarball -> tarball }
+            ch_bsgenome_file = forge_out.tarball.map { _meta, tarball -> tarball }
             ch_bsgenome_name = ''
         }
 
-        ch_txdb_file = GTF2TXDB(ch_gtf).out.txdb
+        ch_txdb_file = GTF2TXDB(ch_gtf).txdb
 
     emit:
         ch_bsgenome_file = ch_bsgenome_file
