@@ -15,7 +15,11 @@ workflow SAMTOOLS_PROCESSING {
 
         ch_index_format = Channel.value("bai")
 
-        SAMTOOLS_SORT(ch_aligned, ch_fasta, ch_index_format)
+        // ch_fasta is a single-element queue channel; convert it to a value
+        // channel with .first() so the same reference is broadcast to every
+        // BAM in ch_aligned. Without this, SAMTOOLS_SORT runs only once
+        // (consuming the lone fasta) and all but the first sample are dropped.
+        SAMTOOLS_SORT(ch_aligned, ch_fasta.first(), ch_index_format)
         SAMTOOLS_INDEX (SAMTOOLS_SORT.out.bam)
         ch_bam_bai = SAMTOOLS_SORT.out.bam.join(SAMTOOLS_INDEX.out.bai)
         if (params.bowtie2) {
