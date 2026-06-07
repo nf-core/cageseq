@@ -230,14 +230,6 @@ workflow CUSTOMCAGE {
     //
     // Collate and save software versions
     //
-    softwareVersionsToYAML(ch_versions)
-        .collectFile(
-            storeDir: "${params.outdir}/pipeline_info",
-            name:  'customcage_software_'  + 'mqc_'  + 'versions.yml',
-            sort: true,
-            newLine: true
-        ).set { ch_collated_versions }
-
     def topic_versions = channel.topic("versions")
       .distinct()
       .branch { entry ->
@@ -256,6 +248,12 @@ workflow CUSTOMCAGE {
         }
     ch_collated_versions = softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
         .mix(topic_versions_string)
+        .collectFile(
+            storeDir: "${params.outdir}/pipeline_info",
+            name:  'customcage_software_'  + 'mqc_'  + 'versions.yml',
+            sort: true,
+            newLine: true
+        )
 
 
     //
@@ -289,17 +287,17 @@ workflow CUSTOMCAGE {
         )
     )
 
-    // MULTIQC (
-    //     ch_multiqc_files.collect(),
-    //     ch_multiqc_config.toList(),
-    //     ch_multiqc_custom_config.toList(),
-    //     ch_multiqc_logo.toList(),
-    //     [],
-    //     []
-    // )
+    MULTIQC (
+        ch_multiqc_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_multiqc_custom_config.toList(),
+        ch_multiqc_logo.toList(),
+        [],
+        []
+    )
 
-    // emit:report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
-    emit:report = channel.of( 1, 2, 3, 4 ).toList()
+    emit:report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    // emit:report = channel.of( 1, 2, 3, 4 ).toList()
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
 
 }
