@@ -13,6 +13,8 @@ include { completionEmail           } from '../../nf-core/utils_nfcore_pipeline'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
+include { logColours                } from '../../nf-core/utils_nfcore_pipeline'
+include { getWorkflowVersion        } from '../../nf-core/utils_nfcore_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,6 +34,11 @@ workflow PIPELINE_INITIALISATION {
     main:
 
     ch_versions = Channel.empty()
+
+    //
+    // Print the pipeline ASCII banner
+    //
+    log.info(cageseqLogo(monochrome_logs))
 
     //
     // Print version and exit if required and dump pipeline parameters to JSON file
@@ -110,6 +117,38 @@ workflow PIPELINE_COMPLETION {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+
+//
+// cageseq ASCII banner, framed in the nf-core dashed-line style
+//
+def cageseqLogo(monochrome_logs=true) {
+    def colors = logColours(monochrome_logs) as Map
+    String.format(
+        """\n
+        ${dashedLine(monochrome_logs)}
+
+           ${colors.bblue} ######     ###     ######   ########${colors.bgreen}  ######  ########  ####### ${colors.reset}
+           ${colors.bblue}##    ##   ## ##   ##    ##  ##      ${colors.bgreen} ##    ## ##       ##     ##${colors.reset}
+           ${colors.bblue}##        ##   ##  ##        ##      ${colors.bgreen} ##       ##       ##     ##${colors.reset}
+           ${colors.bblue}##       ##     ## ##   #### ######  ${colors.bgreen}  ######  ######   ##     ##${colors.reset}
+           ${colors.bblue}##       ######### ##    ##  ##      ${colors.bgreen}       ## ##       ##  ## ##${colors.reset}
+           ${colors.bblue}##    ## ##     ## ##    ##  ##      ${colors.bgreen} ##    ## ##       ##    ## ${colors.reset}
+           ${colors.bblue} ######  ##     ##  ######   ########${colors.bgreen}  ######  ########  ##### ##${colors.reset}
+
+              ${colors.white}Cap Analysis of Gene Expression data processing and analysis${colors.reset}
+        ${colors.purple}                        ${workflow.manifest.name} ${getWorkflowVersion()}${colors.reset}
+        ${dashedLine(monochrome_logs)}
+        """.stripIndent()
+    )
+}
+
+//
+// Return dashed line bracketing the banner
+//
+def dashedLine(monochrome_logs=true) {
+    def colors = logColours(monochrome_logs) as Map
+    return "-${colors.dim}----------------------------------------------------------------------${colors.reset}-"
+}
 
 //
 // Generate methods description for MultiQC
