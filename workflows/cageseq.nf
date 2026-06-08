@@ -179,6 +179,11 @@ workflow CAGESEQ {
 
         BAM_STATS_SAMTOOLS(ch_bam_bai, ch_meta_fasta)
 
+        // Feed samtools stats/flagstat/idxstats into the MultiQC report
+        ch_multiqc_files = ch_multiqc_files.mix(BAM_STATS_SAMTOOLS.out.stats.collect{it[1]})
+        ch_multiqc_files = ch_multiqc_files.mix(BAM_STATS_SAMTOOLS.out.flagstat.collect{it[1]})
+        ch_multiqc_files = ch_multiqc_files.mix(BAM_STATS_SAMTOOLS.out.idxstats.collect{it[1]})
+
         if (params.bowtie2) {
             mapped_files_ch = ch_for_cager.map{ meta, paths ->
                 [paths]}
