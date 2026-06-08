@@ -5,7 +5,7 @@ cageronly: true
 gtf: "cageflow_test_data/danRer11_genome/danRer11.ensGene.gtf"
 
 # preprocessing parameters
-input: "customcageq/testdata/samplesheet_danio_nepal_2020_pe_test_dup.csv"
+input: "cageseq/testdata/samplesheet_danio_nepal_2020_pe_test_dup.csv"
 infolder:
 sample_name_fields: 2
 genome_name: "danRer11"
@@ -19,7 +19,7 @@ unique_only: true
 remove_non_g: false
 
 # CAGEr parameters
-cager_sample_file: customcageq/testdata/samplesheet_cager_nepal_dup.csv
+cager_sample_file: cageseq/testdata/samplesheet_cager_nepal_dup.csv
 # datatype: "bam" or "bigwig". if bowtie2 is used, it will be set to bam
 datatype:
 # BSgenome

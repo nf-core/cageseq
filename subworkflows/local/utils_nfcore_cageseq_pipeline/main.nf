@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the ComputationalRegulatoryGenomicsICL/customcage pipeline
+// Subworkflow with functionality specific to the nf-core/cageseq pipeline
 //
 
 /*

@@ -74,7 +74,7 @@ params.minSamples = 0
 // workflow utils
 include { paramsSummaryMap          } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc      } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_customcage_pipeline'
+include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_cageseq_pipeline'
 include { softwareVersionsToYAML      } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 
 // input readers
@@ -97,7 +97,7 @@ include { CAGER } from '../subworkflows/local/cager/main.nf'
 
 def multiqc_report = []
 
-workflow CUSTOMCAGE {
+workflow CAGESEQ {
 
     take:
     ch_versions
@@ -250,7 +250,7 @@ workflow CUSTOMCAGE {
         .mix(topic_versions_string)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
-            name:  'customcage_software_'  + 'mqc_'  + 'versions.yml',
+            name:  'cageseq_software_'  + 'mqc_'  + 'versions.yml',
             sort: true,
             newLine: true
         )

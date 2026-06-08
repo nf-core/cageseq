@@ -19,7 +19,7 @@ unique_only: false
 remove_non_g: false
 
 # CAGEr parameters
-cager_sample_file: "customcageq/testdata/samplesheet_cager_nepal.csv" # with sorted list of bigwigs, if mapping is run elsewhere
+cager_sample_file: "cageseq/testdata/samplesheet_cager_nepal.csv" # with sorted list of bigwigs, if mapping is run elsewhere
 # datatype: "bam" or "bigwig". if bowtie2 is used, it will be set to bam
 datatype: "bigwig"
 # BSgenome

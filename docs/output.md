@@ -1,4 +1,4 @@
-# ComputationalRegulatoryGenomicsICL/customcage: Output
+# nf-core/cageseq: Output
 
 ## Introduction
 

@@ -5,7 +5,7 @@ cageronly: false
 gtf: "cageflow_test_data/sacCer3_genome/sacCer3.ensGene.gtf"
 
 # preprocessing parameters
-input: "customcageq/testdata/samplesheet_yeast_borlin_2018_se_test.csv"
+input: "cageseq/testdata/samplesheet_yeast_borlin_2018_se_test.csv"
 infolder:
 sample_name_fields: 2
 genome_name: "sacCer3"

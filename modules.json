@@ -1,6 +1,6 @@
 {
-    "name": "ComputationalRegulatoryGenomicsICL/customcage",
-    "homePage": "https://github.com/ComputationalRegulatoryGenomicsICL/customcage",
+    "name": "nf-core/cageseq",
+    "homePage": "https://github.com/nf-core/cageseq",
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {

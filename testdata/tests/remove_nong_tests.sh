@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-paramfilespath="/mnt/biggley/home/slava/projects/leancage_dev/customcageq/testdata/tests/"
+paramfilespath="/mnt/biggley/home/slava/projects/leancage_dev/cageseq/testdata/tests/"
 
 paramsfiles=(
     "params_danio_nepal_test_bt2_windex_wfasta_removenong_pe.yaml" \
@@ -9,8 +9,8 @@ touch mapping_removenong_tests_log.txt
 
 for pf in ${paramsfiles[@]}; do
     time ~/tools/nextflow/nextflow run \
-        customcageq/main.nf \
-        -params-file customcageq/testdata/tests/${pf} \
+        cageseq/main.nf \
+        -params-file cageseq/testdata/tests/${pf} \
         -profile singularity \
         -w /mnt/scratch/slava/work_nepal_test && \
     echo ${pf} >> mapping_removenong_tests_log.txt && \

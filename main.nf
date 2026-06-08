@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ComputationalRegulatoryGenomicsICL/customcage
+    nf-core/cageseq
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/ComputationalRegulatoryGenomicsICL/customcage
+    Github : https://github.com/nf-core/cageseq
 ----------------------------------------------------------------------------------------
 */
 
@@ -13,9 +13,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { CUSTOMCAGE  } from './workflows/customcage'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_customcage_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_customcage_pipeline'
+include { CAGESEQ  } from './workflows/cageseq'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_cageseq_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_cageseq_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,7 +44,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    CUSTOMCAGE(ch_versions)
+    CAGESEQ(ch_versions)
 
     //
     // SUBWORKFLOW: Run completion tasks
@@ -56,7 +56,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        CUSTOMCAGE.out.report
+        CAGESEQ.out.report
     )
 }
 
