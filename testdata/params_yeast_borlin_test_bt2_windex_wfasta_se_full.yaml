@@ -9,7 +9,7 @@ samplesheet:
 infolder: "cageflow_test_data/fastq/se"
 sample_name_fields: 2
 genome_name: "sacCer3"
-genome: "cageflow_test_data/sacCer3_genome/sacCer3.fa"
+fasta: "cageflow_test_data/sacCer3_genome/sacCer3.fa"
 index: "cageflow_test_data/sacCer3_genome/bowtie2"
 seq_platform: "illumina"
 seq_center: false

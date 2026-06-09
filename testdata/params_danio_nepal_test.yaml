@@ -9,7 +9,7 @@ input: "cageflow_to_nfcore/cageseq/testdata/samplesheet_danio_nepal_2020_pe_test
 infolder:
 sample_name_fields:
 genome_name: "danRer11"
-genome: "cageflow_test_data/danRer11_genome/danRer11.fa"
+fasta: "cageflow_test_data/danRer11_genome/danRer11.fa"
 index:
 seq_platform: "illumina"
 seq_center: false

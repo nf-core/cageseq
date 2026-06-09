@@ -28,7 +28,7 @@ workflow BOWTIE2 {
             ch_index = sample_meta.combine(ch_index.map { genome_name, index -> index })
         }
 
-        if (params.genome) {
+        if (params.fasta) {
             ch_fasta = sample_meta.combine(ch_fasta.map { genome_name, fasta -> fasta } )
         } else {
             ch_fasta = sample_meta.combine(channel.fromPath("$projectDir/assets/NO_FILE_FASTA", checkIfExists: true))

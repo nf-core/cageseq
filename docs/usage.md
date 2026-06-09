@@ -30,7 +30,7 @@ infolder:
 outdir: "results"
 sample_name_fields: 3
 genome_name: "danRer11"
-genome: "cageflow_test_data/danRer11_genome/danRer11.fa"
+fasta: "cageflow_test_data/danRer11_genome/danRer11.fa"
 index:
 seq_platform: "illumina"
 seq_center: false
