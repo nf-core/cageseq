@@ -9,8 +9,10 @@
 */
 
 include { UTILS_NFSCHEMA_PLUGIN     } from '../../nf-core/utils_nfschema_plugin'
+include { paramsSummaryMap          } from 'plugin/nf-schema'
 include { completionEmail           } from '../../nf-core/utils_nfcore_pipeline'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
+include { imNotification            } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
 include { logColours                } from '../../nf-core/utils_nfcore_pipeline'
@@ -89,21 +91,30 @@ workflow PIPELINE_COMPLETION {
 
     main:
 
+    summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+    def multiqc_report_list = multiqc_report.toList()
+
     //
     // Completion email and summary
     //
     workflow.onComplete {
         if (email || email_on_fail) {
             completionEmail(
+                summary_params,
                 email,
                 email_on_fail,
                 plaintext_email,
                 outdir,
                 monochrome_logs,
+                multiqc_report_list.getVal(),
             )
         }
 
         completionSummary(monochrome_logs)
+
+        if (hook_url) {
+            imNotification(summary_params, hook_url)
+        }
     }
 
     workflow.onError {
