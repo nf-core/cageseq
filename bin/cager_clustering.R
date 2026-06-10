@@ -73,6 +73,14 @@ cager_clustering <- function(
         qLow = iqlow,
         qUp = iqhigh,
         xlim = iqw_plot_lim) # plot_lim
+    # CAGEr facets the plot by sampleName in sampleLabels() order. Reorder the
+    # factor levels by the natural ordering of the sample names so the
+    # per-sample facets are always shown in the same order across the report.
+    if ("sampleName" %in% colnames(iqw_plot$data)) {
+        iqw_plot$data$sampleName <- factor(
+            iqw_plot$data$sampleName,
+            levels = natural_sort(unique(as.character(iqw_plot$data$sampleName))))
+    }
     save_plot(
         "interquartile_width_tagclusters_plot.pdf",
         iqw_plot)

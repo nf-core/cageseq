@@ -64,6 +64,13 @@ plot_dinucleotide_frequency_heatmap <- function(
         weigthed_dinuc_vals_df$dinucleotide,
         levels = dinuc_order$dinucleotide)
 
+    # Order samples by the natural ordering of their names on the y axis. The
+    # first factor level is drawn at the bottom, so reversing puts the first
+    # sample at the top.
+    weigthed_dinuc_vals_df$samples <- factor(
+        weigthed_dinuc_vals_df$samples,
+        levels = rev(natural_sort(unique(weigthed_dinuc_vals_df$samples))))
+
     p <- ggplot(
         data = weigthed_dinuc_vals_df,
         aes(x = dinucleotide, y = samples, fill = proportion)) +
@@ -98,10 +105,19 @@ plot_dinucleotide_frequency_histogram <- function(
         weigthed_dinuc_vals_df$dinucleotide,
         levels = dinuc_order$dinucleotide)
 
+    # Order samples by the natural ordering of their names. With coord_flip()
+    # the dodged bars read top-to-bottom in the reverse of the factor levels,
+    # so reversing puts the first sample at the top. The legend is reversed
+    # below so that it lists the samples in the same order as the bars.
+    weigthed_dinuc_vals_df$samples <- factor(
+        weigthed_dinuc_vals_df$samples,
+        levels = rev(natural_sort(unique(weigthed_dinuc_vals_df$samples))))
+
     p <- ggplot(
         data = weigthed_dinuc_vals_df,
         aes(x = dinucleotide, y = proportion, fill = samples)) +
         scale_fill_manual(values = col) +
+        guides(fill = guide_legend(reverse = TRUE)) +
         geom_bar(
             stat = "identity",
             position = position_dodge(),
@@ -129,10 +145,13 @@ plot_dinucleotide_frequency_histogram <- function(
 plot_dinucleotide_frequency <- function(
         weigthed_dinuc_vals_df) {
 
-    column_names <- sort(unique(weigthed_dinuc_vals_df$samples))
+    column_names <- natural_sort(unique(weigthed_dinuc_vals_df$samples))
     col = viridis::magma(
         length(column_names),
         alpha = 0.8)[length(column_names):1]
+    # Name the colours by sample so that scale_fill_manual maps each sample to
+    # the same colour regardless of how the sample factor levels are ordered.
+    names(col) <- column_names
 
     # heatmap if more than 10 samples, otherwise barplot
     if (length(column_names) > 10){

@@ -9,6 +9,23 @@ output:
 geometry: margin = 2cm
 ---
 
+```{r setup, include=FALSE}
+# Natural (numeric-aware) ordering of sample names, e.g. S1, S2, ..., S9, S10,
+# S11 rather than the lexicographic S1, S10, S11, S2, ... Defined in base R so
+# it works regardless of which packages the report container provides.
+natural_sort <- function(x) {
+    x <- as.character(x)
+    digit_runs <- regmatches(x, gregexpr("[0-9]+", x))
+    all_digits <- unlist(digit_runs)
+    pad_width <- if (length(all_digits)) max(nchar(all_digits)) else 0L
+    key <- x
+    regmatches(key, gregexpr("[0-9]+", key)) <- lapply(
+        digit_runs,
+        function(d) formatC(as.integer(d), width = pad_width, flag = "0"))
+    x[order(key)]
+}
+```
+
 # Results of CAGEr analysis
 
 ## Raw reads
@@ -22,7 +39,7 @@ It is expected to see more intergenic reads here than after filtering and cluste
 options(warn=-1)
 sampleNs <- unname(CAGEr::sampleLabels(ce))
 tagannot_plot <- readRDS("tag_region_annotation_plot.rds")
-tagannot_plot + ggplot2::xlim(rev(levels(factor(sampleNs))))
+tagannot_plot + ggplot2::xlim(rev(natural_sort(unique(sampleNs))))
 ```
 
 ### Correlation of samples at raw tag count level
@@ -140,7 +157,7 @@ print(paste0("The current tssregion_down value is: ", tssregion_down))
 
 sampleNs <- unname(CAGEr::sampleLabels(ce))
 chta_plot <- readRDS("chipseeker_tagCluster_annotation_plot.rds")
-chta_plot + ggplot2::xlim(rev(levels(factor(sampleNs))))
+chta_plot + ggplot2::xlim(rev(natural_sort(unique(sampleNs))))
 ```
 
 ### Dinucleotide frequencies in tagclusters weighted by expression (tpm)
@@ -156,7 +173,7 @@ dinucl_plot + ggplot2::theme(
 
 ### TSS region logos
 ```{r logo_setup, eval=TRUE, include=FALSE, echo=FALSE}
-logo_samples <- unname(CAGEr::sampleLabels(ce))
+logo_samples <- natural_sort(unname(CAGEr::sampleLabels(ce)))
 n_logo_samples <- length(logo_samples)
 # Show the logos in the report only when there are at most 60 samples.
 # Otherwise there would be too many to display and the user is pointed to the
