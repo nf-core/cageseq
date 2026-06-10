@@ -155,10 +155,49 @@ dinucl_plot + ggplot2::theme(
 ```
 
 ### TSS region logos
-Not inlcuded in this report, but saved separately in the results/cager/plots folder are the TSS region logos of the tag clusters of each sample that are annotated as promoters.
-The number of bases to inlcude upstream of the TSS is provided by the user with the tsslogo_upstream parameter.
-```{r eval=TRUE, include=TRUE, echo=FALSE}
+```{r logo_setup, eval=TRUE, include=FALSE, echo=FALSE}
+logo_samples <- unname(CAGEr::sampleLabels(ce))
+n_logo_samples <- length(logo_samples)
+# Show the logos in the report only when there are at most 60 samples.
+# Otherwise there would be too many to display and the user is pointed to the
+# individual files saved on disk.
+show_logos <- n_logo_samples <= 60
+# Number of columns the logos are arranged in: 1 column for up to 5 samples,
+# 2 columns for 6 to 29 samples and 3 columns for 30 to 60 samples.
+logo_n_cols <- if (n_logo_samples <= 5) {
+    1
+} else if (n_logo_samples <= 29) {
+    2
+} else {
+    3
+}
+logo_out_width <- paste0(floor(100 / logo_n_cols), "%")
+```
+```{r logo_text, eval=TRUE, include=TRUE, echo=FALSE, results='asis'}
+if (show_logos) {
+    cat(paste0(
+        "Shown below are the TSS region logos of the tag clusters of each ",
+        "sample that are annotated as promoters. The number of bases included ",
+        "upstream of the TSS is set by the user with the tsslogo_upstream ",
+        "parameter."))
+} else {
+    cat(paste0(
+        "There are ", n_logo_samples, " samples, which is too many to display ",
+        "the TSS region logos in this report. Instead, the TSS region logos of ",
+        "the tag clusters of each sample that are annotated as promoters are ",
+        "saved separately in the results/cager/plots folder, where they can be ",
+        "viewed individually. The number of bases included upstream of the TSS ",
+        "is set by the user with the tsslogo_upstream parameter."))
+}
+```
+```{r logo_param, eval=TRUE, include=TRUE, echo=FALSE}
 print(paste0("The current tsslogo_upstream value is: ", tsslogo_upstream))
+```
+```{r logo_plots, eval=show_logos, include=show_logos, echo=FALSE, fig.show='hold', out.width=logo_out_width, fig.height=3.33}
+for (logo_sample in logo_samples) {
+    print(readRDS(paste0(
+        logo_sample, "_tagcluster_dominantTSSlogos_plot.rds")))
+}
 ```
 
 ## Consensus clustering

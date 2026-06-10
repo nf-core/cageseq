@@ -189,9 +189,42 @@ for (sample in sampleNames){
         sample_annotation |> subset(
             sample_annotation@elementMetadata$annotation == promoter_annot),
         upstream = tsslogo_upstream)
+    # Shift the x-axis numbering one position to the right for non-positive
+    # labels so that 0 is excluded: 0 -> -1, -1 -> -2, ... while positive
+    # labels stay in place. Going from left to right the axis now jumps from
+    # -1 straight to 1. Of the resulting numbers, keep only -1, 1 and the
+    # multiples of 5 (positive and negative); the rest are blanked out.
+    # CAGEr::TSSlogo stores the axis labels as a numeric vector on the scale
+    # objects, so we relabel those in place.
+    for (i in seq_along(tsslogo_plot$scales$scales)) {
+        scale_labels <- tsslogo_plot$scales$scales[[i]]$labels
+        if (!is.null(scale_labels) && is.numeric(scale_labels)) {
+            shifted <- ifelse(
+                scale_labels <= 0, scale_labels - 1, scale_labels)
+            keep <- shifted == -1 | shifted == 1 | shifted %% 5 == 0
+            tsslogo_plot$scales$scales[[i]]$labels <- ifelse(
+                keep, as.character(shifted), "")
+        }
+    }
+    # Add the sample name as a centered, black title. The font family is left
+    # unset so it inherits the plot's base font (same as the rest of the text).
+    # The size stays comfortably readable even with three columns of logos
+    # without overwhelming the logo itself. Also bring the x-axis numbers
+    # closer to the axis: a quarter of the default gap (tick length 3pt and
+    # label margin 2.4pt).
+    tsslogo_plot <- tsslogo_plot +
+        ggtitle(sample) +
+        theme(
+            plot.title = element_text(
+                hjust = 0.5,
+                colour = "black",
+                size = 18),
+            axis.ticks.length = grid::unit(0.75, "pt"),
+            axis.text.x = element_text(margin = margin(t = 0.6)))
     save_plot(
         paste0(sample, "_tagcluster_dominantTSSlogos_plot.pdf"),
-        tsslogo_plot
+        tsslogo_plot,
+        height = 10 / 1.5
     )
 }
 
