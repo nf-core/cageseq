@@ -51,6 +51,19 @@ extract_dinucleotide_information <- function(ce, reference_name) {
 plot_dinucleotide_frequency_heatmap <- function(
         weigthed_dinuc_vals_df) {
 
+    # Order dinucleotides by the median (across samples) of their proportions.
+    # The x axis is not flipped here, so the first factor level sits at the
+    # left; descending order renders the largest median on the left.
+    dinuc_order <- stats::aggregate(
+        proportion ~ dinucleotide,
+        data = weigthed_dinuc_vals_df,
+        FUN = median)
+    dinuc_order <- dinuc_order[
+        order(dinuc_order$proportion, decreasing = TRUE), ]
+    weigthed_dinuc_vals_df$dinucleotide <- factor(
+        weigthed_dinuc_vals_df$dinucleotide,
+        levels = dinuc_order$dinucleotide)
+
     p <- ggplot(
         data = weigthed_dinuc_vals_df,
         aes(x = dinucleotide, y = samples, fill = proportion)) +
@@ -71,6 +84,19 @@ plot_dinucleotide_frequency_heatmap <- function(
 
 plot_dinucleotide_frequency_histogram <- function(
     weigthed_dinuc_vals_df, col) {
+
+    # Order dinucleotides by the median (across samples) of their proportions.
+    # coord_flip() puts the first factor level at the bottom, so
+    # ascending order renders the largest median at the top of the y axis.
+    dinuc_order <- stats::aggregate(
+        proportion ~ dinucleotide,
+        data = weigthed_dinuc_vals_df,
+        FUN = median)
+    dinuc_order <- dinuc_order[
+        order(dinuc_order$proportion, decreasing = FALSE), ]
+    weigthed_dinuc_vals_df$dinucleotide <- factor(
+        weigthed_dinuc_vals_df$dinucleotide,
+        levels = dinuc_order$dinucleotide)
 
     p <- ggplot(
         data = weigthed_dinuc_vals_df,
