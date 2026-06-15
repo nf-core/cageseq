@@ -18,6 +18,11 @@ top_modules:
       path_filters_exclude:
         - "*_val_*"
         - "*_trimmed_*"
+  - cutadapt:
+      name: "TrimGalore"
+      info: "is a wrapper around cutadapt and is used here to trim sequencing adapters."
+      path_filters:
+        - "*trimming_report.txt"
   - fastqc:
       name: "FastQC (trimmed)"
       info: "shows the quality metrics of trimmed reads."
@@ -27,6 +32,8 @@ top_modules:
   - cutadapt:
       name: "Cutadapt"
       info: "is used here to trim 5'-G."
+      path_filters:
+        - "*.cutadapt.log"
   - star
   - samtools
 disable_version_detection: true
