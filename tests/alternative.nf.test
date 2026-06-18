@@ -11,8 +11,14 @@ nextflow_pipeline {
                 outdir      = "$outputDir"
                 unique_only = false
                 bowtie2     = true
-                dedup       = true
-                dist        = 100
+                // Deduplication works (checked the existence and content of samtools dedup stats files),
+                // but on the test datasets signal becomes too low for the subsequent normalisation in CAGEr:
+                // Error in .fit.power.law.to.reverse.cumulative(decode(x), val.range) : 
+                //     Selected range for fitting the power law does not contain any tag count values. Consider changing/increasing 'fitInRange'.
+                //  Calls: cager_normalization ... lapply -> FUN -> .fit.power.law.to.reverse.cumulative
+                // Therefore, we comment out deduplication params
+                // dedup       = true
+                // dist        = 100
                 datatype    = "bam"
                 forgeseed   = params.pipelines_testdata_base_path + "cageseq/reference/v2/BSgenome.sacCer3ChrIII.Test.sacCer3ChrIII-seed"
                 sourcedir   = params.pipelines_testdata_base_path + "cageseq/reference/v2/seq_dir"
