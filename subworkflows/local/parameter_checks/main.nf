@@ -64,6 +64,10 @@ workflow PARAMETER_CHECKS {
             ch_index = Channel.empty()
         }
 
+        if (params.dedup && !params.bowtie2) {
+            exit 1, 'The --dedup option requires the --bowtie2 option.'
+        }
+
         if (params.dist) {
             if (!params.dedup) {
                 exit 1, 'The --dist option requires the --dedup option.'

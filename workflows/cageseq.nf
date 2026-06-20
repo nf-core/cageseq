@@ -161,23 +161,31 @@ workflow CAGESEQ {
             ch_multiqc_files = STAR.out.ch_multiqc_files
         }
 
+        // The samtools steps below (sort/index/dedup and stats/flagstat/idxstats)
+        // only use the FASTA as an optional `--reference`, which they don't
+        // actually need: their core output is identical without it. When no FASTA
+        // is available (i.e. only --index was given), ch_fasta is an empty channel,
+        // which would silently gate these processes off (.first() never emits,
+        // .combine() yields nothing). Fall back to the nf-core empty-path sentinel
+        // ([meta, []]) so the modules run without `--reference`. A value channel is
+        // used so the same reference is broadcast to every BAM.
+        ch_fasta_for_samtools = params.fasta
+            ? ch_fasta.first()
+            : Channel.value([[id: 'no_fasta'], []])
+
         if (params.dedup) {
-            DEDUPLICATION(ch_aligned, ch_fasta, ch_for_cager)
+            DEDUPLICATION(ch_aligned, ch_fasta_for_samtools, ch_for_cager)
 
             ch_for_cager = DEDUPLICATION.out.ch_for_cager
             ch_bam_bai = DEDUPLICATION.out.ch_bam_bai
         } else {
-            SAMTOOLS_PROCESSING(ch_aligned, ch_fasta, ch_for_cager)
+            SAMTOOLS_PROCESSING(ch_aligned, ch_fasta_for_samtools, ch_for_cager)
 
             ch_for_cager = SAMTOOLS_PROCESSING.out.ch_for_cager
             ch_bam_bai = SAMTOOLS_PROCESSING.out.ch_bam_bai
         }
 
-        ch_meta_fasta = ch_bam_bai
-            .combine(ch_fasta)
-            .map{[it[3], it[4]]}
-
-        BAM_STATS_SAMTOOLS(ch_bam_bai, ch_meta_fasta)
+        BAM_STATS_SAMTOOLS(ch_bam_bai, ch_fasta_for_samtools)
 
         // Feed samtools stats/flagstat/idxstats into the MultiQC report
         ch_multiqc_files = ch_multiqc_files.mix(BAM_STATS_SAMTOOLS.out.stats.collect{it[1]})
