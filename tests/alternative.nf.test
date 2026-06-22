@@ -13,7 +13,7 @@ nextflow_pipeline {
                 bowtie2     = true
                 // Deduplication works (checked the existence and content of samtools dedup stats files),
                 // but on the test datasets signal becomes too low for the subsequent normalisation in CAGEr:
-                // Error in .fit.power.law.to.reverse.cumulative(decode(x), val.range) : 
+                // Error in .fit.power.law.to.reverse.cumulative(decode(x), val.range) :
                 //     Selected range for fitting the power law does not contain any tag count values. Consider changing/increasing 'fitInRange'.
                 //  Calls: cager_normalization ... lapply -> FUN -> .fit.power.law.to.reverse.cumulative
                 // Therefore, we comment out deduplication params
