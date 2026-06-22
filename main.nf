@@ -26,7 +26,8 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_cage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-params.fasta = getGenomeAttribute('fasta')
+params.fasta  = getGenomeAttribute('fasta')
+params.index  = params.bowtie2 ? getGenomeAttribute('bowtie2') : getGenomeAttribute('star')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
