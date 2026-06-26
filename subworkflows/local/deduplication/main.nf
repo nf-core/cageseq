@@ -29,7 +29,6 @@ workflow DEDUPLICATION {
         // first sample and drops all the others.
         ch_fasta_value = ch_fasta.first()
 
-        println("Deduplicating reads")
         SORT_FOR_FIXMATE (
             ch_aligned,
             ch_fasta_value,

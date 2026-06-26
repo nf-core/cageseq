@@ -114,7 +114,6 @@ workflow CAGESEQ {
         if (!params.cager_sample_file ) {
             exit 1, 'Sample list file is mandatory if mapping is not done within the pipeline.'
         }
-        println("Running CAGEr analysis subpipeline")
 
         ch_cager_sample_file = Channel.fromPath(params.cager_sample_file)
         mapped_files_ch = MAPPED_INPUTS(ch_cager_sample_file).collect()

@@ -18,11 +18,7 @@ workflow PARAMETER_CHECKS {
             // Create channel from samplesheet file provided through params.input
             //
 
-            println("Reading in samplesheet")
-
             input_handler = Channel.fromPath(params.input, checkIfExists: true)
-
-            println("Creating channel from samplesheet")
 
             ch_fastq = input_handler
                 .splitCsv ( header:true, sep:',' )
@@ -31,7 +27,6 @@ workflow PARAMETER_CHECKS {
                 .map{ meta, fastq -> [ meta, fastq.flatten() ] }
 
         } else if (params.infolder) {
-            println("Reading in files from folder")
             ch_fastq = INPUT_FROM_FOLDER(
                 params.infolder
             )
@@ -39,7 +34,6 @@ workflow PARAMETER_CHECKS {
             exit 1, 'Provide input by using the --input or the --infolder options.'
         }
 
-        println("Initializing channels")
         sample_meta = ch_fastq.map{ meta, fastq ->
             meta = meta
             [meta]}
