@@ -27,8 +27,11 @@ export_tagclusters <- function(ce, iqlow, iqhigh){
         qLow = iqlow, qUp = iqhigh,
         oneTrack = FALSE)
 
+    # genome seqlengths, used as a fallback when filling in BigBed seqinfo
+    gsi <- GenomeInfoDb::seqinfo(CAGEr::CTSStagCountGR(ce, "all")[[1]])
+
     mapply(function(x, y){
-        rtracklayer::export.bed(x, paste0("tracks/", y, "_tagClusters.bed"))
+        export_bigbed(x, paste0("tracks/", y, "_tagClusters.bb"), gsi)
     }, bedTracks, CAGEr::sampleLabels(ce))
 }
 
@@ -38,11 +41,10 @@ export_consensus_clusters <- function(ce){
         what = "consensusClusters",
         colorByExpressionProfile = FALSE,
         oneTrack = TRUE)
-    # should start at 1 for export to be 0
-    thick_start <- rep(1, length(ccbedTracks))
-    thick_end <- thick_start
-    thick_width <- thick_start
-    ccbedTracks$thick <- IRanges(
-        start=thick_start, end=thick_end, width=thick_width)
-    rtracklayer::export.bed( ccbedTracks, "tracks/consensusClusters_prefix.bed")
+
+    # Only the BigBed track is emitted (the consensus-cluster BED has been
+    # retired). export_bigbed reduces to a BED6, so no thickStart/thickEnd
+    # column needs to be set here.
+    gsi <- GenomeInfoDb::seqinfo(CAGEr::CTSStagCountGR(ce, "all")[[1]])
+    export_bigbed(ccbedTracks, "tracks/consensusClusters.bb", gsi)
 }

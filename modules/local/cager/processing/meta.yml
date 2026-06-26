@@ -141,10 +141,10 @@ output:
         type: file
         description: |
           Raw and normalized CAGE signal tracks in bigWig format.
-    - "tracks/*.bed":
+    - "tracks/*.bb":
         type: file
         description: |
-          Bed file of taglcuster locations.
+          bigBed files of per-sample tag cluster and consensus cluster locations.
     - "tables/*.csv":
         type: file
         description: |

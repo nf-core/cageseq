@@ -15,7 +15,7 @@ process CAGER_PROCESSING {
     output:
     path "intermediate_cagerobj/normalized_clustered_cagexp.rds",        emit: rds
     tuple path("plots/*.pdf"), path("plots/*.txt"), path("plots/*plot.rds"), emit: results
-    tuple path("tracks/*.bw"), path("tracks/*.bed"), path("tables/*.csv"), emit: tracks
+    tuple path("tracks/*.bw"), path("tracks/*.bb"), path("tables/*.csv"), emit: tracks
     path "versions.yml", emit: versions
 
     """
@@ -46,9 +46,6 @@ process CAGER_PROCESSING {
         --project_dir ${projectDir} \
         --bsgenome \${bsgenome} \
         --num_core ${task.cpus}
-
-    cat tracks/consensusClusters_prefix.bed | awk '{print \$1 "\t" \$2 "\t" \$3 "\t" \$4 "\t" \$5 "\t" \$6 "\t" \$7 }' > tracks/consensusClusters.bed
-    rm tracks/consensusClusters_prefix.bed
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

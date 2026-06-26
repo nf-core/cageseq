@@ -87,10 +87,12 @@ exclude_enhancers_overlapping_promoters <- function(BCs, ce){
 #' This function saves a GRanges object of enhancer regions to a BED file.
 #'
 #' @param enhancers A GRanges object containing enhancer regions.
-#' @return None. The function writes a BED file to disk.
+#' @param seqlengths_src Optional object carrying genome seqlengths used to fill
+#'   in any missing seqinfo when writing the BigBed track.
+#' @return None. The function writes the BigBed track to disk.
 #' @export
-save_enhancers_to_bed <- function(enhancers){
-    rtracklayer::export.bed(enhancers,con='tracks/enhancers.bed')
+save_enhancers_to_bed <- function(enhancers, seqlengths_src = NULL){
+    export_bigbed(enhancers, 'tracks/enhancers.bb', seqlengths_src)
 }
 
 #' Annotate Enhancers with Transcript Database Information

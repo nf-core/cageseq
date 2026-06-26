@@ -73,18 +73,18 @@ Below is the complete tree of the results run on 2 samples with the STAR option.
 │   │   ├── consensus_clusters_tpm.csv
 │   │   └── enhancer_expression_per_sample.tsv
 │   ├── tracks
-│   │   ├── consensusClusters.bed
-│   │   ├── enhancers.bed
+│   │   ├── consensusClusters.bb
+│   │   ├── enhancers.bb
 │   │   ├── <sample_name_1>\_normalized_minus.bw
 │   │   ├── <sample_name_1>\_normalized_plus.bw
 │   │   ├── <sample_name_1>\_raw_minus.bw
 │   │   ├── <sample_name_1>\_raw_plus.bw
-│   │   ├── <sample_name_1>\_tagClusters.bed
+│   │   ├── <sample_name_1>\_tagClusters.bb
 │   │   ├── <sample_name_2>\_normalized_minus.bw
 │   │   ├── <sample_name_2>\_normalized_plus.bw
 │   │   ├── <sample_name_2>\_raw_minus.bw
 │   │   ├── <sample_name_2>\_raw_plus.bw
-│   │   └── <sample_name_2>\_tagClusters.bed
+│   │   └── <sample_name_2>\_tagClusters.bb
 │   └── versions.yml
 ├── cat_fastq
 │   ├── <sample_name_1>\_1.merged.fastq.gz

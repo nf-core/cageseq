@@ -93,10 +93,10 @@ output:
         type: file
         description: |
           Table with enhancer expression per sample.
-    - "tracks/*.bed":
+    - "tracks/*.bb":
         type: file
         description: |
-          Bed file of enhancer locations.
+          bigBed file of enhancer locations.
   versions:
     - versions.yml:
         type: file

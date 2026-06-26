@@ -158,6 +158,7 @@ source(file.path(project_dir, "bin/plot_saving.R"))
 source(file.path(project_dir, "bin/qc_plots.R"))
 source(file.path(project_dir, "bin/cager_clustering.R"))
 source(file.path(project_dir, "bin/cager_consensus_clustering.R"))
+source(file.path(project_dir, "bin/bigbed_export.R"))
 source(file.path(project_dir, "bin/cager_track_export.R"))
 
 reference_name <- install_bsgenome(bsgenome)
