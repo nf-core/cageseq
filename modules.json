@@ -70,11 +70,6 @@
                         "git_sha": "fe93fde0845f907fc91ad7cc7d797930408824df",
                         "installed_by": ["bam_stats_samtools"]
                     },
-                    "samtools/view": {
-                        "branch": "master",
-                        "git_sha": "d2ceed2ec5fccf922638f116a15e02f6458288fb",
-                        "installed_by": ["modules"]
-                    },
                     "star/align": {
                         "branch": "master",
                         "git_sha": "d6419d592de78e193625b209c1d0a5cc09206df3",
