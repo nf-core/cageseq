@@ -86,6 +86,8 @@ Below is the complete tree of the results run on 2 samples with the STAR option.
 │   │   ├── <sample_name_2>\_raw_plus.bw
 │   │   └── <sample_name_2>\_tagClusters.bb
 │   └── versions.yml
+├── cager_sample_list
+│   └── cager_sample_list.csv
 ├── cat_fastq
 │   ├── <sample_name_1>\_1.merged.fastq.gz
 │   ├── <sample_name_1>\_2.merged.fastq.gz

@@ -33,6 +33,13 @@ export_bigbed <- function(gr, con, seqlengths_src = NULL) {
         GenomeInfoDb::seqlengths(gr)[common] <- sl[common]
     }
 
+    # BigBed rejects features that run past the chromosome end (e.g. an enhancer
+    # or cluster window extended beyond the last base -> "End coordinate ... bigger
+    # than <chrom> size ..."). Trim any out-of-bound ranges back to their sequence
+    # bounds; trim() only touches seqlevels whose length is known, leaving the rest
+    # untouched.
+    gr <- GenomicRanges::trim(gr)
+
     # Keep only the seqlevels actually used, then sort by genome and coordinate.
     gr <- GenomeInfoDb::keepSeqlevels(
         gr, unique(as.character(GenomicRanges::seqnames(gr))),

@@ -211,9 +211,14 @@ workflow CAGESEQ {
         .reduce( header ) { acc, table_line ->
             acc + '\n' + table_line.readLines()[0]}
 
-        // sorting samples alphabetically
+        // sorting samples alphabetically. storeDir writes the merged sheet to
+        // results/cager_sample_list/cager_sample_list.csv (in both maponly and
+        // full-run mode, whenever mapping produces the bigWigs), before the CAGEr
+        // part starts, mirroring the cageronly-mode RELATIVISATION output, while
+        // the same channel is still passed directly into CAGER below.
         merged_sample_file = ch_collected.collectFile(
-            name: "sample_list.csv",
+            name: "cager_sample_list.csv",
+            storeDir: "${params.outdir}/cager_sample_list",
             newLine: true,
             sort: { file -> file.text })
 

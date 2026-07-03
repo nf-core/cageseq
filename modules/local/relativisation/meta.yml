@@ -23,10 +23,12 @@ input:
         The file should be a comma-separated file with the following columns:
         "id,single_end,path,new_name"
 output:
-  - "sample_list_relativepath.csv":
+  - "cager_sample_list.csv":
       type: file
       description: |
-        A samplefile with relative paths to bigwig files.
+        A samplefile with relative (work-folder) paths to bigwig/BAM files,
+        directly consumable by the CAGEr subworkflow. Published under
+        `<outdir>/cager_sample_list/` in cageronly mode.
         The file is a comma-separated file with the following columns:
         "id,single_end,path,new_name"
 authors:
