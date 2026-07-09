@@ -7,9 +7,9 @@
 # path/to/S14.Signal.UniqueMultiple.str1.out.wig.bw
 # path/to/S14.Signal.UniqueMultiple.str2.out.wig.bw
 # output:
-# id,single_end,path
-# S10,false,[path/to/S10.Signal.UniqueMultiple.str1.out.wig.bw path/to/S10.Signal.UniqueMultiple.str2.out.wig.bw]
-# S14,false,[path/to/S14.Signal.UniqueMultiple.str1.out.wig.bw path/to/S14.Signal.UniqueMultiple.str2.out.wig.bw]
+# id,single_end,path1,path2,new_name
+# S10,false,path/to/S10.Signal.UniqueMultiple.str1.out.wig.bw,path/to/S10.Signal.UniqueMultiple.str2.out.wig.bw,S10
+# S14,false,path/to/S14.Signal.UniqueMultiple.str1.out.wig.bw,path/to/S14.Signal.UniqueMultiple.str2.out.wig.bw,S14
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -43,13 +43,11 @@ with open(args.filepath, "r", encoding="utf-8") as filein:
         else:
             outdict[sample_name].append(samplepath)
 
+any_paired = any(len(paths) > 1 for paths in outdict.values())
 with open("sample_list.csv", "w+", encoding="utf-8") as outfile:
-    header = "id,single_end,path,new_name\n"
+    header = "id,single_end,path1,path2,new_name\n" if any_paired else "id,single_end,path,new_name\n"
     outfile.write(header)
     for sample, paths in outdict.items():
-        if len(paths) > 1:
-            path_str = " ".join(paths)
-        else:
-            path_str = paths[0]
-        line_to_write = f"{sample},{args.singleend},[{path_str}],{sample}\n"
+        path_str = ",".join(paths)
+        line_to_write = f"{sample},{args.singleend},{path_str},{sample}\n"
         outfile.write(line_to_write)

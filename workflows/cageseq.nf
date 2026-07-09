@@ -205,7 +205,10 @@ workflow CAGESEQ {
 
 
         ch_sample_files = WRITE_SAMPLE_LIST(ch_for_cager)
-        def header = "id,single_end,path,new_name"
+        // bowtie2 emits a single BAM path per sample (4 columns); STAR emits a
+        // pair of bigWigs, now written as two comma-separated columns (path1,
+        // path2) instead of a single bracketed "[str1 str2]" field.
+        def header = params.bowtie2 ? "id,single_end,path,new_name" : "id,single_end,path1,path2,new_name"
 
         ch_collected = ch_sample_files
         .reduce( header ) { acc, table_line ->

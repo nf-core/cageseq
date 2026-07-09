@@ -13,7 +13,7 @@ process WRITE_SAMPLE_LIST {
     script:
     if ( bw_or_bam[1] != null )
         """
-        line="${meta.id},${meta.single_end},[${PWD}/${params.outdir}/bigwig/${bw_or_bam[0]} ${PWD}/${params.outdir}/bigwig/${bw_or_bam[1]}],${meta.id}"
+        line="${meta.id},${meta.single_end},${PWD}/${params.outdir}/bigwig/${bw_or_bam[0]},${PWD}/${params.outdir}/bigwig/${bw_or_bam[1]},${meta.id}"
         echo \$line > sample_list.csv
         """
     else
