@@ -1,6 +1,6 @@
 # Functions to calulcate and plot dinucleotide composition
 
-extract_dinucleotide_information <- function(ce, reference_name) {
+extract_dinucleotide_information <- function(ce, reference_name, qLow = 0.1, qUp = 0.9) {
     bsgenome <- BSgenome::getBSgenome(reference_name)
     sample_names <- CAGEr::sampleLabels(ce)
     weigthed_dinuc_vals <- list()
@@ -8,7 +8,7 @@ extract_dinucleotide_information <- function(ce, reference_name) {
         tmp <- as.data.frame(CAGEr::tagClustersGR(
             ce,
             sample = sample,
-            qLow = 0.1,qUp = 0.9))
+            qLow = qLow, qUp = qUp))
         tmp <- GenomicRanges::GRanges(
             seqnames = tmp$seqnames,
             ranges =  IRanges::IRanges(

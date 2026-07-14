@@ -229,7 +229,8 @@ for (sample in sampleNames){
 }
 
 # dinculeotide composition
-weigthed_dinuc_vals_df <- extract_dinucleotide_information(ce, reference_name)
+weigthed_dinuc_vals_df <- extract_dinucleotide_information(
+    ce, reference_name, qLow = iqlow, qUp = iqhigh)
 dinuclfreq_plot <- plot_dinucleotide_frequency(
     weigthed_dinuc_vals_df)
 save_plot(
