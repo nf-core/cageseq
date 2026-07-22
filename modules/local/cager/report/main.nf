@@ -33,6 +33,7 @@ process CAGER_REPORT {
     keepSingletonsAbove <- '${params.keepSingletonsAbove}'
     iq_low <- '${params.iq_low}'
     iq_high <- '${params.iq_high}'
+    cons_full_span <- '${params.cons_full_span}'
     iqw_tpm_threshold <- '${params.iqw_tpm_threshold}'
     tssregion_up <- '${params.tssregion_up}'
     tssregion_down <- '${params.tssregion_down}'

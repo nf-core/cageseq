@@ -50,6 +50,9 @@ score_from_ctss <- function(ce){
 #' @param tpmThreshold Threshold for calling consensus clusters (in aggregateTagClusters function)
 #' @param maxDist Maximum distance for calling consensus clusters (in aggregateTagClusters function)
 #' @param tx_annotation SQLite file with a TxDb genome annotation package
+#' @param cons_full_span If TRUE, aggregate tag clusters into consensus clusters
+#'   using their whole span (qLow/qUp set to NULL) instead of the interquantile
+#'   range bounded by iqlow/iqhigh (the default, FALSE).
 #' @return ce clustered CAGEexp object
 #' @examples
 #' consensus_clustering(
@@ -66,7 +69,8 @@ consensus_clustering <- function(
         tx_annotation,
         num_core,
         iqlow,
-        iqhigh){
+        iqhigh,
+        cons_full_span = FALSE){
 
     multicore <- TRUE
     if(num_core < 2){
@@ -74,11 +78,22 @@ consensus_clustering <- function(
         num_core <- NULL
     }
 
+    # When cons_full_span is TRUE, the interquantile boundaries are not used for
+    # aggregation: passing qLow/qUp = NULL makes CAGEr aggregate tag clusters on
+    # their whole span. Otherwise the iqlow/iqhigh interquantile range is used.
+    if (cons_full_span) {
+        agg_qLow <- NULL
+        agg_qUp  <- NULL
+    } else {
+        agg_qLow <- iqlow
+        agg_qUp  <- iqhigh
+    }
+
     ce <- CAGEr::aggregateTagClusters(
         ce,
         tpmThreshold = tpmThreshold,
-        qLow = iqlow,
-        qUp = iqhigh,
+        qLow = agg_qLow,
+        qUp = agg_qUp,
         maxDist = maxDist)
 
     ce <- score_from_ctss(ce)

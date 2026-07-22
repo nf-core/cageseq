@@ -13,7 +13,7 @@ process CAGEFIGHTR_ENHANCER_CALLING {
     output:
     tuple path("intermediate_cagerobj/supported_enhancers.rds"), path("intermediate_cagerobj/nonTSS_enhancers.rds"), emit: rds
     tuple path("plots/*.pdf"), path("plots/*plot.rds"), emit: plots
-    tuple path("tables/*.tsv"), path("tracks/*.bb"), emit: enhancer_table
+    tuple path("tables/*.tsv"), path("tracks/*.bed"), emit: enhancer_table
     path "versions.yml", emit: versions
     """
 

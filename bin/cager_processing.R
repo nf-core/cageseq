@@ -61,9 +61,9 @@ option_list = list(
         help = "Number of samples in which the CTSS Tpm threshold (ctss_thr) should be passed (Default = 1)"),
     make_option(
         c("-r", "--ctss_thr"),
-        type = "integer",
+        type = "double",
         default = 1,
-        help = "CTSS Tpm threshold which should be passed in sample_num_thr number of samples (Default = 1)"),
+        help = "CTSS Tpm threshold which should be passed in sample_num_thr number of samples. May be a non-integer positive number, e.g. 0.5 or 1.5 (Default = 1)"),
     make_option(
         c("-l", "--distclu_maxDist"),
         type = "integer",
@@ -99,6 +99,14 @@ option_list = list(
         type = "integer",
         default = 100,
         help = "Distance threshold for consensus clustering (Default = 100)"),
+    make_option(
+        c("-f", "--cons_full_span"),
+        type = "character",
+        default = "false",
+        help = paste(
+            "Whether to aggregate tag clusters into consensus clusters using",
+            "their whole span ('true') instead of their interquantile range",
+            "bounded by iq_low/iq_high ('false', default)")),
     make_option(
         c("-x", "--annotation"),
         type = "character",
@@ -142,6 +150,7 @@ iqhigh              <- opt$iq_high
 iqw_tpm_threshold   <- opt$iqw_tpm_threshold
 consensus_thr       <- opt$consensus_thr
 consensus_dist      <- opt$consensus_dist
+cons_full_span      <- tolower(as.character(opt$cons_full_span)) %in% c("true", "t", "yes", "1")
 tx_annotation       <- opt$annotation
 project_dir         <- opt$project_dir
 bsgenome            <- opt$bsgenome
@@ -158,7 +167,6 @@ source(file.path(project_dir, "bin/plot_saving.R"))
 source(file.path(project_dir, "bin/qc_plots.R"))
 source(file.path(project_dir, "bin/cager_clustering.R"))
 source(file.path(project_dir, "bin/cager_consensus_clustering.R"))
-source(file.path(project_dir, "bin/bigbed_export.R"))
 source(file.path(project_dir, "bin/cager_track_export.R"))
 
 reference_name <- install_bsgenome(bsgenome)
@@ -204,7 +212,8 @@ ce <- consensus_clustering(
     tx_annotation=tx_annotation,
     num_core=1,
     iqlow=iqlow,
-    iqhigh=iqhigh)
+    iqhigh=iqhigh,
+    cons_full_span=cons_full_span)
 
 # save output
 # RDS

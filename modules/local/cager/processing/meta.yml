@@ -141,10 +141,12 @@ output:
         type: file
         description: |
           Raw and normalized CAGE signal tracks in bigWig format.
-    - "tracks/*.bb":
+    - "tracks/*.bed":
         type: file
         description: |
-          bigBed files of per-sample tag cluster and consensus cluster locations.
+          BED12 text tracks of per-sample tag cluster (with dominant TSS and
+          interquantile block structure) and consensus cluster (single-block)
+          locations.
     - "tables/*.csv":
         type: file
         description: |

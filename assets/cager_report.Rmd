@@ -114,6 +114,10 @@ With the keepSingletonsAbove parameter, the user can decide the tpm threshold ab
 
 The iq_low and iq_high parameters are used to define the lower and upper quantile boundaries of the interquartile range within which the majority of the signal lies.
 
+The cons_full_span parameter controls whether the iq_low and iq_high boundaries are also applied when tag clusters are aggregated into consensus clusters.
+When cons_full_span is false (the default), the interquartile range delimited by iq_low and iq_high is used for consensus cluster calling.
+When cons_full_span is true, iq_low and iq_high are not used for consensus cluster calling and the whole span of the tag clusters is taken into account when they are aggregated.
+
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 print(paste0("The current sample_num_thr value is: ", sample_num_thr))
 print(paste0("The current ctss_thr value is: ", ctss_thr))
@@ -122,6 +126,7 @@ print(paste0("The current keepSingletonsAbove value is: ", keepSingletonsAbove))
 
 print(paste0("The current iq_low value is: ", iq_low))
 print(paste0("The current iq_high value is: ", iq_high))
+print(paste0("The current cons_full_span value is: ", cons_full_span))
 ```
 
 ### Tag cluster interquartile width

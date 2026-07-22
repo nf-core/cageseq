@@ -15,7 +15,7 @@ process CAGER_PROCESSING {
     output:
     path "intermediate_cagerobj/normalized_clustered_cagexp.rds",        emit: rds
     tuple path("plots/*.pdf"), path("plots/*.txt"), path("plots/*plot.rds"), emit: results
-    tuple path("tracks/*.bw"), path("tracks/*.bb"), path("tables/*.csv"), emit: tracks
+    tuple path("tracks/*.bw"), path("tracks/*.bed"), path("tables/*.csv"), emit: tracks
     path "versions.yml", emit: versions
 
     """
@@ -42,6 +42,7 @@ process CAGER_PROCESSING {
         --iqw_tpm_threshold ${params.iqw_tpm_threshold} \
         --consensus_thr ${params.consensus_thr} \
         --consensus_dist ${params.consensus_dist} \
+        --cons_full_span ${params.cons_full_span} \
         --annotation ${txdb} \
         --project_dir ${projectDir} \
         --bsgenome \${bsgenome} \

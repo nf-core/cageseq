@@ -27,11 +27,14 @@ export_tagclusters <- function(ce, iqlow, iqhigh){
         qLow = iqlow, qUp = iqhigh,
         oneTrack = FALSE)
 
-    # genome seqlengths, used as a fallback when filling in BigBed seqinfo
-    gsi <- GenomeInfoDb::seqinfo(CAGEr::CTSStagCountGR(ce, "all")[[1]])
-
     mapply(function(x, y){
-        export_bigbed(x, paste0("tracks/", y, "_tagClusters.bb"), gsi)
+        # BED12 text track. The full per-cluster attributes are preserved: the
+        # dominant TSS as thickStart/thickEnd (a "coding exon") and the
+        # interquantile range (qLow..qUp) as the block structure.
+        # Coerce away the UCSCData wrapper so no "track ..." line is written.
+        rtracklayer::export.bed(
+            methods::as(x, "GRanges"),
+            paste0("tracks/", y, "_tagClusters.bed"))
     }, bedTracks, CAGEr::sampleLabels(ce))
 }
 
@@ -42,9 +45,16 @@ export_consensus_clusters <- function(ce){
         colorByExpressionProfile = FALSE,
         oneTrack = TRUE)
 
-    # Only the BigBed track is emitted (the consensus-cluster BED has been
-    # retired). export_bigbed reduces to a BED6, so no thickStart/thickEnd
-    # column needs to be set here.
-    gsi <- GenomeInfoDb::seqinfo(CAGEr::CTSStagCountGR(ce, "all")[[1]])
-    export_bigbed(ccbedTracks, "tracks/consensusClusters.bb", gsi)
+    # BED12 text track. A consensus cluster aggregates per-sample tag clusters
+    # whose dominant TSS may differ, so no single dominant TSS is represented:
+    # the whole cluster span is written as one block and the thick region is
+    # collapsed to zero width at the cluster start (thickStart == thickEnd), so
+    # browsers draw a single thin block with no coding-exon marker.
+    ccbedTracks <- methods::as(ccbedTracks, "GRanges")
+    ccbedTracks$blocks <- IRanges::IRangesList(lapply(
+        GenomicRanges::width(ccbedTracks),
+        function(w) IRanges::IRanges(start = 1, width = w)))
+    ccbedTracks$thick <- IRanges::IRanges(
+        start = GenomicRanges::start(ccbedTracks), width = 0)
+    rtracklayer::export.bed(ccbedTracks, "tracks/consensusClusters.bed")
 }

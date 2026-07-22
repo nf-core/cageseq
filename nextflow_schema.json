@@ -327,9 +327,9 @@
                     "description": "Parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed."
                 },
                 "ctss_thr": {
-                    "type": "integer",
+                    "type": "number",
                     "default": 1,
-                    "description": "Parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed."
+                    "description": "Parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold (may be a non-integer positive number, e.g. 0.5 or 1.5) above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed."
                 },
                 "distclu_maxDist": {
                     "type": "integer",
@@ -380,6 +380,11 @@
                     "type": "integer",
                     "default": 100,
                     "description": "Used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquartile ranges of tag clusters to be joined together into consensus clusters."
+                },
+                "cons_full_span": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If false (default), tag clusters are aggregated into consensus clusters using their interquantile range bounded by `iq_low`/`iq_high`. If true, `iq_low`/`iq_high` are not used for consensus clustering and the whole span of tag clusters is used instead when they are aggregated."
                 },
                 "cfBalanceThreshold": {
                     "type": "number",

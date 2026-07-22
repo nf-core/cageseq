@@ -66,6 +66,7 @@ params.tsslogo_upstream = 35
 // parameters for consensus clusters
 params.consensus_thr = 2
 params.consensus_dist = 100
+params.cons_full_span = false
 // parameters for enhancer calling
 params.cfBalanceThreshold = 0.95
 params.unexpressed = 0

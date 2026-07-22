@@ -83,8 +83,6 @@ project_dir         <- opt$project_dir
 # import functions
 # installing BSgenome
 source(file.path(project_dir, "bin/install_bsgenome.R"))
-# track export helpers
-source(file.path(project_dir, "bin/bigbed_export.R"))
 # for analysis
 source(file.path(project_dir, "bin/enhancer_functions.R"))
 source(file.path(project_dir, "bin/qc_plots.R"))
@@ -136,12 +134,9 @@ if (length(true_enhancers) > 0) {
     saveRDS(true_enhancers, file = "intermediate_cagerobj/nonTSS_enhancers.rds")
     print("Enhancers excluding promoters (consensus clusters) rds file saved")
 
-    print("Saving enhancers to bigBed files...")
-    genome_seqinfo <- GenomeInfoDb::seqinfo(CAGEr::CTSStagCountGR(ce, "all")[[1]])
-    save_enhancers_to_bed(
-        enhancers=true_enhancers,
-        seqlengths_src=genome_seqinfo)
-    print("Enhancers saved to bigBed files")
+    print("Saving enhancers to BED files...")
+    save_enhancers_to_bed(enhancers=true_enhancers)
+    print("Enhancers saved to BED files")
 
     # assign enhancers to samples
     enhancer_expr_per_sample <- identify_sample_specific_enhancers(
