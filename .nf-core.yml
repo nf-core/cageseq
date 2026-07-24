@@ -1,4 +1,13 @@
-nf_core_version: 4.0.2
+lint:
+  container_configs: false
+  files_unchanged:
+    - .github/PULL_REQUEST_TEMPLATE.md
+  merge_markers:
+    - modules/nf-core/bowtie2/align/tests/main.nf.test.snap
+  nextflow_config:
+    - config_defaults:
+        - params.markdown_path
+nf_core_version: 4.0.3
 repository_type: pipeline
 template:
   author: Katalin Ferenc, Sviatoslav Sidorov, Damir Baranasic

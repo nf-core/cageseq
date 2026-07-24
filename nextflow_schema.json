@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/cageseq/main/nextflow_schema.json",
+    "$id": "https://raw.githubusercontent.com/nf-core/cageseq/master/nextflow_schema.json",
     "title": "nf-core/cageseq pipeline parameters",
     "description": "CAGE-sequencing analysis pipeline with trimming, alignment and counting of CAGE tags.",
     "type": "object",
