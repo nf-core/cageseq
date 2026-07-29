@@ -16,6 +16,7 @@ process CAGER_TAGCLUSTER_QC {
     path "tables/*.csv", emit: counts_csv
     tuple path("plots/*plot.pdf"), path("plots/*plot.rds"), emit: plots
     path "plots/*correlations_matrix.rds", emit: correlation_rds
+    path "plots/*_error.txt", emit: error_logs, optional: true
     path "versions.yml", emit: versions
 
     """

@@ -184,59 +184,87 @@ if (abs(tssregion_up-tssregion_down) < 1000){
     promoter_annot <- "Promoter"
 }
 for (sample in sampleNames){
-    sample_annotation <- peakAnno_list[[sample]]@anno
-    tsslogo_plot <- CAGEr::TSSlogo(
-        sample_annotation |> subset(
-            sample_annotation@elementMetadata$annotation == promoter_annot),
-        upstream = tsslogo_upstream)
-    # Shift the x-axis numbering one position to the right for non-positive
-    # labels so that 0 is excluded: 0 -> -1, -1 -> -2, ... while positive
-    # labels stay in place. Going from left to right the axis now jumps from
-    # -1 straight to 1. Of the resulting numbers, keep only -1, 1 and the
-    # multiples of 5 (positive and negative); the rest are blanked out.
-    # CAGEr::TSSlogo stores the axis labels as a numeric vector on the scale
-    # objects, so we relabel those in place.
-    for (i in seq_along(tsslogo_plot$scales$scales)) {
-        scale_labels <- tsslogo_plot$scales$scales[[i]]$labels
-        if (!is.null(scale_labels) && is.numeric(scale_labels)) {
-            shifted <- ifelse(
-                scale_labels <= 0, scale_labels - 1, scale_labels)
-            keep <- shifted == -1 | shifted == 1 | shifted %% 5 == 0
-            tsslogo_plot$scales$scales[[i]]$labels <- ifelse(
-                keep, as.character(shifted), "")
+    # Generating a TSS logo can fail (e.g. when a sample has no tag clusters
+    # annotated as promoters). Rather than crashing the whole pipeline, record
+    # the error to a published text file and drop a placeholder plot in the
+    # spot the real logo would have occupied so the CAGEr report still renders.
+    tryCatch({
+        sample_annotation <- peakAnno_list[[sample]]@anno
+        tsslogo_plot <- CAGEr::TSSlogo(
+            sample_annotation |> subset(
+                sample_annotation@elementMetadata$annotation == promoter_annot),
+            upstream = tsslogo_upstream)
+        # Shift the x-axis numbering one position to the right for non-positive
+        # labels so that 0 is excluded: 0 -> -1, -1 -> -2, ... while positive
+        # labels stay in place. Going from left to right the axis now jumps from
+        # -1 straight to 1. Of the resulting numbers, keep only -1, 1 and the
+        # multiples of 5 (positive and negative); the rest are blanked out.
+        # CAGEr::TSSlogo stores the axis labels as a numeric vector on the scale
+        # objects, so we relabel those in place.
+        for (i in seq_along(tsslogo_plot$scales$scales)) {
+            scale_labels <- tsslogo_plot$scales$scales[[i]]$labels
+            if (!is.null(scale_labels) && is.numeric(scale_labels)) {
+                shifted <- ifelse(
+                    scale_labels <= 0, scale_labels - 1, scale_labels)
+                keep <- shifted == -1 | shifted == 1 | shifted %% 5 == 0
+                tsslogo_plot$scales$scales[[i]]$labels <- ifelse(
+                    keep, as.character(shifted), "")
+            }
         }
-    }
-    # Add the sample name as a centered, black title. The font family is left
-    # unset so it inherits the plot's base font (same as the rest of the text).
-    # The size stays comfortably readable even with three columns of logos
-    # without overwhelming the logo itself. Also bring the x-axis numbers
-    # closer to the axis: a quarter of the default gap (tick length 3pt and
-    # label margin 2.4pt).
-    tsslogo_plot <- tsslogo_plot +
-        ggtitle(sample) +
-        theme(
-            plot.title = element_text(
-                hjust = 0.5,
-                colour = "black",
-                size = 18),
-            axis.ticks.length = grid::unit(0.75, "pt"),
-            axis.text.x = element_text(margin = margin(t = 0.6)))
-    save_plot(
-        paste0(sample, "_tagcluster_dominantTSSlogos_plot.pdf"),
-        tsslogo_plot,
-        height = 10 / 1.5
-    )
+        # Add the sample name as a centered, black title. The font family is
+        # left unset so it inherits the plot's base font (same as the rest of
+        # the text). The size stays comfortably readable even with three columns
+        # of logos without overwhelming the logo itself. Also bring the x-axis
+        # numbers closer to the axis: a quarter of the default gap (tick length
+        # 3pt and label margin 2.4pt).
+        tsslogo_plot <- tsslogo_plot +
+            ggtitle(sample) +
+            theme(
+                plot.title = element_text(
+                    hjust = 0.5,
+                    colour = "black",
+                    size = 18),
+                axis.ticks.length = grid::unit(0.75, "pt"),
+                axis.text.x = element_text(margin = margin(t = 0.6)))
+        save_plot(
+            paste0(sample, "_tagcluster_dominantTSSlogos_plot.pdf"),
+            tsslogo_plot,
+            height = 10 / 1.5
+        )
+    }, error = function(e) {
+        message("TSSlogo failed for ", sample, ": ", conditionMessage(e))
+        save_error_log(
+            paste0(sample, "_tagcluster_dominantTSSlogos_error.txt"), e)
+        save_plot(
+            paste0(sample, "_tagcluster_dominantTSSlogos_plot.pdf"),
+            make_message_plot("Error occurred when generating the TSS logo"),
+            height = 10 / 1.5
+        )
+    })
 }
 
 # dinculeotide composition
-weigthed_dinuc_vals_df <- extract_dinucleotide_information(
-    ce, reference_name, qLow = iqlow, qUp = iqhigh)
-dinuclfreq_plot <- plot_dinucleotide_frequency(
-    weigthed_dinuc_vals_df)
-save_plot(
-    "dinucleotide_frequencies_plot.pdf",
-    dinuclfreq_plot
-)
+# If the dinucleotide frequency analysis or its plotting fails, log the error to
+# a published text file and substitute a placeholder plot so the pipeline keeps
+# running and the CAGEr report can still be generated.
+tryCatch({
+    weigthed_dinuc_vals_df <- extract_dinucleotide_information(
+        ce, reference_name, qLow = iqlow, qUp = iqhigh)
+    dinuclfreq_plot <- plot_dinucleotide_frequency(
+        weigthed_dinuc_vals_df)
+    save_plot(
+        "dinucleotide_frequencies_plot.pdf",
+        dinuclfreq_plot
+    )
+}, error = function(e) {
+    message("Dinucleotide composition failed: ", conditionMessage(e))
+    save_error_log("dinucleotide_frequencies_error.txt", e)
+    save_plot(
+        "dinucleotide_frequencies_plot.pdf",
+        make_message_plot(
+            "Error occurred when generating the dinucleotide frequency plot")
+    )
+})
 
 # Consensus clustered CTSS quality plots
 

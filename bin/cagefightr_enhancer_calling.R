@@ -97,22 +97,6 @@ dir.create(file.path("intermediate_cagerobj"))
 # Read in CAGEexp object
 ce <- readRDS(ce_path)
 
-# call enhancers with CAGEfightR
-supported_enhancers <- cagefightr_enhancers(
-    ce=ce,
-    cfBalanceThreshold=cfBalanceThreshold,
-    unexpressed=unexpressed,
-    minSamples=minSamples)
-
-saveRDS(supported_enhancers, file = "intermediate_cagerobj/supported_enhancers.rds")
-print("Supported enhancers rds file saved")
-
-# exclude enhancers overlapping promoters defined by consensus clusters
-true_enhancers <- exclude_enhancers_overlapping_promoters(
-    BCs=supported_enhancers,
-    ce=ce)
-print("Enhancers overlapping promoters excluded")
-
 # annotate enhancers with transcript database information
 tx_annotation_obj <- loadDb(tx_annotation)
 print("Annotation in TxDb is loaded")
@@ -121,76 +105,135 @@ print("Annotation in TxDb is loaded")
 outFileNameSamples <- file.path(
     "tables", "enhancer_expression_per_sample.tsv")
 
-if (length(true_enhancers) > 0) {
+# The three enhancer-related plots that the CAGEr report expects to exist.
+enhancer_plot_files <- c(
+    "chipseeker_enhancer_annotation_plot.pdf",
+    "enhancer_expression_pca_plot.pdf",
+    "enhancer_count_per_sample_plot.pdf")
 
-    annotate_enhancers(
-        enhancers=true_enhancers,
-        txdb=tx_annotation_obj,
-        tssregion_up=tssregion_up,
-        tssregion_down=tssregion_down)
+# Put the same placeholder plot (bearing the given message) in place of every
+# enhancer plot so the report can still be rendered.
+write_enhancer_placeholders <- function(message) {
+    for (plot_file in enhancer_plot_files) {
+        save_plot(plot_file, make_message_plot(message))
+    }
+}
 
-    print("Enhancers annotated")
+# The module output contract requires the enhancer rds objects, the per-sample
+# expression table and a BED track to be present even when no enhancers are
+# called or an error occurred. Create empty stand-ins for whatever is missing so
+# Nextflow can collect the outputs and the pipeline continues to the report.
+ensure_enhancer_stub_files <- function() {
+    for (rds_file in c(
+        "intermediate_cagerobj/supported_enhancers.rds",
+        "intermediate_cagerobj/nonTSS_enhancers.rds")) {
+        if (!file.exists(rds_file)) {
+            saveRDS(NULL, file = rds_file)
+        }
+    }
+    if (!file.exists(outFileNameSamples)) {
+        file.create(outFileNameSamples)
+    }
+    if (length(list.files("tracks", pattern = "\\.bed$")) == 0) {
+        file.create(file.path("tracks", "enhancers.bed"))
+    }
+}
+
+# Call enhancers and run the full downstream analysis. Any failure along the way
+# is captured so that, instead of crashing the pipeline, the error is logged to a
+# published text file and an "Error occurred when calling enhancers" placeholder
+# is shown in the report. If enhancer calling succeeds but finds no enhancers,
+# a "No enhancers called" placeholder is shown instead.
+enhancer_status <- tryCatch({
+
+    # call enhancers with CAGEfightR
+    supported_enhancers <- cagefightr_enhancers(
+        ce=ce,
+        cfBalanceThreshold=cfBalanceThreshold,
+        unexpressed=unexpressed,
+        minSamples=minSamples)
+
+    saveRDS(supported_enhancers, file = "intermediate_cagerobj/supported_enhancers.rds")
+    print("Supported enhancers rds file saved")
+
+    # exclude enhancers overlapping promoters defined by consensus clusters
+    true_enhancers <- exclude_enhancers_overlapping_promoters(
+        BCs=supported_enhancers,
+        ce=ce)
+    print("Enhancers overlapping promoters excluded")
 
     saveRDS(true_enhancers, file = "intermediate_cagerobj/nonTSS_enhancers.rds")
     print("Enhancers excluding promoters (consensus clusters) rds file saved")
 
-    print("Saving enhancers to BED files...")
-    save_enhancers_to_bed(enhancers=true_enhancers)
-    print("Enhancers saved to BED files")
+    if (length(true_enhancers) > 0) {
 
-    # assign enhancers to samples
-    enhancer_expr_per_sample <- identify_sample_specific_enhancers(
-        true_enhancers=true_enhancers,
-        ce=ce)
+        annotate_enhancers(
+            enhancers=true_enhancers,
+            txdb=tx_annotation_obj,
+            tssregion_up=tssregion_up,
+            tssregion_down=tssregion_down)
 
-    print("Enhancers assigned to samples")
+        print("Enhancers annotated")
 
-    write.table(
-        enhancer_expr_per_sample,
-        file=outFileNameSamples,
-        quote=FALSE,
-        sep='\t')
-    print("Enhancer expressions per sample saved to file")
+        print("Saving enhancers to BED files...")
+        save_enhancers_to_bed(enhancers=true_enhancers)
+        print("Enhancers saved to BED files")
 
-    # plot PCA of enhancer expression per sample
-    pca_plot <- plot_pcs(
-        count_matrix=enhancer_expr_per_sample)
-    save_plot(
-        "enhancer_expression_pca_plot.pdf",
-        pca_plot)
-    print("PCA plot of enhancer expression per sample saved")
+        # assign enhancers to samples
+        enhancer_expr_per_sample <- identify_sample_specific_enhancers(
+            true_enhancers=true_enhancers,
+            ce=ce)
 
-    # count and plot number of enhancers per sample
-    sample_enhancer_count <- count_number_of_enhancers(
-        enhancer_expr_per_sample=enhancer_expr_per_sample)
-    # function from qc_plots.R
-    enhancer_count_plot <- plot_number_of_tag_clusters(
-        sample_tag_count=sample_enhancer_count,
-        yaxistitle="Number of enhancers per sample",
-        mytitle="Number of enhancers per sample",
-        myfilename="enhancer_count_per_sample")
-    save_plot(
-        "enhancer_count_per_sample_plot.pdf",
-        enhancer_count_plot)
-    print("Enhancer counts plotted")
+        print("Enhancers assigned to samples")
 
-} else {
+        write.table(
+            enhancer_expr_per_sample,
+            file=outFileNameSamples,
+            quote=FALSE,
+            sep='\t')
+        print("Enhancer expressions per sample saved to file")
 
-    chipannot_empty_plot = make_no_enhancer_plot()
-    save_plot(
-        "chipseeker_enhancer_annotation_plot.pdf",
-        chipannot_empty_plot
-    )
+        # plot PCA of enhancer expression per sample
+        pca_plot <- plot_pcs(
+            count_matrix=enhancer_expr_per_sample)
+        save_plot(
+            "enhancer_expression_pca_plot.pdf",
+            pca_plot)
+        print("PCA plot of enhancer expression per sample saved")
 
-    file.create(outFileNameSamples)
+        # count and plot number of enhancers per sample
+        sample_enhancer_count <- count_number_of_enhancers(
+            enhancer_expr_per_sample=enhancer_expr_per_sample)
+        # function from qc_plots.R
+        enhancer_count_plot <- plot_number_of_tag_clusters(
+            sample_tag_count=sample_enhancer_count,
+            yaxistitle="Number of enhancers per sample",
+            mytitle="Number of enhancers per sample",
+            myfilename="enhancer_count_per_sample")
+        save_plot(
+            "enhancer_count_per_sample_plot.pdf",
+            enhancer_count_plot)
+        print("Enhancer counts plotted")
 
-    pca_empty_plot = make_no_enhancer_plot()
-    save_plot(
-        "enhancer_expression_pca_plot.pdf",
-        pca_empty_plot)
+        "found"
 
-    enhancer_count_empty_plot = make_no_enhancer_plot()
-    save_plot(
-        "enhancer_count_per_sample_plot.pdf",
-        enhancer_count_empty_plot)
+    } else {
+        "none"
+    }
+
+}, error = function(e) {
+    message("Enhancer calling failed: ", conditionMessage(e))
+    save_error_log("enhancer_calling_error.txt", e)
+    "error"
+})
+
+if (enhancer_status == "none") {
+    print("No enhancers called; writing placeholder plots")
+    write_enhancer_placeholders("No enhancers called")
+} else if (enhancer_status == "error") {
+    print("Enhancer calling errored; writing placeholder plots")
+    write_enhancer_placeholders("Error occurred when calling enhancers")
 }
+
+# Make sure the non-plot outputs declared by the module always exist.
+ensure_enhancer_stub_files()
