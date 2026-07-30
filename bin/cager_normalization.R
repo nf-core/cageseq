@@ -56,5 +56,21 @@ cager_normalization <- function(
         alpha = slope_to_calc,
         T = t_norm)
 
+    if (method == "powerLaw"){
+        # The reverse-cumulative plot above is built on the raw tag counts. Here
+        # we build the equivalent plot on the power-law-normalised counts using
+        # the object right after normalizeTagCount. It shows how well the
+        # normalisation aligned the samples' distributions, i.e. how much of the
+        # technical (sequencing-depth) variation between samples was removed.
+        revcum_norm_plots <- CAGEr::plotReverseCumulatives(
+            object = ce,
+            values = "normalized",
+            fitInRange = c(rangeMin, rangeMax))
+
+        save_plot(
+            "reverse_cumulative_normalized_plot.pdf",
+            revcum_norm_plots)
+    }
+
     return(ce)
 }

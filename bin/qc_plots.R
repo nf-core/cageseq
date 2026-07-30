@@ -94,9 +94,20 @@ plot_correlation <- function(
     heatmap_cex <- sample_size^(-0.2)
 
     # plot correlations in heatmap format
+    # The colour scheme is the exact reverse of gplots' default "heat.colors" so
+    # that the higher the correlation the more red the cell is (low correlations
+    # are creamy/pale). Passing a *function* (rather than a fixed colour vector)
+    # is important: heatmap.2 then keeps its default granularity (breaks = 16 ->
+    # 15 colours) and the cyan colour-key histogram, only reversing the gradient
+    # order (creamy at the minimum, red at the maximum). A fixed-length vector
+    # would instead force one break per colour, breaking the key into hundreds of
+    # cells and collapsing the histogram. Only base (grDevices) functions are
+    # used so that eval(hm$call) can redraw it in the report, where gplots is not
+    # attached.
     hm <- gplots::heatmap.2(
         corr_m,
         trace="none",
+        col=function(n) rev(grDevices::heat.colors(n)),
         margins=c(12, 12),
         cexRow=heatmap_cex,
         cexCol=heatmap_cex)

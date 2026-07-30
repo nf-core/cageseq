@@ -75,7 +75,17 @@ option_list = list(
         c("-t", "--corrplot_tagCountThreshold"),
         type = "integer",
         default = 1,
-        help = "Threshold for considering tags when calculating correlations of normalized CTSS (Default = 1)")
+        help = "Threshold for considering tags when calculating correlations of normalized CTSS (Default = 1)"),
+    make_option(
+        c("-r", "--ctss_thr"),
+        type = "double",
+        default = 1,
+        help = "CTSS Tpm threshold used to select the high-fidelity CTSS set for the all-TSS dinucleotide plot. May be a non-integer positive number, e.g. 0.5 or 1.5 (Default = 1)"),
+    make_option(
+        c("-s", "--sample_num_thr"),
+        type = "integer",
+        default = 1,
+        help = "Number of samples in which the CTSS Tpm threshold (ctss_thr) should be passed for the all-TSS dinucleotide plot (Default = 1)")
 )
 
 message("; Reading arguments from command line.")
@@ -94,6 +104,8 @@ tssregion_down  <- opt$tssregion_down
 tsslogo_upstream    <- opt$tsslogo_upstream
 project_dir     <- opt$project_dir
 corrplot_tagCountThreshold <- opt$corrplot_tagCountThreshold
+ctss_thr        <- opt$ctss_thr
+sample_num_thr  <- opt$sample_num_thr
 
 # installing BSgenome
 source(file.path(project_dir, "bin/install_bsgenome.R"))
@@ -263,6 +275,33 @@ tryCatch({
         "dinucleotide_frequencies_plot.pdf",
         make_message_plot(
             "Error occurred when generating the dinucleotide frequency plot")
+    )
+})
+
+# dinucleotide composition based on ALL high-fidelity TSSs (not only the dominant
+# TSS of each tag cluster): every CTSS expressed at tpm >= ctss_thr in at least
+# sample_num_thr samples, weighted by its per-sample normalized tpm. Wrapped in
+# the same tryCatch/placeholder pattern as the dominant-TSS plot above.
+tryCatch({
+    weigthed_dinuc_vals_all_df <- extract_dinucleotide_information_all_ctss(
+        ce, reference_name, ctss_thr = ctss_thr, sample_num_thr = sample_num_thr)
+    dinuclfreq_all_plot <- plot_dinucleotide_frequency(
+        weigthed_dinuc_vals_all_df,
+        title = paste0(
+            "All-TSS dinucleotide (-/+ 1bp) proportion weighted by the sum of ",
+            "normalized tpm per sample (TSSs with tpm >= ", ctss_thr, " in >= ",
+            sample_num_thr, " samples)"))
+    save_plot(
+        "dinucleotide_frequencies_all_tss_plot.pdf",
+        dinuclfreq_all_plot
+    )
+}, error = function(e) {
+    message("All-TSS dinucleotide composition failed: ", conditionMessage(e))
+    save_error_log("dinucleotide_frequencies_all_tss_error.txt", e)
+    save_plot(
+        "dinucleotide_frequencies_all_tss_plot.pdf",
+        make_message_plot(
+            "Error occurred when generating the all-TSS dinucleotide frequency plot")
     )
 })
 

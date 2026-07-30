@@ -66,6 +66,8 @@ Number of CAGE tags versus number of TSS supported by at least as many tags shou
 The power-law distribution is fitted in the range between the two dotted lines.
 The positions of the dotted lines are modifiable by user with norm_range_min and norm_range_max parameters.
 The total number of tags (t_norm) defaults to 1000000 which corresponds to TPM, but in cases of very deep sequencing this should be adjusted.
+
+The reverse-cumulative plot below is generated on the raw (un-normalized) tag counts.
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 print(paste0("The current norm_range_min value is: ", norm_range_min))
 print(paste0("The current norm_range_max value is: ", norm_range_max))
@@ -75,6 +77,12 @@ print(paste0("The user provided alpha value is: ", alpha, ". If this value if No
 
 revc_plot <- readRDS("reverse_cumulative_plot.rds")
 revc_plot
+```
+
+The reverse-cumulative plot below is generated on the power-law-normalized tag counts.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+revc_norm_plot <- readRDS("reverse_cumulative_normalized_plot.rds")
+revc_norm_plot
 ```
 
 ### Correlations of samples at normalized tag count level
@@ -168,9 +176,23 @@ chta_plot + ggplot2::xlim(rev(natural_sort(unique(sampleNs))))
 ### Dinucleotide frequencies in tagclusters weighted by expression (tpm)
 Expression-level-aware dinucleotide frequencies at dominant TSSs of tag clusters.
 Dinulceotides are sorted by frequencies at the first sample in alphabetical order.
+
+The plot below is based on the **dominant TSS** of each tag cluster, weighted by the sum of the dominant TSS scores per sample.
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 dinucl_plot <- readRDS("dinucleotide_frequencies_plot.rds")
 dinucl_plot + ggplot2::theme(
+    text=ggplot2::element_text(size=5),
+    axis.text.x = ggplot2::element_text(angle = 90, size=5),
+    axis.text.y = ggplot2::element_text(size=5))
+```
+
+The plot below is based on **all high-fidelity TSSs** rather than only the dominant ones: every CTSS expressed at tpm greater than or equal to `ctss_thr` in at least `sample_num_thr` samples (the same low-expression filter used before tag clustering), weighted by its per-sample normalized tpm.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+print(paste0("The current ctss_thr value is: ", ctss_thr))
+print(paste0("The current sample_num_thr value is: ", sample_num_thr))
+
+dinucl_all_plot <- readRDS("dinucleotide_frequencies_all_tss_plot.rds")
+dinucl_all_plot + ggplot2::theme(
     text=ggplot2::element_text(size=5),
     axis.text.x = ggplot2::element_text(angle = 90, size=5),
     axis.text.y = ggplot2::element_text(size=5))

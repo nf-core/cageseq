@@ -38,7 +38,9 @@ process CAGER_TAGCLUSTER_QC {
         --tssregion_down ${params.tssregion_down} \
         --tsslogo_upstream ${params.tsslogo_upstream} \
         --project_dir ${projectDir} \
-        --corrplot_tagCountThreshold ${params.corrplot_tagCountThreshold}
+        --corrplot_tagCountThreshold ${params.corrplot_tagCountThreshold} \
+        --ctss_thr ${params.ctss_thr} \
+        --sample_num_thr ${params.sample_num_thr}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
