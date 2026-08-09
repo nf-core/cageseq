@@ -83,6 +83,29 @@ tx_annotation_obj <- loadDb(tx_annotation)
 print("Annotating CTSS...")
 ce <- CAGEr::annotateCTSS(ce, tx_annotation_obj)
 
+# annotateCTSS tallies the per-sample tag counts of each annotation class with
+# tapply() over a factor whose levels are fixed (promoter/exon/intron/unknown).
+# A class that no CTSS falls into gets NA rather than the 0 it stands for. That
+# NA is not harmless: plotAnnot(ce, "counts") derives the intergenic segment by
+# subtraction (librarySizes - promoter - intron - exon), so a single missing
+# class turns BOTH that class and the intergenic segment into NA and the stacked
+# bars silently stop short of 1.00. Replace the missing tallies with zeroes
+# before the object is saved, so every downstream consumer sees them too.
+annotation_classes <- intersect(
+    levels(CAGEr::CTSScoordinatesGR(ce)$annotation),
+    colnames(colData(ce)))
+for (annotation_class in annotation_classes) {
+    class_counts <- colData(ce)[[annotation_class]]
+    if (anyNA(class_counts)) {
+        message(
+            "; No CTSS annotated as \"", annotation_class,
+            "\" in ", sum(is.na(class_counts)),
+            " sample(s); recording the count as 0.")
+        class_counts[is.na(class_counts)] <- 0
+        colData(ce)[[annotation_class]] <- class_counts
+    }
+}
+
 # Save intermediate annotated object
 saveRDS(ce, "intermediate_cagerobj/annotated_cagexp.rds")
 
