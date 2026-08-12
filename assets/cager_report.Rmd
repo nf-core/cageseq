@@ -142,11 +142,24 @@ Interquartile width distribution in each sample, for tag clusters passing the iq
 A sequencing library of sufficient depth shows two types of tag clusters: narrow and wide.
 In low depth cases, the wider type might be lacking which flags low quality data.
 
-```{r eval=TRUE, include=TRUE, echo=FALSE}
+```{r iqw-layout, include=FALSE}
+iqw_plot <- readRDS("interquartile_width_tagclusters_plot.rds")
+
+# CAGEr facets this plot with the ggplot2 default layout, which spreads the
+# panels over roughly as many columns as rows. With many samples that makes the
+# individual panels too small to read, so cap the grid at three columns and grow
+# the figure vertically instead. With three or fewer samples this is the same
+# single-row layout as before.
+iqw_n_samples <- length(unique(as.character(iqw_plot$data$sampleName)))
+iqw_ncol <- min(3L, max(1L, iqw_n_samples))
+iqw_nrow <- ceiling(iqw_n_samples / iqw_ncol)
+iqw_fig_height <- max(5, 2.2 * iqw_nrow)
+```
+
+```{r eval=TRUE, include=TRUE, echo=FALSE, fig.height=iqw_fig_height}
 print(paste0("The current iqw_tpm_threshold value is: ", iqw_tpm_threshold))
 
-iqw_plot <- readRDS("interquartile_width_tagclusters_plot.rds")
-iqw_plot
+iqw_plot + ggplot2::facet_wrap("~sampleName", ncol = iqw_ncol)
 ```
 
 ### Number of tag clusters per sample
