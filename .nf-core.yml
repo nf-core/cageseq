@@ -7,7 +7,7 @@ lint:
   nextflow_config:
     - config_defaults:
         - params.markdown_path
-nf_core_version: 4.0.3
+nf_core_version: 4.1.0
 repository_type: pipeline
 template:
   author: Katalin Ferenc, Sviatoslav Sidorov, Damir Baranasic
