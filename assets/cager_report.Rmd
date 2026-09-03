@@ -29,12 +29,12 @@ natural_sort <- function(x) {
 # Results of CAGEr analysis
 
 ## Raw reads
-These QC plots show the status before normalization or filtering.
+These QC plots show the status of the data before normalization or filtering.
 
 ### Tag region annotation
-Annotation of raw tags per samples.
-Note: tags are not filtered or normalized yet.
-It is expected to see more intergenic reads here than after filtering and clustering which removes much of the noise.
+Annotation of raw reads (tags) per sample.
+Tags are not filtered, and tag counts are not normalized yet.
+It is expected to see more intergenic tags here than after filtering and clustering which removes much of the noise.
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 options(warn=-1)
 sampleNs <- unname(CAGEr::sampleLabels(ce))
@@ -42,12 +42,12 @@ tagannot_plot <- readRDS("tag_region_annotation_plot.rds")
 tagannot_plot + ggplot2::xlim(rev(natural_sort(unique(sampleNs))))
 ```
 
-### Correlation of samples at raw tag count level
-Correlation of samples by the raw tag counts above the user defined threshold (corrplot_tagCountThreshold).
-Note: these are not filtered or normalized yet. The plot is for diagnostic purposes, such as highlighting batch effects.
-Note #2: the main correlation is shown on the top-right ot bottom-left diagonal due to the behaviour of the underlying `gplots::heatmap.2` function.
-The corrplot_tagCountThreshold is shared across correlation plots.
-For a higher resolution plot, visit the `pdf` file saved in the results/cager/plots folder.
+### Correlation of samples at the raw tag count level
+Correlation of samples by raw tag counts higher than the user defined threshold `corrplot_tagCountThreshold`.
+These counts are not filtered or normalized yet. The plot is for diagnostic purposes, such as highlighting batch effects.
+The self-correlation diagonal runs from the top-right to the bottom-left cell.
+The `corrplot_tagCountThreshold` is shared with correlation plots further below.
+For a higher-resolution plot, check the PDF file saved in the `results/cager/plots` folder.
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 print(paste0("The current corrplot_tagCountThreshold value is: ", corrplot_tagCountThreshold))
 
@@ -62,18 +62,18 @@ eval(hm_plot$call)
 Next, the tag counts are normalized.
 
 ### Power-law distributions
-Number of CAGE tags versus number of TSS supported by at least as many tags should follow the power-law distribution.
+Number of CAGE tags versus number of TSSs supported by at least as many tags [should follow the power-law distribution](https://link.springer.com/article/10.1186/gb-2009-10-7-r79).
 The power-law distribution is fitted in the range between the two dotted lines.
-The positions of the dotted lines are modifiable by user with norm_range_min and norm_range_max parameters.
-The total number of tags (t_norm) defaults to 1000000 which corresponds to TPM, but in cases of very deep sequencing this should be adjusted.
+The positions of the dotted lines are modifiable by user with the `norm_range_min` and `norm_range_max` parameters.
+The total number of tags `t_norm` defaults to 1,000,000, which corresponds to TPM, but in the case of very deep sequencing it should be adjusted.
 
-The reverse-cumulative plot below is generated on the raw (un-normalized) tag counts.
+The reverse-cumulative plot below is generated on raw (un-normalized) tag counts.
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 print(paste0("The current norm_range_min value is: ", norm_range_min))
 print(paste0("The current norm_range_max value is: ", norm_range_max))
 print(paste0("The current normalization method (norm_method) is: ", norm_method))
 print(paste0("The current t_norm value is: ", t_norm))
-print(paste0("The user provided alpha value is: ", alpha, ". If this value if None, the calculated value shown on the plot is used for normalization. Note: this value cannot be less than 1.05, if the user provides a lower value the code automatically assumes 1.05."))
+print(paste0("The user provided alpha value is: ", alpha, ". If this value is null/None, the calculated value shown on the plot is used for normalization. This value cannot be less than 1.05: if the user provides a lower value, the code automatically assumes 1.05."))
 
 revc_plot <- readRDS("reverse_cumulative_plot.rds")
 revc_plot
@@ -85,12 +85,12 @@ revc_norm_plot <- readRDS("reverse_cumulative_normalized_plot.rds")
 revc_norm_plot
 ```
 
-### Correlations of samples at normalized tag count level
-Correlation of samples by the normalized tag counts above the user defined threshold (corrplot_tagCountThreshold).
+### Correlations of samples at the normalized tag count level
+Correlation of samples by normalized tag counts higher than the user defined threshold `corrplot_tagCountThreshold` (it is shared across correlation plots).
 Normalization should have removed batch effects to some extent.
-Note: the main correlation is shown on the top-right ot bottom-left diagonal due to the behaviour of the underlying `gplots::heatmap.2` function.
-The corrplot_tagCountThreshold is shared across correlation plots.
-For a higher resolution plot, visit the `pdf` file saved in the results/cager/plots folder.
+The plot is for diagnostic purposes, such as highlighting batch effects.
+The self-correlation diagonal runs from the top-right to the bottom-left cell.
+For a higher-resolution plot, check the PDF file saved in the `results/cager/plots` folder.
 
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 print(paste0("The current corrplot_tagCountThreshold value is: ", corrplot_tagCountThreshold))
