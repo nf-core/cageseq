@@ -80,7 +80,7 @@ consensus_dist: 100
 # parameters for enhancer calling
 cfBalanceThreshold: 0.95
 unexpressed: 0
-minSamples: 0
+minSamples: 1
 ```
 
 where the pipeline parameters that should be provided in all runs are
@@ -112,7 +112,7 @@ The parameters specific to CAGEr and CAGEfightR analysis, can be left empty when
 - `corrplot_tagCountThreshold` is a threshold above which (raw and normalized) CTSS are considered for the correlation plot.
 - `norm_method` is the method used for normalizing the samples. Options are `simpleTpm` to covert tag counts to tags per million, `powerLaw` to normalize to a reference power-law distribution, or `none` to keep using the raw tag counts in downstream analyses. Case sensitive.
 - `norm_range_min` and `norm_range_max` defines the lower and upper thresold for fitting the power-law distribution and calculate the slope for normalization. Only used when `norm_method` is `powerLaw`.
-- `alpha` user specified alpha, the `-1 *` fitted slope in the log-log representation of the power-law distribution. If none, the average across samples is calculated and used. Considered for `powerLaw` normalization only. Note: this value cannot be less than 1.05, if the user provides a lower value the code automatically assumes 1.05.
+- `alpha` user specified alpha, the `-1 *` fitted slope in the log-log representation of the power-law distribution. If none, the median of the per-sample fitted alphas is used. Whether fitted or user-provided, alpha is never allowed to be less than 1.05: a smaller value is replaced by 1.05. Considered for `powerLaw` normalization only.
 - `t_norm` total number of CAGE tags in the reference power-law distribution. Setting `T = 10^6` results in normalized values that correspond to tags per million. Considered for `powerLaw` normalization only.
 - `sample_num_thr` and `ctss_thr` are parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed.
 - `distclu_maxDist` specifies the maximum distance for distance-based clustering (distclu).
@@ -124,7 +124,7 @@ The parameters specific to CAGEr and CAGEfightR analysis, can be left empty when
 - `tsslogo_upstream` is used for plotting the TSS logos. This parameter specifies the number of bases to inlcude upstream of the TSS.
 - `consensus_thr` and `consensus_dist` are used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquartile ranges of tag clusters to be joined together into consensus clusters.
 - `cfBalanceThreshold` is used for enhancer calling. It defines the balance threshold above which bidirectionality is considered balanced.
-- `unexpressed` and `minSamples` are used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is a non-inclusive lower boundary for the number of samples where the clusters should show bidirectionality.
+- `unexpressed` and `minSamples` are used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is the minimum number of samples (inclusive, so `minSamples: 1` means at least one sample) where the clusters should show bidirectionality.
 
 - Additional arguments can be:
   - `params-trimgalore` specifies any options that can be passed to `TrimGalore!`. This option is useful for any non-standard read processing (for example, for CAGEscan reads that require the removal of a fixed number of nucleotides from the 5'-ends of the forward and reverse reads ([Bertin et al., 2017](https://www.nature.com/articles/sdata2017147))). The string with the parameters for `TrimGalore!` must be surrounded by single quotes.

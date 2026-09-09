@@ -70,7 +70,7 @@ params.cons_full_span = false
 // parameters for enhancer calling
 params.cfBalanceThreshold = 0.95
 params.unexpressed = 0
-params.minSamples = 0
+params.minSamples = 1
 
 // workflow utils
 include { paramsSummaryMap          } from 'plugin/nf-schema'

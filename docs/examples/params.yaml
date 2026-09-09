@@ -55,4 +55,4 @@ consensus_dist: 100
 # parameters for enhancer calling
 cfBalanceThreshold: 0.95
 unexpressed: 0
-minSamples: 0
+minSamples: 1

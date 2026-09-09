@@ -314,7 +314,7 @@
                 },
                 "alpha": {
                     "type": "string",
-                    "description": "User specified alpha, the `-1 *` fitted slope in the log-log representation of the power-law distribution. If none, the average across samples is calculated and used."
+                    "description": "User specified alpha, the `-1 *` fitted slope in the log-log representation of the power-law distribution. If none, the median of the per-sample fitted alphas is used. Whether fitted or user-provided, alpha is never allowed to be less than 1.05: a smaller value is replaced by 1.05."
                 },
                 "t_norm": {
                     "type": "integer",
@@ -392,14 +392,15 @@
                     "description": "Defines the balance threshold above which bidirectionality is considered balanced and enhancers are called"
                 },
                 "unexpressed": {
-                    "type": "integer",
+                    "type": "number",
                     "default": 0,
-                    "description": "Used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is a non-inclusive lower boundary for the number of samples where the clusters should show bidirectionality."
+                    "description": "Used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is the minimum number of samples (inclusive, so 1 means at least one sample) where the clusters should show bidirectionality."
                 },
                 "minSamples": {
                     "type": "integer",
-                    "default": 0,
-                    "description": "Used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is a non-inclusive lower boundary for the number of samples where the clusters should show bidirectionality."
+                    "default": 1,
+                    "minimum": 0,
+                    "description": "Used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is the minimum number of samples (inclusive, so 1 means at least one sample) where the clusters should show bidirectionality."
                 }
             },
             "required": ["gtf"]

@@ -2,15 +2,15 @@
 #'
 #' @param ce initial CAGEexp object with CTSS values
 #' @param cfBalanceThreshold threshold for the cagefightr balance score
-#' @param unexpressed threshold above which normalized CTSS are considered expressed
-#' @param minSamples non inlcusive lower threshold for number of samples supporting enhancers (i.e. where there is bidirectionality)
+#' @param unexpressed non-inclusive lower TPM boundary for expression: a TSS with a normalized expression of at most `unexpressed` TPM in a sample is treated as not expressed in that sample
+#' @param minSamples minimum number of samples that must support an enhancer (i.e. show bidirectionality, with TSS expression above `unexpressed` TPM on both strands); inclusive, so `minSamples = 1` means at least one sample
 #' @return enhancers
 #' @examples
 #' cagefightr_enhancers(
 #' ce,
 #' cfBalanceThreshold = 0.95,
 #' unexpressed = 0,
-#' minSamples = 0
+#' minSamples = 1
 #' )
 cagefightr_enhancers <- function(
         ce,
@@ -33,28 +33,44 @@ cagefightr_enhancers <- function(
     # Save as main working object
     cfSampleCTSSs <- se
 
-    # Calculate pooled signal across all samples (average TPM)
+    # Apply the user-defined expression threshold to the normalized TPM values:
+    # a TSS with a TPM of at most `unexpressed` in a sample is treated as not
+    # expressed in that sample, i.e. its TPM is set to 0 (only values strictly
+    # greater than `unexpressed` count as expressed). All following steps work
+    # on these thresholded TPM values: the pooled signal that the bidirectional
+    # clusters are called on, and the per-sample bidirectionality support. Only
+    # the non-zero entries of the sparse matrix need to be visited.
+    tpm <- assay(cfSampleCTSSs, "TPM")
+    tpm@x[tpm@x <= unexpressed] <- 0
+    tpm <- Matrix::drop0(tpm)
+    assay(cfSampleCTSSs, "TPM", withDimnames = FALSE) <- tpm
+    # Drop the TSSs that are not expressed in any sample after thresholding.
+    cfSampleCTSSs <- cfSampleCTSSs[Matrix::rowSums(tpm) > 0, ]
+
+    # Calculate pooled signal across all samples (sum of the TPM values)
     cfSampleCTSSs <- CAGEfightR::calcPooled(
         cfSampleCTSSs,
         inputAssay = "TPM")
-
-    # Calculate how many samples support expression at each CTSS
-    cfSampleCTSSs <- CAGEfightR::calcSupport(
-        cfSampleCTSSs,
-        inputAssay = "counts",
-        outputColumn = "support",
-        unexpressed = unexpressed)
 
     # Find bidirectional clusters (potential enhancers)
     sampleBCs <- CAGEfightR::clusterBidirectionally(
         cfSampleCTSSs,
         balanceThreshold = cfBalanceThreshold)
 
-    # Filter bidirectional clusters that are supported in at least 1 sample
+    # Keep the bidirectional clusters supported in at least `minSamples`
+    # samples. A sample supports a cluster if it has TSS expression (thresholded
+    # TPM > 0, i.e. TPM > `unexpressed`) on both strands of the cluster.
+    # CAGEfightR's own `minSamples` is exclusive (it keeps clusters with a
+    # bidirectionality strictly greater than it), so pass `minSamples - 1` to
+    # turn the user's inclusive "at least" cutoff into that convention.
+    if (minSamples < 0) {
+        stop("minSamples must be a non-negative integer, got ", minSamples)
+    }
     finalSampleBCs <- CAGEfightR::subsetByBidirectionality(
         sampleBCs,
         samples = cfSampleCTSSs,
-        minSamples = minSamples)
+        inputAssay = "TPM",
+        minSamples = minSamples - 1)
 
     return(finalSampleBCs)
 }

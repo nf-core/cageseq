@@ -47,8 +47,8 @@ option_list = list(
     make_option(
         c("-s", "--minSamples"),
         type = "integer",
-        default = 0,
-        help = "non inlcusive lower threshold for number of samples supporting enhancers (i.e. where there is bidirectionality) (Default=0)"),
+        default = 1,
+        help = "minimum number of samples (inclusive) that must support an enhancer, i.e. show bidirectionality (Default=1)"),
     make_option(
         c("-u", "--tssregion_up"),
         type = "integer",

@@ -263,7 +263,8 @@ tryCatch({
     weigthed_dinuc_vals_df <- extract_dinucleotide_information(
         ce, reference_name, qLow = iqlow, qUp = iqhigh)
     dinuclfreq_plot <- plot_dinucleotide_frequency(
-        weigthed_dinuc_vals_df)
+        weigthed_dinuc_vals_df,
+        title = NULL)
     save_plot(
         "dinucleotide_frequencies_plot.pdf",
         dinuclfreq_plot
@@ -279,7 +280,7 @@ tryCatch({
 })
 
 # dinucleotide composition based on ALL high-fidelity TSSs (not only the dominant
-# TSS of each tag cluster): every CTSS expressed at tpm >= ctss_thr in at least
+# TSS of each tag cluster): every CTSS expressed at tpm > ctss_thr in at least
 # sample_num_thr samples, weighted by its per-sample normalized tpm. Wrapped in
 # the same tryCatch/placeholder pattern as the dominant-TSS plot above.
 tryCatch({
@@ -287,10 +288,7 @@ tryCatch({
         ce, reference_name, ctss_thr = ctss_thr, sample_num_thr = sample_num_thr)
     dinuclfreq_all_plot <- plot_dinucleotide_frequency(
         weigthed_dinuc_vals_all_df,
-        title = paste0(
-            "All-TSS dinucleotide (-/+ 1bp) proportion weighted by the sum of ",
-            "normalized tpm per sample (TSSs with tpm >= ", ctss_thr, " in >= ",
-            sample_num_thr, " samples)"))
+        title = NULL)
     save_plot(
         "dinucleotide_frequencies_all_tss_plot.pdf",
         dinuclfreq_all_plot
@@ -325,7 +323,7 @@ sample_cons_ctss_count[["Union"]] <- dim(consclustTpm)[1]
 consensus_ctss_plot <- plot_number_of_tag_clusters(
     sample_tag_count=sample_cons_ctss_count,
     yaxistitle="Number of non-zero consensus clusters",
-    mytitle="Non-zero consensus clusters per sample and union")
+    mytitle="Non-zero consensus clusters per sample and their union")
 save_plot(
     "consensus_counts_plot.pdf",
     consensus_ctss_plot)

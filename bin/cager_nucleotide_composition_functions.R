@@ -60,7 +60,7 @@ extract_dinucleotide_information <- function(ce, reference_name, qLow = 0.1, qUp
 }
 
 # All-TSS counterpart of extract_dinucleotide_information. Instead of the single
-# dominant TSS per tag cluster, it uses every CTSS that is expressed at tpm >=
+# dominant TSS per tag cluster, it uses every CTSS that is expressed at tpm >
 # ctss_thr in at least sample_num_thr samples (the same low-expression filter
 # applied before tag clustering), weighting each by its per-sample normalized
 # tpm. This reveals the initiator dinucleotide preference across the whole set of
@@ -74,12 +74,14 @@ extract_dinucleotide_information_all_ctss <- function(
     ctss_gr <- CAGEr::CTSScoordinatesGR(ce)
     tpm_df <- as.data.frame(CAGEr::CTSSnormalizedTpmDF(ce))
 
-    # Keep the CTSSs expressed at >= ctss_thr tpm in at least sample_num_thr
+    # Keep the CTSSs expressed at > ctss_thr tpm in at least sample_num_thr
     # samples. This mirrors CAGEr::filterLowExpCTSS(thresholdIsTpm = TRUE,
     # nrPassThreshold = sample_num_thr, threshold = ctss_thr) used before tag
-    # clustering, so the plot is based on exactly that high-fidelity CTSS set.
-    pass_counts <- rowSums(tpm_df >= ctss_thr)
-    keep <- pass_counts >= sample_num_thr
+    # clustering (strict on the tpm, non-strict on the number of samples, which
+    # CAGEr caps at the number of samples), so the plot is based on exactly that
+    # high-fidelity CTSS set.
+    pass_counts <- rowSums(tpm_df > ctss_thr)
+    keep <- pass_counts >= min(sample_num_thr, ncol(tpm_df))
     ctss_gr <- ctss_gr[keep]
     tpm_df <- tpm_df[keep, , drop = FALSE]
 
