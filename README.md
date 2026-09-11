@@ -25,11 +25,11 @@
 
 The first part of the pipeline is shown here:
 
-![Mapping metromap](images/mappingmap.png)
+![Mapping metromap](docs/images/mappingmap.png)
 
 The second part of the pipeline is shown here:
 
-![CAGEr metromap](images/cagermap.png)
+![CAGEr metromap](docs/images/cagermap.png)
 
 ## Pipeline overview
 
