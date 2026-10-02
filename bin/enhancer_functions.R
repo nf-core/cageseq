@@ -94,7 +94,12 @@ exclude_enhancers_overlapping_promoters <- function(BCs, ce){
         query=BCs,
         subject=CAGEr::consensusClustersGR(ce))
     overlapping_idx <- unique(queryHits(promoter_overlaps))
-    true_enhancers <- BCs[-overlapping_idx]
+    # Do not use BCs[-overlapping_idx]: in R a negative index of length zero
+    # selects nothing, so that form would drop every enhancer whenever none of
+    # them overlaps a consensus cluster.
+    keep <- rep(TRUE, length(BCs))
+    keep[overlapping_idx] <- FALSE
+    true_enhancers <- BCs[keep]
     return(true_enhancers)
 }
 

@@ -344,17 +344,17 @@
                 "iq_low": {
                     "type": "number",
                     "default": 0.1,
-                    "description": "Define the lower quantile boundaries of the interquartile range"
+                    "description": "Define the lower quantile boundaries of the interquantile range"
                 },
                 "iq_high": {
                     "type": "number",
                     "default": 0.9,
-                    "description": "Define the upper quantile boundaries of the interquartile range"
+                    "description": "Define the upper quantile boundaries of the interquantile range"
                 },
                 "iqw_tpm_threshold": {
                     "type": "integer",
                     "default": 3,
-                    "description": "Threshold above which tag clusters are considered for the interquartile width distribution plot"
+                    "description": "Threshold above which tag clusters are considered for the interquantile width distribution plot"
                 },
                 "tssregion_up": {
                     "type": "integer",
@@ -374,12 +374,12 @@
                 "consensus_thr": {
                     "type": "integer",
                     "default": 2,
-                    "description": "Used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquartile ranges of tag clusters to be joined together into consensus clusters."
+                    "description": "Used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquantile ranges of tag clusters to be joined together into consensus clusters."
                 },
                 "consensus_dist": {
                     "type": "integer",
                     "default": 100,
-                    "description": "Used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquartile ranges of tag clusters to be joined together into consensus clusters."
+                    "description": "Used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquantile ranges of tag clusters to be joined together into consensus clusters."
                 },
                 "cons_full_span": {
                     "type": "boolean",

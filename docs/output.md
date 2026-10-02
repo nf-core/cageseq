@@ -52,8 +52,8 @@ Below is the complete tree of the results run on 2 samples with the STAR option.
 │   │   ├── enhancer_count_per_sample_plot.rds
 │   │   ├── enhancer_expression_pca_plot.pdf
 │   │   ├── enhancer_expression_pca_plot.rds
-│   │   ├── interquartile_width_tagclusters_plot.pdf
-│   │   ├── interquartile_width_tagclusters_plot.rds
+│   │   ├── interquantile_width_tagclusters_plot.pdf
+│   │   ├── interquantile_width_tagclusters_plot.rds
 │   │   ├── norm_CTSS_correlations_matrix.rds
 │   │   ├── norm_CTSS_correlations_plot.pdf
 │   │   ├── norm_CTSS_correlations_plot.rds

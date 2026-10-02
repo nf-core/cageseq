@@ -117,12 +117,12 @@ The parameters specific to CAGEr and CAGEfightR analysis, can be left empty when
 - `sample_num_thr` and `ctss_thr` are parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed.
 - `distclu_maxDist` specifies the maximum distance for distance-based clustering (distclu).
 - `keepSingletonsAbove` defines the tpm threshold above which even a single CTSS is kept during clustering.
-- The `iq_low` and `iq_high` parameters are used to define the lower and upper quantile boundaries of the interquartile range within which the majority of the signal lies.
-- `iqw_tpm_threshold` is a threshold above which tag clusters are considered for the interquartile width distribution plot.
+- The `iq_low` and `iq_high` parameters are used to define the lower and upper quantile boundaries of the interquantile range within which the majority of the signal lies.
+- `iqw_tpm_threshold` is a threshold above which tag clusters are considered for the interquantile width distribution plot.
 - `tssregion_up` and `tssregion_down` are used for annotation with ChIPseeker. These correspond to the upstream and downstream distance to consider into TSS region for ChIPseeker annotation.
   tssregion_up should be negative, tssregion_down should be positive.
 - `tsslogo_upstream` is used for plotting the TSS logos. This parameter specifies the number of bases to inlcude upstream of the TSS.
-- `consensus_thr` and `consensus_dist` are used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquartile ranges of tag clusters to be joined together into consensus clusters.
+- `consensus_thr` and `consensus_dist` are used for defining the consensus clusters. `consensus_thr` specifies the TPM threshold above which tag clusters are considered for consensus clusters, and `consensus_dist` define the maximum distance between the interquantile ranges of tag clusters to be joined together into consensus clusters.
 - `cfBalanceThreshold` is used for enhancer calling. It defines the balance threshold above which bidirectionality is considered balanced.
 - `unexpressed` and `minSamples` are used for selecting only supported enhancers. `unexpressed` is a non inclusive lower TPM boundary for expression when calculating support of enhancers. `minSamples` is the minimum number of samples (inclusive, so `minSamples: 1` means at least one sample) where the clusters should show bidirectionality.
 

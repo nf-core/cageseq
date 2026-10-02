@@ -45,12 +45,12 @@ option_list = list(
         c("-o", "--iq_low"),
         type = "double",
         default = 0.1,
-        help = "Lower boundary of interquartile range (Default = 0.1)"),
+        help = "Lower boundary of interquantile range (Default = 0.1)"),
     make_option(
         c("-g", "--iq_high"),
         type = "double",
         default = 0.9,
-        help = "Higher boundary of interquartile range (Default = 0.9)"),
+        help = "Higher boundary of interquantile range (Default = 0.9)"),
     make_option(
         c("-u", "--tssregion_up"),
         type = "integer",

@@ -43,9 +43,9 @@ tagannot_plot + ggplot2::xlim(rev(natural_sort(unique(sampleNs))))
 ```
 
 ### Correlation of samples at the raw tag count level
-Correlation of samples by raw tag counts of at least the user defined threshold `corrplot_tagCountThreshold`.
-For each pair of samples, a TSS is included if its raw tag count reaches the threshold in at least one of the two samples.
-These counts are not filtered or normalized yet. The plot is for diagnostic purposes, such as highlighting batch effects.
+Pairwise correlation of samples by raw tag counts per TSS (also known as "CTSS" for "CAGE TSS").
+For each pair of samples, a TSS is included in the correlation calculation if its raw tag count reaches the threshold `corrplot_tagCountThreshold` in at least one of the two samples.
+The sample correlation plot is for diagnostic purposes, such as highlighting batch effects.
 The self-correlation diagonal runs from the top-right to the bottom-left cell.
 The `corrplot_tagCountThreshold` is shared with correlation plots further below.
 For a higher-resolution plot, check the PDF file saved in the `results/cager/plots` folder.
@@ -60,12 +60,12 @@ eval(hm_plot$call)
 ```
 
 ## Normalization
-Next, the tag counts are normalized.
+Next, tag counts are normalized.
 
 ### Power-law distributions
 Number of CAGE tags versus number of TSSs supported by at least as many tags [should follow the power-law distribution](https://link.springer.com/article/10.1186/gb-2009-10-7-r79).
 The power-law distribution is fitted in the range between the two dotted lines (both boundaries included).
-The positions of the dotted lines are modifiable by user with the `norm_range_min` and `norm_range_max` parameters.
+The positions of the dotted lines are modifiable by the user with the `norm_range_min` and `norm_range_max` parameters.
 The total number of tags `t_norm` defaults to 1,000,000, which corresponds to TPM, but in the case of very deep sequencing it should be adjusted.
 
 The reverse-cumulative plot below is generated on raw (un-normalized) tag counts.
@@ -74,7 +74,7 @@ print(paste0("The current norm_range_min value is: ", norm_range_min))
 print(paste0("The current norm_range_max value is: ", norm_range_max))
 print(paste0("The current normalization method (norm_method) is: ", norm_method))
 print(paste0("The current t_norm value is: ", t_norm))
-print(paste0("The user provided alpha value is: ", alpha, ". If this value is null/None, the calculated value shown on the plot is used for normalization: the median of the per-sample fitted alphas. Whether fitted or provided by the user, alpha is never allowed to be less than 1.05: a smaller value is replaced by 1.05."))
+print(paste0("The user-provided alpha value is: ", alpha, ". If this value is null, the calculated value shown on the plot is used for normalization: it is the median of the per-sample fitted alphas. Whether fitted or provided by the user, alpha is never allowed to be less than 1.05: a smaller value is replaced by 1.05."))
 
 revc_plot <- readRDS("reverse_cumulative_plot.rds")
 revc_plot
@@ -87,10 +87,10 @@ revc_norm_plot
 ```
 
 ### Correlations of samples at the normalized tag count level
-Correlation of samples by normalized tag counts of at least the user defined threshold `corrplot_tagCountThreshold` (it is shared across correlation plots).
-For each pair of samples, a TSS is included if its normalized tag count reaches the threshold in at least one of the two samples.
-Normalization should have removed batch effects to some extent.
+Pairwise correlation of samples by normalized tag counts per TSS.
+For each pair of samples, a TSS is included in the correlation calculation if its normalized tag count reaches the threshold `corrplot_tagCountThreshold` in at least one of the two samples.
 The plot is for diagnostic purposes, such as highlighting batch effects.
+Normalization should have removed batch effects to some extent.
 The self-correlation diagonal runs from the top-right to the bottom-left cell.
 For a higher-resolution plot, check the PDF file saved in the `results/cager/plots` folder.
 
@@ -105,8 +105,9 @@ eval(hm_plot$call)
 ```
 
 ### PCA plot of samples, based on normalized tag counts
-PCA was run on all samples, using the top 500 most variable TSSs, according to normalised tag counts (TPM) (if fewer than 500 TSSs are available, all of them are used).
-The variance explained by each PC is shown in parentheses.
+PCA was run on all samples, using the top 500 most variable TSSs, according to normalised tag counts (TPM). 
+If fewer than 500 TSSs are available, all TSSs are used.
+The variance explained by each principal component is shown in parentheses.
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 pca_plot <- readRDS("CTSS_pca_plot.rds")
 pca_plot
@@ -121,12 +122,12 @@ By default, these values are 1 sample and 1 TPM, meaning that the high-fidelity 
 The clustering is done using the distance-based distclu method.
 The max distance is a user-defined parameter `distclu_maxDist`: TSSs that are at most `distclu_maxDist` bp apart are joined into the same tag cluster.
 
-With the `keepSingletonsAbove` parameter, the user can decide the TPM threshold at or above which even a single CTSS is kept as a tag cluster.
+With the `keepSingletonsAbove` parameter, the user can decide the TPM threshold at or above which even a single TSS is kept as a tag cluster.
 
-The `iq_low` and `iq_high` parameters are used to define the lower and upper quantile boundaries of the interquartile range within which the majority of the signal lies.
+The `iq_low` and `iq_high` parameters are used to define the lower and upper quantile boundaries of the interquantile range within which the majority of the signal lies.
 
 The `cons_full_span` parameter controls whether the `iq_low` and `iq_high` boundaries are also applied when tag clusters are aggregated into consensus clusters.
-When `cons_full_span` is *false* (the default), the interquartile range delimited by `iq_low` and `iq_high` is used for consensus cluster calling.
+When `cons_full_span` is *false* (the default), the interquantile range delimited by `iq_low` and `iq_high` is used for consensus cluster calling.
 When `cons_full_span` is *true*, `iq_low` and `iq_high` are not used for consensus cluster calling and the whole span of the tag clusters is taken into account when they are aggregated.
 
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
@@ -140,13 +141,13 @@ print(paste0("The current iq_high value is: ", iq_high))
 print(paste0("The current cons_full_span value is: ", cons_full_span))
 ```
 
-### Tag cluster interquartile width
-Interquartile width (IQW) distribution in each sample, for tag clusters with an expression of at least `iqw_tpm_threshold` TPM, as set by the user.
-A sequencing library of sufficient depth shows two types of tag clusters (narrow and wide) as two peaks in the IQW distribution: a high peak on the left (narrow clusters) and a broad peak on the right (broad clusters).
-In low-depth cases, the wide type might be lacking, which flags low-quality data.
+### Tag cluster interquantile width
+Interquantile width (IQW) distribution in each sample, for tag clusters with expression of at least `iqw_tpm_threshold` TPM, as set by the user.
+A sequencing library of sufficient depth shows two types of tag clusters (narrow and broad) as two peaks in the IQW distribution: a high peak on the left (narrow clusters) and a broad peak on the right (broad clusters).
+In low-depth samples, the broad type may be lacking, which flags low-quality data.
 
 ```{r iqw-layout, include=FALSE}
-iqw_plot <- readRDS("interquartile_width_tagclusters_plot.rds")
+iqw_plot <- readRDS("interquantile_width_tagclusters_plot.rds")
 
 # CAGEr facets this plot with the ggplot2 default layout, which spreads the
 # panels over roughly as many columns as rows. With many samples that makes the
@@ -177,7 +178,7 @@ ChIPseeker annotation of genomic regions where tag clusters reside.
 The region labels are extracted from a TxDb object generated from the GTF file provided by the user.
 You can find this file in the `results/txdb` folder.
 Two parameters should be defined for the annotation: `tssregion_up` and `tssregion_down`.
-These correspond to the upstream and downstream distance from the TSS of an annotated transcript to include into the TSS region for the ChIPseeker annotation.
+They correspond to the upstream and downstream distance from the TSS of *an annotated* transcript to include into the TSS region for the ChIPseeker annotation.
 `tssregion_up` should be negative, `tssregion_down` should be positive.
 These parameters are shared with the enhancer annotation.
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
@@ -198,22 +199,25 @@ Dinucleotides are sorted by the median of their per-sample proportions, in decre
 # as a heatmap (more than 10 samples). The bar plot uses coord_flip(), so the
 # dinucleotide names sit on the vertical axis there and on the horizontal axis
 # in the heatmap. style_dinuc() shrinks the plot down to report size while
-# keeping the dinucleotide names, the legend entries and the horizontal axis
-# title big enough to read, and drops the plot title, since the text above each
-# plot already says what it shows.
+# keeping the dinucleotide names, the legend entries, the axis titles and (in
+# the bar plot) the proportion axis numbers big enough to read, and drops the
+# plot title, since the text above each plot already says what it shows.
 style_dinuc <- function(p) {
     small <- ggplot2::element_text(size = 5)
-    dinuc_names <- ggplot2::element_text(size = 11, colour = "black")
+    labels <- ggplot2::element_text(size = 11, colour = "black")
+    titles <- ggplot2::element_text(size = 12)
     flipped <- inherits(p$coordinates, "CoordFlip")
     p + ggplot2::ggtitle(NULL) + ggplot2::theme(
         text = small,
         axis.text.x = if (flipped) {
-            ggplot2::element_text(angle = 90, size = 5)
+            ggplot2::element_text(angle = 90, size = 11, colour = "black")
         } else {
             ggplot2::element_text(angle = 90, size = 11, colour = "black")
         },
-        axis.text.y = if (flipped) dinuc_names else small,
-        axis.title.x = ggplot2::element_text(size = 12),
+        axis.text.y = if (flipped) labels else small,
+        axis.title.x = titles,
+        axis.title.y = if (flipped) titles else small,
+        legend.title = if (flipped) titles else small,
         legend.text = ggplot2::element_text(size = 11))
 }
 ```
@@ -282,9 +286,9 @@ for (logo_sample in logo_samples) {
 
 ## Consensus clustering
 To compare the activity of tag clusters between samples, consensus clusters are defined.
-Consensus clusters are clusters aggregated from tag clusters of different samples which are in close vicinity and pass a TPM threshold: tag clusters with an expression of at least `consensus_thr` TPM are used, and those whose interquartile ranges are at most `consensus_dist` bp apart are merged into one consensus cluster.
-The TPM threshold and the maximum distance between the interquartile ranges (widths) of tag clusters can be set by the user with the `consensus_thr` and `consensus_dist` parameters, respectively.
-The per-sample expression of a consensus cluster is the sum of the expression of the high-fidelity TSSs it contains that have an expression strictly greater than `consensus_thr` TPM in at least one sample.
+Consensus clusters are clusters aggregated from tag clusters of different samples which are in close vicinity and pass a TPM threshold: tag clusters with an expression of at least `consensus_thr` TPM are used, and those whose interquantile ranges (widths) are at most `consensus_dist` bp apart are merged into one consensus cluster.
+The TPM threshold and the maximum distance between the interquantile ranges of tag clusters can be set by the user with the `consensus_thr` and `consensus_dist` parameters, respectively.
+The per-sample expression of a consensus cluster is the total expression of its high-fidelity TSSs that are expressed strictly greater than `consensus_thr` TPM in at least one sample.
 
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 print(paste0("The current consensus_dist value is: ", consensus_dist))
@@ -293,15 +297,15 @@ print(paste0("The current consensus_thr value is: ", consensus_thr))
 
 ### Number of non-zero consensus clusters
 This plot shows the number of non-zero consensus clusters per sample, as well as the total number of consensus clusters (union).
-A consensus cluster in non-zero in a sample if it is expressed in that sample.
+A consensus cluster is non-zero in a sample if it is expressed in that sample.
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 cc_plot <- readRDS("consensus_counts_plot.rds")
 cc_plot
 ```
 
 ### Consensus cluster PCA
-PCA calculated on the TPM values of the top 500 most variable consensus clusters across samples.
-The variance explained by each PC is shown in the parentheses.
+PCA of samples, calculated on the TPM values of the top 500 most variable consensus clusters across samples (if fewer than 500 consensus clusters are available, all of them are used).
+The variance explained by each principal component is shown in parentheses.
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 ccp_plot <- readRDS("consensus_clusters_pca_plot.rds")
 ccp_plot
@@ -311,8 +315,9 @@ ccp_plot
 Enahncers are defined as sites with balanced bidirectional transcription.
 The balance threshold is a user-defined parameter `cfBalanceThreshold`: a site is called bidirectional if its balance score is strictly greater than `cfBalanceThreshold`.
 The normalized TPM values of TSSs are used as input for enhancer calling.
-The threshold for TPM values is set by the user with the `unexpressed` parameter: a TSS with a normalized expression of at most `unexpressed` TPM in a sample is treated as not expressed in that sample (only values strictly greater than `unexpressed` count as expressed).
-Enhancers are called on the TSS values pooled (summed) over all samples, but only those enhancers are kept that have support in at least a user-defined number of samples `minSamples` (so `minSamples` = 1 means at least one sample), where a sample supports an enhancer if it has TSS expression above `unexpressed` TPM on both strands of the enhancer.
+The threshold for these TPM values is set by the user with the `unexpressed` parameter: only the TSSs with TPM values strictly greater than `unexpressed` count as expressed.
+Enhancers are called on expressed TSS values summed over all samples, but only those enhancers are kept that have support in at least a user-defined number of samples `minSamples`. 
+A sample supports an enhancer if the enhancer's TSS expression is above `unexpressed` TPM on both strands.
 To ensure that promoters are not confused with enhancers, any enhancer region overlapping consensus clusters is removed.
 
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
@@ -323,16 +328,19 @@ print(paste0("The current minSamples value is: ", minSamples))
 
 ### Number of active enhancers per sample
 This plot shows the number of active enhancers per sample, as well as the total number of identified enhancers (union).
+An enhancer is counted as active in a sample if it has a non-zero TSS signal on at least one strand in that sample.
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 enh_count_plot <- readRDS("enhancer_count_per_sample_plot.rds")
 enh_count_plot
 ```
 
 ### Annotation of enhancers
-Two parameters should be defined for the annotation: `tssregion_up` and `tssregion_down`.
-They correspond to the upstream and downstream distance from the TSS of an annotated transcript to include into the TSS region for ChIPseeker annotation.
+ChIPseeker annotation of genomic regions where enhancers reside, relative to the transcripts annotated in the user-provided GTF file.
+Two parameters should be defined for this step: `tssregion_up` and `tssregion_down`.
+They correspond to the upstream and downstream distance from the TSS of *an annotated* transcript to include into the TSS region for ChIPseeker annotation.
 `tssregion_up` should be negative, `tssregion_down` should be positive.
 These parameters are shared with the tag cluster annotation.
+While enhancers called within consensus tag clusters are excluded, some of the remaining enhancers may still fall into the promoter region defined by the `tssregion_up` and `tssregion_down` parameters. Therefore, the annotation below may show "promoter" categories for enhancers.
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 print(paste0("The current tssregion_up value is: ", tssregion_up))
 print(paste0("The current tssregion_down value is: ", tssregion_down))

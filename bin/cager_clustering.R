@@ -52,7 +52,7 @@ cager_clustering <- function(
         maxDist=distclu_maxDist,
         keepSingletonsAbove = keepSingletonsAbove)
 
-    # calculate IQ range
+    # calculate the interquantile range
     ce <- CAGEr::cumulativeCTSSdistribution(
         ce,
         clusters = "tagClusters",
@@ -82,7 +82,7 @@ cager_clustering <- function(
             levels = natural_sort(unique(as.character(iqw_plot$data$sampleName))))
     }
     save_plot(
-        "interquartile_width_tagclusters_plot.pdf",
+        "interquantile_width_tagclusters_plot.pdf",
         iqw_plot)
 
     # count tag clusters
