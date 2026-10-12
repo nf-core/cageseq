@@ -85,7 +85,12 @@ option_list = list(
         c("-s", "--sample_num_thr"),
         type = "integer",
         default = 1,
-        help = "Number of samples in which the CTSS Tpm threshold (ctss_thr) should be passed for the all-TSS dinucleotide plot (Default = 1)")
+        help = "Number of samples in which the CTSS threshold (ctss_thr) should be passed for the all-TSS dinucleotide plot (Default = 1)"),
+    make_option(
+        c("-T", "--threshold_is_tpm"),
+        type = "character",
+        default = "true",
+        help = "Whether ctss_thr is in normalized tpm ('true', default) or in raw tag counts ('false'), as in the pre-clustering filter")
 )
 
 message("; Reading arguments from command line.")
@@ -106,6 +111,7 @@ project_dir     <- opt$project_dir
 corrplot_tagCountThreshold <- opt$corrplot_tagCountThreshold
 ctss_thr        <- opt$ctss_thr
 sample_num_thr  <- opt$sample_num_thr
+threshold_is_tpm <- tolower(as.character(opt$threshold_is_tpm)) %in% c("true", "t", "yes", "1")
 
 # installing BSgenome
 source(file.path(project_dir, "bin/install_bsgenome.R"))
@@ -285,7 +291,8 @@ tryCatch({
 # the same tryCatch/placeholder pattern as the dominant-TSS plot above.
 tryCatch({
     weigthed_dinuc_vals_all_df <- extract_dinucleotide_information_all_ctss(
-        ce, reference_name, ctss_thr = ctss_thr, sample_num_thr = sample_num_thr)
+        ce, reference_name, ctss_thr = ctss_thr, sample_num_thr = sample_num_thr,
+        threshold_is_tpm = threshold_is_tpm)
     dinuclfreq_all_plot <- plot_dinucleotide_frequency(
         weigthed_dinuc_vals_all_df,
         title = NULL)

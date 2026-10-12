@@ -40,6 +40,7 @@ process CAGER_TAGCLUSTER_QC {
         --project_dir ${projectDir} \
         --corrplot_tagCountThreshold ${params.corrplot_tagCountThreshold} \
         --ctss_thr ${params.ctss_thr} \
+        --threshold_is_tpm ${params.threshold_is_tpm} \
         --sample_num_thr ${params.sample_num_thr}
 
     cat <<-END_VERSIONS > versions.yml

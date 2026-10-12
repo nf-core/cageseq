@@ -100,6 +100,11 @@ option_list = list(
         default = 100,
         help = "Distance threshold for consensus clustering (Default = 100)"),
     make_option(
+        c("-T", "--threshold_is_tpm"),
+        type = "character",
+        default = "true",
+        help = "Whether ctss_thr is in normalized tpm ('true', default) or in raw tag counts ('false'). Passed to the thresholdIsTpm argument of CAGEr::filterLowExpCTSS()"),
+    make_option(
         c("-f", "--cons_full_span"),
         type = "character",
         default = "false",
@@ -151,6 +156,7 @@ iqw_tpm_threshold   <- opt$iqw_tpm_threshold
 consensus_thr       <- opt$consensus_thr
 consensus_dist      <- opt$consensus_dist
 cons_full_span      <- tolower(as.character(opt$cons_full_span)) %in% c("true", "t", "yes", "1")
+threshold_is_tpm    <- tolower(as.character(opt$threshold_is_tpm)) %in% c("true", "t", "yes", "1")
 tx_annotation       <- opt$annotation
 project_dir         <- opt$project_dir
 bsgenome            <- opt$bsgenome
@@ -196,6 +202,7 @@ ce <- cager_clustering(
     iqw_plot_lim=c(0, 150),
     sample_num_thr=sample_num_thr,
     ctss_thr=ctss_thr,
+    threshold_is_tpm=threshold_is_tpm,
     distclu_maxDist=distclu_maxDist,
     keepSingletonsAbove=keepSingletonsAbove,
     iqw_tpm_threshold=iqw_tpm_threshold,

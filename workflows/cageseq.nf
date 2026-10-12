@@ -1,76 +1,7 @@
-// pipeline run settings
-params.fullpipeline = true
-params.maponly = false
-params.cageronly = false
-
-// genome annotation in GTF
-params.gtf = "$projectDir/assets/NO_FILE_GTF"
-
-// preprocessing parameters
-params.input = "$projectDir/assets/NO_FILE_SAMPLESHEET"
-params.infolder = ''
-params.outdir = "results"
-params.sample_name_fields = 1
-params.genome_name = 'unknown'
-params.fasta = "$projectDir/assets/NO_FILE_FASTA"
-params.index = "$projectDir/assets/NO_FILE_INDEX"
-params.seq_platform = 'unknown'
-params.seq_center = false
-params.unique_only = true
-params.remove_non_g = false
-
-// TrimGalore! parameters
-params.params_trimgalore = '-v'
-
-// cutadapt parameters
-params.nogtrim = false
-
-// read deduplication parameters
-params.dedup = false
-params.dist = false
-
-// bowtie2 parameters
-params.bowtie2 = false
-
-// CAGEr markdown template location
-params.markdown_path = "$projectDir/assets/cager_report.Rmd"
-
-// BSgenome parameters
-params.bsgenome = false
-params.forgeseed = "$projectDir/assets/NO_FILE_FORGESEED"
-params.sourcedir = ''
-
-// CAGEr parameters
-params.cager_sample_file = "$projectDir/assets/NO_FILE_CAGERSAMPLESHEET"
-params.datatype = "bigwig"
-// parameter for correlation calculation
-params.corrplot_tagCountThreshold = 1
-// parameters for normalization
-params.norm_range_min = 5
-params.norm_range_max = 10000
-params.norm_method = "powerLaw"
-params.alpha = false
-params.t_norm = 1000000
-// parameters for tag clustering
-params.sample_num_thr = 1
-params.ctss_thr = 1
-params.distclu_maxDist = 20
-params.keepSingletonsAbove = 5
-params.iq_low = 0.1
-params.iq_high = 0.9
-// plotting for tagclusters QC
-params.iqw_tpm_threshold = 3
-params.tssregion_up = -3000
-params.tssregion_down = 3000
-params.tsslogo_upstream = 35
-// parameters for consensus clusters
-params.consensus_thr = 2
-params.consensus_dist = 100
-params.cons_full_span = false
-// parameters for enhancer calling
-params.cfBalanceThreshold = 0.95
-params.unexpressed = 0
-params.minSamples = 1
+// All parameter defaults are defined in nextflow.config (params block). Nextflow
+// applies config values over script-level `params.x = ...` assignments, so defaults
+// declared here would be dead code; the schema (nextflow_schema.json) must match the
+// config and is checked by `nf-core pipelines schema lint`.
 
 // workflow utils
 include { paramsSummaryMap          } from 'plugin/nf-schema'
@@ -109,6 +40,17 @@ workflow CAGESEQ {
             ch_gtf = Channel.fromPath(params.gtf, checkIfExists: true)
         } else {
             exit 1, "The --gtf argument is mandatory."
+    }
+
+    // --cager_sample_file only makes sense when the pipeline does not map the reads
+    // itself: in the fullpipeline and maponly modes the CAGEr sample list is generated
+    // from the mapping results, so a user-provided one would be silently ignored.
+    if ((params.maponly || params.fullpipeline) && params.cager_sample_file) {
+        exit 1, "The --cager_sample_file option is only valid in the cageronly mode " +
+            "(--cageronly true --fullpipeline false). In the fullpipeline and maponly modes " +
+            "the pipeline generates the CAGEr sample list itself from the mapping results " +
+            "(<outdir>/cager_sample_list/cager_sample_list.csv). Please remove " +
+            "--cager_sample_file (currently '${params.cager_sample_file}') or switch to the cageronly mode."
     }
 
     if (!params.maponly && !params.fullpipeline){

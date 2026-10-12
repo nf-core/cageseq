@@ -31,6 +31,13 @@ natural_sort <- function(x) {
         function(d) formatC(as.integer(d), width = pad_width, flag = "0"))
     x[order(key)]
 }
+
+# ctss_thr is a TPM threshold (threshold_is_tpm = true) or a raw tag count
+# threshold (false); these words are used inline in the Tag clustering and
+# dinucleotide sections.
+thr_in_tpm <- tolower(threshold_is_tpm) == "true"
+thr_quantity <- if (thr_in_tpm) "normalized expression" else "raw tag count"
+thr_unit <- if (thr_in_tpm) "TPM" else "tags"
 ```
 
 # Results of CAGEr analysis
@@ -132,8 +139,9 @@ pca_plot
 ## Tag clustering
 After normalization, tag clusters are identified with the following parameters.
 Before clustering, low-expressed TSSs are filtered by the user-defined thresholds: `sample_num_thr` and `ctss_thr`.
-A TSS is kept (as a high-fidelity TSS) if its normalized expression is strictly greater than `ctss_thr` TPM in at least `sample_num_thr` samples (if `sample_num_thr` exceeds the number of samples, all samples are required).
+A TSS is kept (as a high-fidelity TSS) if its `r thr_quantity` is strictly greater than `ctss_thr` `r thr_unit` in at least `sample_num_thr` samples (if `sample_num_thr` exceeds the number of samples, all samples are required).
 By default, these values are 1 sample and 1 TPM, meaning that the high-fidelity TSSs have more than 1 TPM in at least one sample.
+Whether `ctss_thr` is expressed in TPM or in raw tag counts is set by the user with the `threshold_is_tpm` parameter.
 
 The clustering is done using the distance-based distclu method.
 The max distance is a user-defined parameter `distclu_maxDist`: TSSs that are at most `distclu_maxDist` bp apart are joined into the same tag cluster.
@@ -145,6 +153,7 @@ The `iq_low` and `iq_high` parameters are used to define the lower and upper qua
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 print(paste0("The current sample_num_thr value is: ", sample_num_thr))
 print(paste0("The current ctss_thr value is: ", ctss_thr))
+print(paste0("The current threshold_is_tpm value is: ", threshold_is_tpm))
 print(paste0("The current distclu_maxDist value is: ", distclu_maxDist))
 print(paste0("The current keepSingletonsAbove value is: ", keepSingletonsAbove))
 
@@ -240,13 +249,14 @@ dinucl_plot <- readRDS("dinucleotide_frequencies_plot.rds")
 style_dinuc(dinucl_plot)
 ```
 
-The plot below is based on **all high-fidelity TSSs**: those expressed at TPM strictly greater than `ctss_thr` in at least `sample_num_thr` samples (the same low-expression filter used before tag clustering).
+The plot below is based on **all high-fidelity TSSs**: those whose `r thr_quantity` is strictly greater than `ctss_thr` `r thr_unit` in at least `sample_num_thr` samples (the same low-expression filter used before tag clustering).
 For each unique dinucleotide, it shows the proportion of the total normalised **high-fidelity TSS** expression, per sample.
 Dinucleotides are sorted by the median of their per-sample proportions, in decreasing order: the highest median comes first, at the top of the bar plot or on the left of the heatmap that replaces it when there are more than 10 samples.
 
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 print(paste0("The current ctss_thr value is: ", ctss_thr))
 print(paste0("The current sample_num_thr value is: ", sample_num_thr))
+print(paste0("The current threshold_is_tpm value is: ", threshold_is_tpm))
 
 dinucl_all_plot <- readRDS("dinucleotide_frequencies_all_tss_plot.rds")
 style_dinuc(dinucl_all_plot)
@@ -384,7 +394,30 @@ enh_p_plot <- readRDS("enhancer_expression_pca_plot.rds")
 enh_p_plot
 ```
 
-### Session info
+## Genome browser tracks
+All tracks are saved in the `results/cager/tracks` folder. They are written without `track` header lines, so when a BED file is loaded as a UCSC custom track, a header line can be added as needed (for example to switch the strand colouring of the consensus clusters on).
+
+### TSS signal (bigWig)
+For each sample, four bigWig files hold the signal of the individual TSSs (CTSSs), one per strand: `<sample>_raw_plus.bw` and `<sample>_raw_minus.bw` contain the raw tag counts, `<sample>_normalized_plus.bw` and `<sample>_normalized_minus.bw` the normalized values (TPM).
+The values of the minus strand are stored as negative numbers, so that the two strands of a sample can be displayed as one track mirrored around zero.
+
+### Tag clusters (BED12, one file per sample)
+`<sample>_tagClusters.bed` contains the tag clusters of the sample in a gene-like representation: the thin line spans the whole tag cluster, the filled blocks mark the interquantile range between the `iq_low` (`r iq_low`) and `iq_high` (`r iq_high`) quantiles of the signal, and the thick 1-bp part marks the dominant TSS, the position with the highest signal in the cluster.
+The score column holds the expression of the tag cluster in TPM and the strand column its strand.
+
+### Consensus clusters (BED9, one file for all samples)
+`consensusClusters.bed` contains one feature per consensus cluster spanning the whole cluster.
+No dominant TSS or interquantile range is drawn, because these differ between the samples that contribute to a consensus cluster.
+The name of each feature is the identifier of the cluster, which ends in its strand (for example `chrIII:17250-17274:+`) and is the same identifier as in the row names of `results/cager/tables/consensus_clusters_tpm.csv`.
+The score column holds the expression of the consensus cluster summed over all samples (TPM), and the features are coloured by strand: red for the plus strand and blue for the minus strand.
+IGV applies these colours directly; in the UCSC Genome Browser they are shown when the track line contains `itemRgb="On"`.
+
+### Enhancers (BED6)
+`enhancers.bed` contains the called enhancers, named by their coordinates, with the pooled (summed over all samples) TPM of their TSSs as the score.
+Enhancers are bidirectional, so their strand is `.`.
+The file is empty when no enhancers were called.
+
+## Session info
 
 ```{r eval=TRUE, include=TRUE, echo=FALSE}
 sessionInfo()

@@ -29,6 +29,7 @@ process CAGER_REPORT {
     alpha <- '${params.alpha}'
     sample_num_thr <- '${params.sample_num_thr}'
     ctss_thr <- '${params.ctss_thr}'
+    threshold_is_tpm <- '${params.threshold_is_tpm}'
     distclu_maxDist <- '${params.distclu_maxDist}'
     keepSingletonsAbove <- '${params.keepSingletonsAbove}'
     iq_low <- '${params.iq_low}'

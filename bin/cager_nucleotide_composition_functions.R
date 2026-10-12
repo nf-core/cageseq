@@ -60,13 +60,14 @@ extract_dinucleotide_information <- function(ce, reference_name, qLow = 0.1, qUp
 }
 
 # All-TSS counterpart of extract_dinucleotide_information. Instead of the single
-# dominant TSS per tag cluster, it uses every CTSS that is expressed at tpm >
-# ctss_thr in at least sample_num_thr samples (the same low-expression filter
+# dominant TSS per tag cluster, it uses every CTSS that is expressed above
+# ctss_thr (tpm, or raw tag counts when threshold_is_tpm is FALSE) in at least
+# sample_num_thr samples (the same low-expression filter
 # applied before tag clustering), weighting each by its per-sample normalized
 # tpm. This reveals the initiator dinucleotide preference across the whole set of
 # high-fidelity TSSs rather than only the dominant ones.
 extract_dinucleotide_information_all_ctss <- function(
-    ce, reference_name, ctss_thr, sample_num_thr) {
+    ce, reference_name, ctss_thr, sample_num_thr, threshold_is_tpm = TRUE) {
 
     bsgenome <- BSgenome::getBSgenome(reference_name)
     sample_names <- CAGEr::sampleLabels(ce)
@@ -74,13 +75,19 @@ extract_dinucleotide_information_all_ctss <- function(
     ctss_gr <- CAGEr::CTSScoordinatesGR(ce)
     tpm_df <- as.data.frame(CAGEr::CTSSnormalizedTpmDF(ce))
 
-    # Keep the CTSSs expressed at > ctss_thr tpm in at least sample_num_thr
-    # samples. This mirrors CAGEr::filterLowExpCTSS(thresholdIsTpm = TRUE,
+    # Keep the CTSSs expressed at > ctss_thr (tpm, or raw tag counts when
+    # threshold_is_tpm is FALSE) in at least sample_num_thr samples. This
+    # mirrors CAGEr::filterLowExpCTSS(thresholdIsTpm = threshold_is_tpm,
     # nrPassThreshold = sample_num_thr, threshold = ctss_thr) used before tag
-    # clustering (strict on the tpm, non-strict on the number of samples, which
+    # clustering (strict on the value, non-strict on the number of samples, which
     # CAGEr caps at the number of samples), so the plot is based on exactly that
-    # high-fidelity CTSS set.
-    pass_counts <- rowSums(tpm_df > ctss_thr)
+    # high-fidelity CTSS set. The weighting below always uses the tpm values.
+    thr_df <- if (threshold_is_tpm) {
+        tpm_df
+    } else {
+        as.data.frame(CAGEr::CTSStagCountDF(ce))
+    }
+    pass_counts <- rowSums(thr_df > ctss_thr)
     keep <- pass_counts >= min(sample_num_thr, ncol(tpm_df))
     ctss_gr <- ctss_gr[keep]
     tpm_df <- tpm_df[keep, , drop = FALSE]

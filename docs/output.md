@@ -73,8 +73,8 @@ Below is the complete tree of the results run on 2 samples with the STAR option.
 │   │   ├── consensus_clusters_tpm.csv
 │   │   └── enhancer_expression_per_sample.tsv
 │   ├── tracks
-│   │   ├── consensusClusters.bb
-│   │   ├── enhancers.bb
+│   │   ├── consensusClusters.bed
+│   │   ├── enhancers.bed
 │   │   ├── <sample_name_1>\_normalized_minus.bw
 │   │   ├── <sample_name_1>\_normalized_plus.bw
 │   │   ├── <sample_name_1>\_raw_minus.bw
@@ -391,7 +391,7 @@ The folder also includes multiple subfolders as listed below with the intermedia
   - `consensus_clusters_tpm.csv` file stores the dataframe which is directly exported from CAGEr consensus clusters matching the scores provided in `consensusClustersTpm(ce)`. Rows are the consensus cluster regions and columns are the samples.
   - `consensus_cluster_per_sample_ctss.csv` files stores a dataframe that has the same structure as `consensus_clusters_tpm.csv` but instead of the scores defined by the overlapping TagCluster scores, `consensus_cluster_per_sample_ctss.csv` includes the scores caclulated by including all CTSS scores overlapping the consensus clusters. As tag clusters has already been filtered by a tpm threshold, the CTSS scores is higher or equal to the tag cluster scores. This is the preferred output for downstream analysis.
   - `enhancer_expression_per_sample.tsv` file stores a dataframe with the enhancer regions as rows and samples as columns. The values are tpm normalized CTSS scores.
-- `cager/tracks` folder stores `bed` and `bigwig` files exported after identifying CTSS (raw strand specific bigwig), normalizing CTSS (normalized strand specific bigwig), tag clusters (bed), consensus clusters (bed), and enhancers (bed).
+- `cager/tracks` folder stores `bed` and `bigwig` files exported after identifying CTSS (raw strand specific bigwig), normalizing CTSS (normalized strand specific bigwig), tag clusters (per-sample BED12 with the interquantile range as blocks and the dominant TSS as the thick part), consensus clusters (`consensusClusters.bed`, BED9: one stranded feature per cluster, named with CAGEr's cluster id which ends in the strand, e.g. `chrIII:17250-17274:+`, and coloured by strand, plus red and minus blue; UCSC shows the colours when the track line has `itemRgb="On"`), and enhancers (BED6).
 
 ### Pipeline information
 

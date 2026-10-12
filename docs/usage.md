@@ -27,7 +27,7 @@ gtf: "cageflow_test_data/danRer11_genome/danRer11.ensGene.gtf"
 # preprocessing parameters
 input: "docs/examples/samplesheet_sacer_pe.csv"
 infolder:
-outdir: "results"
+outdir: "results" # optional: defaults to results_full, results_maponly or results_cageronly, depending on the mode
 sample_name_fields: 3
 genome_name: "danRer11"
 fasta: "cageflow_test_data/danRer11_genome/danRer11.fa"
@@ -47,7 +47,7 @@ dedup: true
 dist: 100
 
 # CAGEr parameters
-cager_sample_file: "docs/examples/sample_list.csv" # with sorted list of bigwigs, if mapping is run elsewhere
+cager_sample_file: # cageronly mode only: sorted list of bigwigs/bams mapped elsewhere, e.g. "docs/examples/sample_list.csv"
 # datatype: "bam" or "bigwig". if bowtie2 is used, it will be set to bam
 datatype: "bam"
 # BSgenome
@@ -104,7 +104,7 @@ The parameters specific to mapping, can be left empty when running in `cageronly
 
 The parameters specific to CAGEr and CAGEfightR analysis, can be left empty when running in `maponly` mode:
 
-- `cager_sample_file` specifies the input CSV samplesheet including the name of the samples, their pairedness status, and the location of bigwig or bam files. Optionally, a fourth column is used that sepcifies which samples should be removed, merged, or kept as is. This is achieved by checking if the row is empty (remove), its content is unique (keep as is), or shared with another sample (merge).
+- `cager_sample_file` (cageronly mode only; providing it in the fullpipeline or maponly mode stops the pipeline with an error, because in those modes the sample list is generated from the mapping results) specifies the input CSV samplesheet including the name of the samples, their pairedness status, and the location of bigwig or bam files. Optionally, a fourth column is used that sepcifies which samples should be removed, merged, or kept as is. This is achieved by checking if the row is empty (remove), its content is unique (keep as is), or shared with another sample (merge).
 - `datatype` specifies the type of mapped input in the CSV samplesheet: `bam` or `bigwig` is accepted. Default is `bigwig`.
 - `forgeseed` specifies a seed file for BSgenome forging (see the [Advanced BSgenomeForge usage vignette](https://bioconductor.org/packages/release/bioc/vignettes/BSgenomeForge/inst/doc/AdvancedBSgenomeForge.pdf) for details). The seed file should not contain the `seqs_srcdir` field (instead, the absolute or relative path to the source directory is set with the `sourcedir` option, see below). This option requires `sourcedir` and is mutually exclusive with `bsgenome`.
 - `sourcedir` specifies a directory containing either a set of FASTA files, one per reference chromosome, or a 2bit file for the whole reference genome. See the [Advanced BSgenomeForge usage vignette](https://bioconductor.org/packages/release/bioc/vignettes/BSgenomeForge/inst/doc/AdvancedBSgenomeForge.pdf) for details. The seed file should be written according to the contents of this directory. This option requires `forgeseed` and is mutually exclusive with `bsgenome`.
@@ -115,6 +115,7 @@ The parameters specific to CAGEr and CAGEfightR analysis, can be left empty when
 - `alpha` user specified alpha, the `-1 *` fitted slope in the log-log representation of the power-law distribution. If none, the median of the per-sample fitted alphas is used. Whether fitted or user-provided, alpha is never allowed to be less than 1.05: a smaller value is replaced by 1.05. Considered for `powerLaw` normalization only.
 - `t_norm` total number of CAGE tags in the reference power-law distribution. Setting `T = 10^6` results in normalized values that correspond to tags per million. Considered for `powerLaw` normalization only.
 - `sample_num_thr` and `ctss_thr` are parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed.
+- `threshold_is_tpm` defines whether `ctss_thr` is expressed in normalized TPM (`true`, the default) or in raw tag counts (`false`). It is passed to the `thresholdIsTpm` argument of `CAGEr::filterLowExpCTSS()`, and the all-TSS dinucleotide plot uses the same choice.
 - `distclu_maxDist` specifies the maximum distance for distance-based clustering (distclu).
 - `keepSingletonsAbove` defines the tpm threshold above which even a single CTSS is kept during clustering.
 - The `iq_low` and `iq_high` parameters are used to define the lower and upper quantile boundaries of the interquantile range within which the majority of the signal lies.
@@ -241,7 +242,7 @@ Note that the pipeline will create the following files in your working directory
 
 ```bash
 work                # Directory containing the nextflow working files
-<OUTDIR>            # Finished results in specified location (defined with --outdir, default is results/)
+<OUTDIR>            # Finished results in specified location (defined with --outdir; default is results_full/, results_maponly/ or results_cageronly/, depending on the run mode)
 .nextflow_log       # Log file from Nextflow
 # Other nextflow hidden files, eg. history of pipeline runs and old logs.
 ```

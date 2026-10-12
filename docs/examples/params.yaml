@@ -22,7 +22,7 @@ remove_non_g: false
 
 # CAGEr parameters
 # sample file with sorted list of bigwigs or bams, if mapping is run elsewhere
-cager_sample_file: "docs/examples/sample_list.csv" # with sorted list of bigwigs, if mapping is run elsewhere
+cager_sample_file: # cageronly mode only: sorted list of bigwigs/bams mapped elsewhere, e.g. "docs/examples/sample_list.csv"
 # datatype: "bam" or "bigwig". if bowtie2 is used, it will be set to bam
 datatype: "bam"
 # BSgenome
@@ -40,6 +40,8 @@ t_norm: 1000000
 # parameters for tag clustering
 sample_num_thr: 1
 ctss_thr: 1
+# whether ctss_thr is in TPM (true) or in raw tag counts (false)
+threshold_is_tpm: true
 distclu_maxDist: 20
 keepSingletonsAbove: 5
 iq_low: 0.1

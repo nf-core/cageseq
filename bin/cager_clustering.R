@@ -3,7 +3,8 @@
 #' @param ce normalized CAGEexp object
 #' @param iqw_plot_lim Limits to IQ width plot x axis
 #' @param sample_num_thr Threshold for nr of samples where tpm should be higher during filtering low expressed TSS before tag clustering
-#' @param ctss_thr Tpm threshold for filtering low expressed TSS before tag clustering
+#' @param ctss_thr Threshold for filtering low expressed TSS before tag clustering, in tpm or in raw tag counts depending on threshold_is_tpm
+#' @param threshold_is_tpm If TRUE (default) ctss_thr is a tpm threshold, if FALSE it is a raw tag count threshold (CAGEr::filterLowExpCTSS thresholdIsTpm argument)
 #' @param distclu_maxDist maximum distance parameter for distclu CAGEr function
 #' @param keepSingletonsAbove threshold above which to keep the singletons during tag clustering
 #' @param iqw_tpm_threshold Tpm threshold for plotting tagcluster IQwidth
@@ -30,7 +31,8 @@ cager_clustering <- function(
         iqw_tpm_threshold,
         num_core,
         iqlow,
-        iqhigh){
+        iqhigh,
+        threshold_is_tpm = TRUE){
 
     multicore <- TRUE
     if(num_core < 2){
@@ -41,7 +43,7 @@ cager_clustering <- function(
     # CTSS flagging used for filtering
     ce <- CAGEr::filterLowExpCTSS(
         ce,
-        thresholdIsTpm = TRUE,
+        thresholdIsTpm = threshold_is_tpm,
         nrPassThreshold = sample_num_thr,
         threshold = ctss_thr)
 

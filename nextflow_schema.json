@@ -10,12 +10,12 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["outdir"],
+            "required": [],
             "properties": {
                 "outdir": {
                     "type": "string",
                     "format": "directory-path",
-                    "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
+                    "description": "The output directory where the results will be saved. If not given, it is named after the run mode: `results_full` (fullpipeline), `results_maponly` (maponly) or `results_cageronly` (cageronly), in the launch directory. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
                 },
                 "email": {
@@ -273,7 +273,7 @@
                 },
                 "cager_sample_file": {
                     "type": "string",
-                    "description": "The input CSV samplesheet including the name of the samples, their pairedness status, and the location of bigwig or bam files. Required when cageronly is true."
+                    "description": "The input CSV samplesheet including the name of the samples, their pairedness status, and the location of bigwig or bam files. Required when cageronly is true, and only allowed in that mode: in the fullpipeline and maponly modes the pipeline generates this sample list itself, and providing it is an error."
                 },
                 "datatype": {
                     "type": "string",
@@ -291,6 +291,12 @@
                 "bsgenome": {
                     "type": "string",
                     "description": "BSgenome R package to use (if not forged)"
+                },
+                "markdown_path": {
+                    "type": "string",
+                    "format": "file-path",
+                    "hidden": true,
+                    "description": "R Markdown template of the CAGEr report. Defaults to assets/cager_report.Rmd in the pipeline directory; only override it to render a customised report."
                 },
                 "corrplot_tagCountThreshold": {
                     "type": "integer",
@@ -330,6 +336,11 @@
                     "type": "number",
                     "default": 1,
                     "description": "Parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold (may be a non-integer positive number, e.g. 0.5 or 1.5) above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed."
+                },
+                "threshold_is_tpm": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether `ctss_thr` is expressed in normalized TPM (true, default) or in raw tag counts (false). Passed to the `thresholdIsTpm` argument of `CAGEr::filterLowExpCTSS()`; the same choice is used for the all-TSS dinucleotide plot."
                 },
                 "distclu_maxDist": {
                     "type": "integer",

@@ -45,16 +45,23 @@ export_consensus_clusters <- function(ce){
         colorByExpressionProfile = FALSE,
         oneTrack = TRUE)
 
-    # BED12 text track. A consensus cluster aggregates per-sample tag clusters
-    # whose dominant TSS may differ, so no single dominant TSS is represented:
-    # the whole cluster span is written as one block and the thick region is
-    # collapsed to zero width at the cluster start (thickStart == thickEnd), so
-    # browsers draw a single thin block with no coding-exon marker.
+    # BED9 text track (chrom, start, end, name, score, strand, thickStart,
+    # thickEnd, itemRgb). A consensus cluster aggregates per-sample tag
+    # clusters whose dominant TSS may differ, so no dominant TSS or
+    # interquantile block structure is drawn: each cluster is a plain
+    # stranded feature. Without a block structure, genome browsers draw the
+    # strand chevrons inside the feature itself, which a single-block BED12
+    # feature does not get. In addition the strand is made evident in two more
+    # ways: the name is CAGEr's cluster id, which ends in the strand
+    # (e.g. chrIII:17250-17274:+), and the feature is coloured by strand
+    # (plus = red, minus = blue; UCSC needs itemRgb="On" on the track line to
+    # use the colours, IGV uses them as they are).
     ccbedTracks <- methods::as(ccbedTracks, "GRanges")
-    ccbedTracks$blocks <- IRanges::IRangesList(lapply(
-        GenomicRanges::width(ccbedTracks),
-        function(w) IRanges::IRanges(start = 1, width = w)))
-    ccbedTracks$thick <- IRanges::IRanges(
-        start = GenomicRanges::start(ccbedTracks), width = 0)
+    ccbedTracks$blocks <- NULL
+    ccbedTracks$name <- names(CAGEr::consensusClustersGR(ce))
+    ccbedTracks$thick <- IRanges::ranges(ccbedTracks)
+    ccbedTracks$itemRgb <- ifelse(
+        as.character(GenomicRanges::strand(ccbedTracks)) == "-",
+        "#0000FF", "#FF0000")
     rtracklayer::export.bed(ccbedTracks, "tracks/consensusClusters.bed")
 }
