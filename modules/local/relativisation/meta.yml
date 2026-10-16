@@ -1,0 +1,35 @@
+name: "relativisation"
+description: Adjusts sample list for CAGEr subworkflow to read in files from work folder
+keywords:
+  - Data organization
+tools:
+  - "argparse":
+      description: "Parser for command-line options, arguments and subcommands"
+      homepage: "https://docs.python.org/3/library/argparse.html"
+      documentation: "https://docs.python.org/3/library/argparse.html"
+      licence: ["Python Software Foundation License Version 2"]
+      identifier: argparse
+  - "os":
+      ddescription: "Miscellaneous operating system interfaces"
+      homepage: "https://docs.python.org/3/library/os.html"
+      documentation: "https://docs.python.org/3/library/os.html"
+      licence: ["Python Software Foundation License Version 2"]
+      identifier: os
+input:
+  - sample_file:
+      type: file
+      description: |
+        A samplefile with absolute paths to bigwig files.
+        The file should be a comma-separated file with the following columns:
+        "id,single_end,path,new_name"
+output:
+  - "sample_list_relativepath.csv":
+      type: file
+      description: |
+        A samplefile with relative paths to bigwig files.
+        The file is a comma-separated file with the following columns:
+        "id,single_end,path,new_name"
+authors:
+  - "@ferenckata"
+maintainers:
+  - "@ferenckata"

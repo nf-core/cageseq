@@ -1,0 +1,42 @@
+name: "read_removal"
+description: Remove reads starting with other than G base
+keywords:
+  - Data cleaning
+  - Read filtering
+tools:
+  - "argparse":
+      description: "Parser for command-line options, arguments and subcommands"
+      homepage: "https://docs.python.org/3/library/argparse.html"
+      documentation: "https://docs.python.org/3/library/argparse.html"
+      licence: ["Python Software Foundation License Version 2"]
+      identifier: argparse
+  - "gzip":
+      ddescription: "Support for gzip files"
+      homepage: "https://docs.python.org/3/library/gzip.html"
+      documentation: "https://docs.python.org/3/library/gzip.html"
+      licence: ["Python Software Foundation License Version 2"]
+      identifier: gzip
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        minimally required content: [ id:'test', single_end:false ]
+  - input_fastq:
+      type: file
+      description: |
+        A FASTQ file in gzip format.
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        minimally required content: [ id:'test', single_end:false ]
+  - "filtered_output.fastq.gz":
+      type: file
+      description: |
+        A FASTQ file in gzip format that does not contain any read that does not start with G.
+authors:
+  - "@ferenckata"
+maintainers:
+  - "@ferenckata"

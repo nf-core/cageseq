@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "cager_report"
+description: Render an HTML report summarising all CAGEr QC and analysis results.
+keywords:
+  - CAGE
+  - report
+  - rmarkdown
+tools:
+  - "rmarkdown":
+      description: "Dynamic Documents for R"
+      homepage: "https://cran.r-project.org/web/packages/rmarkdown/index.html"
+      documentation: "https://cran.r-project.org/web/packages/rmarkdown/refman/rmarkdown.html"
+      tool_dev_url: "https://github.com/rstudio/rmarkdown"
+      doi: "10.32614/CRAN.package.rmarkdowns"
+      licence: ["GPL-3"]
+      identifier: rmarkdown
+  - "CAGEr":
+      description: "Analysis of CAGE (Cap Analysis of Gene Expression) sequencing data for precise mapping of transcription start sites and promoterome mining"
+      homepage: "https://www.bioconductor.org/packages/release/bioc/html/CAGEr.html"
+      documentation: "https://www.bioconductor.org/packages/release/bioc/vignettes/CAGEr/inst/doc/CAGEexp.html"
+      tool_dev_url: "https://github.com/charles-plessy/CAGEr"
+      doi: "10.18129/B9.bioc.CAGEr"
+      licence: ["GPL-3"]
+      identifier: cager
+  - "ggplot2":
+      description: "Create Elegant Data Visualisations Using the Grammar of Graphics"
+      homepage: "https://cran.r-project.org/web/packages/ggplot2/index.html"
+      documentation: "https://ggplot2.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/ggplot2/"
+      doi: "10.32614/CRAN.package.gplots"
+      licence: ["MIT + file"]
+      identifier: ggplot2
+  - "gplots":
+      description: "Various R Programming Tools for Plotting Data"
+      homepage: "https://cran.r-project.org/web/packages/gplots/index.html"
+      documentation: "https://cran.r-project.org/web/packages/gplots/refman/gplots.html"
+      tool_dev_url: "https://github.com/talgalili/gplots"
+      doi: "10.32614/CRAN.package.gplots"
+      licence: ["GPL-2"]
+      identifier: gplots
+input:
+  - rmarkd_template:
+      type: file
+      description: |
+        Rmarkdown template for the CAGEr QC report.
+        This file is used to generate the HTML report.
+      pattern: "*{.Rmd}"
+  - tss_hm_ta_plots:
+      type: file
+      description: |
+        Path to a directory containing various plots generated during the annotation and QC process.
+  - tss_hm_ta_data:
+      type: file
+      description: |
+        Path to a directory containing R objects of the plots generated during the annotation and QC process.
+  - tag_corr_m:
+      type: file
+      description: |
+        Path to a R object containing sample tag correlation matrix.
+  - cc_iqw_rc_plots:
+      type: file
+      description: |
+        List of PDF files containing plots generated during normalization and clustering.
+  - cc_txt:
+      type: file
+      description: |
+        List of RDS files containing plots generated during normalization and clustering.
+  - cc_iqw_rc_data:
+      type: file
+      description: |
+        List of txt files generated during normalization and clustering.
+  - tca_dn_n_plots:
+      type: file
+      description: |
+        Path to a directory containing various plots generated during the QC process.
+  - tca_dn_n_data:
+      type: file
+      description: |
+        Path to a directory containing R objects of the plots generated during QC process.
+  - tagcluster_corr_m:
+      type: file
+      description: |
+        Path to a R object containing normaized sample correlation matrix.
+  - enhancer_plots:
+      type: file
+      description: |
+        List of PDF files containing plots generated during the enhancer calling process.
+  - enhancer_data:
+      type: file
+      description: |
+        List of RDS files containing plots generated during the enhancer calling process.
+  - cageexp_object:
+      type: file
+      description: |
+        Path to a CAGEr object file containing normalized, clustered CAGE data.
+        The CAGEr object should be saved in RDS format.
+      pattern: "*{.rds}"
+output:
+  - "*.html":
+      type: file
+      description: |
+        HTML report generated from the Rmarkdown template.
+        This report contains the results of the CAGEr QC and annotation process.
+authors:
+  - "@ferenckata"
+maintainers:
+  - "@ferenckata"

@@ -3,12 +3,30 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
-include { MULTIQC                } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMap       } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_cageseq_pipeline'
+
+// workflow utils
+include { paramsSummaryMap          } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc      } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText    } from '../subworkflows/local/utils_nfcore_cageseq_pipeline'
+include { softwareVersionsToYAML    } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+
+// input readers
+include { MAPPED_INPUTS } from "../subworkflows/local/mapped_inputs/main.nf"
+include { RELATIVISATION } from '../modules/local/relativisation/main.nf'
+
+// pipeline subworkflows and modules
+include { PARAMETER_CHECKS } from '../subworkflows/local/parameter_checks/main.nf'
+include { PREPROCESSING } from '../subworkflows/local/preprocessing/main.nf'
+include { PREPARE_MAPPING_METADATA } from '../subworkflows/local/prepare_mapping_metadata/main.nf'
+include { PREPARE_CAGER_METADATA } from '../subworkflows/local/prepare_cager_metadata/main.nf'
+include { STAR } from '../subworkflows/local/star/main.nf'
+include { BOWTIE2 } from '../subworkflows/local/bowtie2/main.nf'
+include { DEDUPLICATION } from '../subworkflows/local/deduplication/main.nf'
+include { SAMTOOLS_PROCESSING } from '../subworkflows/local/samtools/main.nf'
+include { BAM_STATS_SAMTOOLS } from '../subworkflows/nf-core/bam_stats_samtools/main'
+include { MULTIQC } from '../modules/nf-core/multiqc/main.nf'
+include { WRITE_SAMPLE_LIST } from '../modules/local/write_sample_list/main.nf'
+include { CAGER } from '../subworkflows/local/cager/main.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,7 +37,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_cage
 workflow CAGESEQ {
 
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    _ch_samplesheet // channel: samplesheet read in from --input
     multiqc_config
     multiqc_logo
     multiqc_methods_description
@@ -27,13 +45,125 @@ workflow CAGESEQ {
 
     main:
 
-    def ch_versions = channel.empty()
-    def ch_multiqc_files = channel.empty()
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC(ch_samplesheet)
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map{ _meta, file -> file })
+    ch_versions = channel.empty()
+    ch_multiqc_files = channel.empty()
+
+    ch_gtf = channel.fromPath(params.gtf, checkIfExists: true)
+
+    if (!params.maponly && !params.fullpipeline){
+        if (!params.cager_sample_file ) {
+            exit 1, 'Sample list file is mandatory if mapping is not done within the pipeline.'
+        }
+        println("Running CAGEr analysis subpipeline")
+
+        ch_cager_sample_file = channel.fromPath(params.cager_sample_file)
+        mapped_files_ch = MAPPED_INPUTS(ch_cager_sample_file).collect()
+        merged_sample_file = RELATIVISATION(ch_cager_sample_file)
+
+    }
+
+    if (params.maponly || params.fullpipeline) {
+
+        ch_fasta = channel.empty()
+        ch_index = channel.empty()
+
+        PARAMETER_CHECKS(ch_fasta, ch_index)
+
+        ch_fasta = PARAMETER_CHECKS.out.ch_fasta
+        ch_index = PARAMETER_CHECKS.out.ch_index
+        ch_fastq = PARAMETER_CHECKS.out.ch_fastq
+
+        PREPROCESSING(ch_fastq, ch_multiqc_files)
+
+        ch_reads_to_align = PREPROCESSING.out.ch_reads_to_align
+        ch_multiqc_files = PREPROCESSING.out.ch_multiqc_files
+
+        PREPARE_MAPPING_METADATA( ch_fasta )
+        ch_chrom_sizes = PREPARE_MAPPING_METADATA.out.ch_chrom_sizes
+        ch_fasta = PREPARE_MAPPING_METADATA.out.ch_fasta
+
+        if (params.bowtie2) {
+            BOWTIE2(ch_reads_to_align, ch_fasta, ch_index, ch_multiqc_files)
+
+            ch_aligned = BOWTIE2.out.ch_aligned
+            ch_multiqc_files = BOWTIE2.out.ch_multiqc_files
+            // NOTE: placeholder so that the channel is not empty
+            // it will be replaced in SAMTOOLS
+            ch_for_cager = ch_aligned
+
+        } else {
+            STAR(ch_reads_to_align, ch_fasta, ch_index, ch_gtf, ch_chrom_sizes, ch_multiqc_files)
+
+            ch_for_cager = STAR.out.bigwig_ch_for_cager
+            ch_aligned = STAR.out.ch_aligned
+            ch_multiqc_files = STAR.out.ch_multiqc_files
+        }
+
+        if (params.dedup) {
+            DEDUPLICATION(ch_aligned, ch_for_cager, ch_fasta.map{ _meta, fasta -> fasta })
+
+            ch_for_cager = DEDUPLICATION.out.ch_for_cager
+            ch_bam_bai = DEDUPLICATION.out.ch_bam_bai
+        } else {
+            SAMTOOLS_PROCESSING(ch_aligned, ch_fasta, ch_for_cager)
+
+            ch_for_cager = SAMTOOLS_PROCESSING.out.ch_for_cager
+            ch_bam_bai = SAMTOOLS_PROCESSING.out.ch_bam_bai
+        }
+
+        ch_meta_fasta = ch_bam_bai
+            .combine(ch_fasta)
+            .map{file -> [file[3], file[4]]}
+
+        BAM_STATS_SAMTOOLS(ch_bam_bai, ch_meta_fasta)
+
+        if (params.bowtie2) {
+            mapped_files_ch = ch_for_cager.map{ _meta, paths ->
+                [paths]}
+                .collect()
+        } else {
+            mapped_files_ch = ch_for_cager.map{ _meta, paths ->
+                def file1 = paths[0]
+                def file2 = paths[1]
+                [file1, file2]}
+                .collect()
+        }
+
+
+        WRITE_SAMPLE_LIST(ch_for_cager, outdir)
+        def header = "id,single_end,path,new_name"
+
+        ch_collected = WRITE_SAMPLE_LIST.out.sample_list
+        .reduce( header ) { acc, table_line ->
+            acc + '\n' + table_line.readLines()[0]}
+
+        // sorting samples alphabetically
+        merged_sample_file = ch_collected.collectFile(
+            name: "sample_list.csv",
+            newLine: true,
+            sort: { file -> file.text })
+
+    }
+
+    if (params.cageronly || params.fullpipeline) {
+
+        PREPARE_CAGER_METADATA( ch_gtf )
+        ch_bsgenome_file = PREPARE_CAGER_METADATA.out.ch_bsgenome_file
+        ch_bsgenome_name = PREPARE_CAGER_METADATA.out.ch_bsgenome_name
+        ch_txdb_file = PREPARE_CAGER_METADATA.out.ch_txdb_file
+
+        CAGER(
+            ch_bsgenome_file,
+            ch_bsgenome_name,
+            merged_sample_file,
+            mapped_files_ch,
+            ch_txdb_file,
+            ch_versions
+        )
+
+        ch_versions = CAGER.out.ch_versions
+
+    }
 
     //
     // Collate and save software versions
@@ -90,7 +220,8 @@ workflow CAGESEQ {
             ]
         }
     )
-    emit:multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
+    emit:
+    multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
 }
 

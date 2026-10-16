@@ -1,0 +1,23 @@
+name: write_sample_list
+description: Write sample list to file
+keywords:
+  - intermediate result collection
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        minimally required content: [ id:'test', single_end:false ]
+  - bw_or_bam:
+      type: file
+      description: |
+        A single bam file or two bigwig files (one for each strand)
+output:
+  - "sample_list.csv":
+      type: file
+      description: |
+        A file with a single line listing meta.id, meta.single_end, and the path to the input file(s).
+authors:
+  - "@ferenckata"
+maintainers:
+  - "@ferenckata"

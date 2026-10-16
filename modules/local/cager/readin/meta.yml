@@ -1,0 +1,102 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "cager_readin"
+description: Read BAM or BigWig files into a CAGEr CAGEexp object with raw CTSS counts.
+keywords:
+  - CAGE
+  - transcription start sites
+  - CAGEr
+tools:
+  - "CAGEr":
+      description: "Analysis of CAGE (Cap Analysis of Gene Expression) sequencing data for precise mapping of transcription start sites and promoterome mining"
+      homepage: "https://www.bioconductor.org/packages/release/bioc/html/CAGEr.html"
+      documentation: "https://www.bioconductor.org/packages/release/bioc/vignettes/CAGEr/inst/doc/CAGEexp.html"
+      tool_dev_url: "https://github.com/charles-plessy/CAGEr"
+      doi: "10.18129/B9.bioc.CAGEr"
+      licence: ["GPL-3"]
+      identifier: cager
+  - "BSgenome":
+      description: "Software infrastructure for efficient representation of full genomes and their SNPs"
+      homepage: "https://bioconductor.org/packages/devel/bioc/html/BSgenome.html"
+      documentation: "https://bioconductor.org/packages/devel/bioc/manuals/BSgenome/man/BSgenome.pdf"
+      tool_dev_url: "https://github.com/Bioconductor/BSgenome"
+      doi: "10.18129/B9.bioc.BSgenome"
+      licence: ["Artistic-2.0"]
+      identifier: bsgenome
+  - "dplyr":
+      description: "A grammar of data manipulation"
+      homepage: "https://cloud.r-project.org/web/packages/dplyr/index.html"
+      documentation: "https://dplyr.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/dplyr/"
+      doi: "10.32614/CRAN.package.dplyr"
+      licence: ["MIT + file"]
+      identifier: dplyr
+  - "purrr":
+      description: "Functional Programming Tools"
+      homepage: "https://cran.r-project.org/web/packages/purrr/index.html"
+      documentation: "https://purrr.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/purrr/"
+      doi: "10.32614/CRAN.package.purrr"
+      licence: ["MIT + file"]
+      identifier: purrr
+  - "magrittr":
+      description: "A Forward-Pipe Operator for R"
+      homepage: "https://cran.r-project.org/web/packages/magrittr/index.html"
+      documentation: "https://magrittr.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/magrittr/"
+      doi: "10.32614/CRAN.package.magrittr"
+      licence: ["MIT + file"]
+      identifier: magrittr
+  - "stringr":
+      description: "Simple, Consistent Wrappers for Common String Operations"
+      homepage: "https://cran.r-project.org/web/packages/stringr/index.html"
+      documentation: "https://stringr.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/stringr/"
+      doi: "10.32614/CRAN.package.stringr"
+      licence: ["MIT + file"]
+      identifier: stringr
+  - "tidyr":
+      description: "Tidy Messy Data"
+      homepage: "https://cran.r-project.org/web/packages/tidyr/index.html"
+      documentation: "https://tidyr.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/tidyr/"
+      doi: "10.32614/CRAN.package.tidyr"
+      licence: ["MIT + file"]
+      identifier: tidyr
+input:
+  - bsgenome_file:
+      type: file
+      description: The forged BSgenome package in tar.gz format.
+      pattern: "BSgenome.*.tar.gz"
+  - bsgenome_name:
+      type: val
+      description: Name of an existing BSgenome package to use.
+  - sample_table:
+      type: map
+      description: |
+        Csv with information from the input channel with [id, pairedness, bigwig or bam path, new name]
+  - data_type:
+      type: val
+      description: |
+        String defining if bigwigs or bams are used as input data.
+        Possible values: "bigwig", "bam".
+  - ch_collected:
+      type: file
+      description: |
+        List of bigwig or bam files collected to import. Should match the sample_table.
+output:
+  rds:
+    - "intermediate_cagerobj/initial_cagexp.rds":
+        type: file
+        description: |
+          Path to a CAGEr object file containing imported CAGE data.
+  versions:
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+        ontologies:
+          - edam: http://edamontology.org/format_3750 # YAML
+authors:
+  - "@ferenckata"
+maintainers:
+  - "@ferenckata"

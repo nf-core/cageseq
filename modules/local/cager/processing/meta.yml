@@ -1,0 +1,182 @@
+name: "cager_processing"
+description: Normalise CTSS, call tag clusters and consensus clusters, and
+  export tracks.
+keywords:
+  - CAGE
+  - tagcluster
+  - consensus cluster
+tools:
+  - "rlang":
+      description: "Functions for Base Types and Core R and 'Tidyverse' Features"
+      homepage: "https://cran.r-project.org/web/packages/rlang/index.html"
+      documentation: "https://rlang.r-lib.org/"
+      doi: "10.32614/CRAN.package.rlang"
+      licence: ["MIT + file"]
+      identifier: rlang
+  - "CAGEr":
+      description: "Analysis of CAGE (Cap Analysis of Gene Expression) sequencing data
+        for precise mapping of transcription start sites and promoterome mining"
+      homepage: "https://www.bioconductor.org/packages/release/bioc/html/CAGEr.html"
+      documentation: "https://www.bioconductor.org/packages/release/bioc/vignettes/CAGEr/inst/doc/CAGEexp.html"
+      tool_dev_url: "https://github.com/charles-plessy/CAGEr"
+      doi: "10.18129/B9.bioc.CAGEr"
+      licence: ["GPL-3"]
+      identifier: cager
+  - "GenomicFeatures":
+      description: "Query the gene models of a given organism/assembly"
+      homepage: "https://bioconductor.org/packages/devel/bioc/html/GenomicFeatures.html"
+      documentation: "https://bioconductor.org/packages/devel/bioc/vignettes/GenomicFeatures/inst/doc/GenomicFeatures.html"
+      tool_dev_url: "https://github.com/Bioconductor/GenomicFeatures"
+      doi: "10.1371/journal.pcbi.1003118"
+      licence: ["Artistic-2.0"]
+      identifier: genomicfeatures
+  - "dplyr":
+      description: "A grammar of data manipulation"
+      homepage: "https://cloud.r-project.org/web/packages/dplyr/index.html"
+      documentation: "https://dplyr.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/dplyr/"
+      doi: "10.32614/CRAN.package.dplyr"
+      licence: ["MIT + file"]
+      identifier: dplyr
+  - "purrr":
+      description: "Functional Programming Tools"
+      homepage: "https://cran.r-project.org/web/packages/purrr/index.html"
+      documentation: "https://purrr.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/purrr/"
+      doi: "10.32614/CRAN.package.purrr"
+      licence: ["MIT + file"]
+      identifier: purrr
+  - "magrittr":
+      description: "A Forward-Pipe Operator for R"
+      homepage: "https://cran.r-project.org/web/packages/magrittr/index.html"
+      documentation: "https://magrittr.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/magrittr/"
+      doi: "10.32614/CRAN.package.magrittr"
+      licence: ["MIT + file"]
+      identifier: magrittr
+  - "stringr":
+      description: "Simple, Consistent Wrappers for Common String Operations"
+      homepage: "https://cran.r-project.org/web/packages/stringr/index.html"
+      documentation: "https://stringr.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/stringr/"
+      doi: "10.32614/CRAN.package.stringr"
+      licence: ["MIT + file"]
+      identifier: stringr
+  - "tidyr":
+      description: "Tidy Messy Data"
+      homepage: "https://cran.r-project.org/web/packages/tidyr/index.html"
+      documentation: "https://tidyr.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/tidyr/"
+      doi: "10.32614/CRAN.package.tidyr"
+      licence: ["MIT + file"]
+      identifier: tidyr
+  - "tibble":
+      description: "Simple Data Frames"
+      homepage: "https://cran.r-project.org/web/packages/tibble/index.html"
+      documentation: "https://tibble.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/tibble/"
+      doi: "10.32614/CRAN.package.tibble"
+      licence: ["MIT + file"]
+      identifier: tibble
+  - "data.table":
+      description: "Extension of 'data.frame'"
+      homepage: "https://cran.r-project.org/web/packages/data.table/index.html"
+      documentation: "https://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.html"
+      tool_dev_url: "https://github.com/Rdatatable/data.table"
+      doi: "10.32614/CRAN.package.data.table"
+      licence: ["MPL-2.0 + file"]
+      identifier: data.table
+  - "rtracklayer":
+      description: "R interface to genome annotation files and the UCSC genome browser"
+      homepage: "https://bioconductor.org/packages/devel/bioc/html/rtracklayer.html"
+      documentation: "https://bioconductor.org/packages/devel/bioc/vignettes/rtracklayer/inst/doc/rtracklayer.pdf"
+      tool_dev_url: "https://github.com/lawremi/rtracklayer"
+      doi: "10.1093/bioinformatics/btp328"
+      licence: ["Artistic-2.0 + file"]
+      identifier: rtracklayer
+input:
+  - - cager_obj:
+        type: file
+        description: |
+          CAGEr object containing annotated CAGE data, saved in RDS format.
+        pattern: "*.rds"
+  - - bsgenome_file:
+        type: file
+        description: Forged BSgenome package in tar.gz format.
+        pattern: "BSgenome.*.tar.gz"
+  - - bsgenome_name:
+        type: string
+        description: Name of an existing BSgenome package to use.
+  - - txdb:
+        type: file
+        description: TxDb object in SQLite format.
+        pattern: "*.sqlite"
+output:
+  rds:
+    - - "intermediate_cagerobj/normalized_clustered_cagexp.rds":
+          type: file
+          description: CAGEr object containing normalized and clustered CAGE data,
+            in RDS format.
+          pattern: "*.rds"
+  results:
+    - - "plots/*.pdf":
+          type: file
+          description: PDF plots generated during normalization and clustering.
+          pattern: "*.pdf"
+      - "plots/*.txt":
+          type: file
+          description: Text files generated during normalization and clustering.
+          pattern: "*.txt"
+      - "plots/*plot.rds":
+          type: file
+          description: RDS plot objects generated during normalization and
+            clustering.
+          pattern: "*.rds"
+  tracks:
+    - - "tracks/*.bw":
+          type: file
+          description: Raw and normalized CAGE signal tracks in bigWig format.
+          pattern: "*.bw"
+      - "tracks/*.bed":
+          type: file
+          description: BED file of tag cluster locations.
+          pattern: "*.bed"
+      - "tables/*.csv":
+          type: file
+          description: Consensus cluster expression per sample in CSV format.
+          pattern: "*.csv"
+  versions:
+    - - versions.yml:
+          type: file
+          description: File containing software versions.
+          pattern: "versions.yml"
+          ontologies:
+            - edam: http://edamontology.org/format_3750 # YAML
+authors:
+  - "@ferenckata"
+maintainers:
+  - "@ferenckata"
+containers:
+  docker:
+    linux/amd64:
+      name: community.wave.seqera.io/library/bioconductor-cager_bioconductor-genomicfeatures_r-biocmanager_r-dplyr_pruned:f9beb808f71e4139
+      build_id: bd-f9beb808f71e4139_1
+      scan_id: sc-dc6e7245525f75ff_1
+    linux/arm64:
+      name: community.wave.seqera.io/library/bioconductor-cager_bioconductor-genomicfeatures_r-biocmanager_r-dplyr_pruned:33b031f4f3087c89
+      build_id: bd-33b031f4f3087c89_1
+      scan_id: sc-86eca27ade8da12a_1
+  singularity:
+    linux/amd64:
+      name: oras://community.wave.seqera.io/library/bioconductor-cager_bioconductor-genomicfeatures_r-biocmanager_r-dplyr_pruned:900e2a35abbb91c6
+      build_id: bd-900e2a35abbb91c6_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/23/23193b56d3e81a11b9b23db31250aa040c7c158f8c346756d2c2a5569e9147dd/data
+    linux/arm64:
+      name: oras://community.wave.seqera.io/library/bioconductor-cager_bioconductor-genomicfeatures_r-biocmanager_r-dplyr_pruned:8ec638670894449c
+      build_id: bd-8ec638670894449c_1
+      https: https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f5/f54677b8d26e7efb17a611ff9508ab376d2b1a006c0cfe415c1a54d2a1e5223c/data
+  conda:
+    linux/amd64:
+      lock_file: modules/local/cager/processing/.conda-lock/linux_amd64-bd-f9beb808f71e4139_1.txt
+    linux/arm64:
+      lock_file: modules/local/cager/processing/.conda-lock/linux_arm64-bd-33b031f4f3087c89_1.txt

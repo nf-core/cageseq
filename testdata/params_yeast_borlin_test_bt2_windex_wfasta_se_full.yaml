@@ -1,0 +1,59 @@
+# pipeline parameters
+fullpipeline: true
+maponly: false
+cageronly: false
+gtf: "cageflow_test_data/sacCer3_genome/sacCer3.ensGene.gtf"
+
+# preprocessing parameters
+samplesheet:
+infolder: "cageflow_test_data/fastq/se"
+sample_name_fields: 2
+genome_name: "sacCer3"
+genome: "cageflow_test_data/sacCer3_genome/sacCer3.fa"
+index: "cageflow_test_data/sacCer3_genome/bowtie2"
+seq_platform: "illumina"
+seq_center: false
+# whether to take the uniquely mapped only
+unique_only: true
+# whether to remove reads that do not start with G
+remove_non_g: false
+# whether to trim G or not
+nogtrim: false
+# mapper to use
+bowtie2: true
+# dedup
+dedup: false
+
+# CAGEr parameters
+cager_sample_file: ../borlin_sample_list_test.csv
+# BSgenome
+forgeseed:
+sourcedir:
+bsgenome: "BSgenome.Scerevisiae.UCSC.sacCer3"
+# parameter for correlation calculation
+corrplot_tagCountThreshold: 1
+# parameters for normalization
+norm_range_min: 5
+norm_range_max: 10000
+norm_method: "powerLaw"
+alpha:
+t_norm: 1000000
+# parameters for tag clustering
+sample_num_thr: 1
+ctss_thr: 1
+distclu_maxDist: 20
+keepSingletonsAbove: 5
+iq_low: 0.1
+iq_high: 0.9
+# plotting for tagclusters QC
+iqw_tpm_threshold: 3
+tssregion_up: -3000
+tssregion_down: 3000
+tsslogo_upstream: 35
+# parameters for consensus clusters
+consensus_thr: 2
+consensus_dist: 100
+# parameters for enhancer calling
+cfBalanceThreshold: 0.95
+unexpressed: 0
+minSamples: 0

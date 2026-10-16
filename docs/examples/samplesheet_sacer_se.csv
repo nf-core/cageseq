@@ -1,0 +1,5 @@
+sample,fastq_1,fastq_2,single_end
+S1,testdata/sacCer_fastq/se/S1_S1_L001_R1_001.fastq.gz,,True
+S1,testdata/sacCer_fastq/se/S1_S1_L002_R1_001.fastq.gz,,True
+S2,testdata/sacCer_fastq/se/S2_S2_L001_R1_001.fastq.gz,,True
+S2,testdata/sacCer_fastq/se/S2_S2_L002_R1_001.fastq.gz,,True

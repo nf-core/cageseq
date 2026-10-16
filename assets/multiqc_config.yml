@@ -12,4 +12,20 @@ report_section_order:
 
 export_plots: true
 
+top_modules:
+  - fastqc:
+      name: "FastQC (raw)"
+      info: "shows the quality metrics of raw reads."
+      path_filters_exclude:
+        - "*_val_*"
+        - "*_trimmed_*"
+  - fastqc:
+      name: "FastQC (trimmed)"
+      info: "shows the quality metrics of trimmed reads."
+      path_filters:
+        - "*_val_*"
+        - "*_trimmed_*"
+  - cutadapt:
+      name: "Cutadapt"
+      info: "is used here to trim 5'-G."
 disable_version_detection: true

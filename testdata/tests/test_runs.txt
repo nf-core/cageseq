@@ -1,0 +1,37 @@
+# Standard SE
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file customcageq/testdata/tests/params_yeast_borlin_se_test.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test
+# Standard PE
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file customcageq/testdata/tests/params_danio_nepal_pe_test.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test
+
+# Infolder SE
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file customcageq/testdata/tests/params_yeast_borlin_se_test_infolder.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test
+# Infolder PE
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file customcageq/testdata/tests/params_danio_nepal_pe_test_infolder.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test
+
+# nogtrim = true: STAR, SE
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file customcageq/testdata/tests/params_yeast_borlin_se_test_nogtrim.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test
+# nogtrim = true: STAR, PE
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file customcageq/testdata/tests/params_danio_nepal_pe_test_nogtrim.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test
+
+# nogtrim = true: bowtie2, SE
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file customcageq/testdata/tests/params_yeast_borlin_se_test_nogtrim_bt2.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test && \
+rm -r results && \
+# nogtrim = true: bowtie2, PE
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file customcageq/testdata/tests/params_danio_nepal_pe_test_nogtrim_bt2.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test && \
+rm -r results && \
+
+# +dedup = true: bowtie2, SE
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file customcageq/testdata/tests/params_yeast_borlin_se_test_dedup_bt2.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test && \
+rm -r results && \
+# .dedup = true: bowtie2, index provided, PE
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file customcageq/testdata/tests/params_danio_nepal_pe_test_dedup_bt2.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test && \
+rm -r results
+# +dedup = true: bowtie2, index provided, SE
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file customcageq/testdata/tests/params_yeast_borlin_se_test_dedup_bt2_index.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test && \
+rm -r results
+# -dedup = true: bowtie2, PE
+
+# Standard SE, STAR index provided
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file ...customcageq/testdata/tests/params_yeast_borlin_se_test.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test
+# Standard PE, STAR index provided
+time ~/tools/nextflow/nextflow run customcageq/main.nf -params-file ...customcageq/testdata/tests/params_danio_nepal_pe_test.yaml -profile singularity -w /mnt/scratch/slava/work_nepal_test
