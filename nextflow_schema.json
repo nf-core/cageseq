@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/cageseq/main/nextflow_schema.json",
+    "$id": "https://raw.githubusercontent.com/nf-core/cageseq/master/nextflow_schema.json",
     "title": "nf-core/cageseq pipeline parameters",
     "description": "CAGE-sequencing analysis pipeline with trimming, alignment and counting of CAGE tags.",
     "type": "object",
@@ -221,7 +221,7 @@
                 },
                 "trace_report_suffix": {
                     "type": "string",
-                    "fa_icon": "far calendar",
+                    "fa_icon": "far fa-calendar",
                     "description": "Suffix to add to the trace report filename. Default is the date and time in the format yyyy-MM-dd_HH-mm-ss.",
                     "hidden": true
                 },
