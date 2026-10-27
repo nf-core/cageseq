@@ -1,0 +1,219 @@
+Changes in component 'nf-core/ucsc/wigtobigwig'
+Changes in 'ucsc/wigtobigwig/main.nf':
+--- modules/nf-core/ucsc/wigtobigwig/main.nf
++++ modules/nf-core/ucsc/wigtobigwig/main.nf
+@@ -5,35 +5,54 @@
+     // WARN: Version information not provided by tool on CLI. Please update version string below when bumping container versions.
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/03/0394161be68e8dd5b30a47f0b19ffa00cb3226bb2e6c9fe3ec89e571a50b871d/data' :
+-        'community.wave.seqera.io/library/ucsc-wigtobigwig:482--7b910cc21c32327e' }"
++        'https://depot.galaxyproject.org/singularity/ucsc-wigtobigwig:447--h2a80c09_1' :
++        'biocontainers/ucsc-wigtobigwig:447--h2a80c09_1' }"
+ 
+     input:
+     tuple val(meta), path(wig)
+-    path sizes
++    each path(sizes)
+ 
+     output:
+-    tuple val(meta), path("${prefix}.bw"), emit: bw
+-    tuple val("${task.process}"), val('ucsc'), val('482'), topic: versions, emit: versions_ucsc
+-    // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
++    tuple val(meta), path("*.bw"), emit: bw
++    path "versions.yml"          , emit: versions
+ 
+     when:
+     task.ext.when == null || task.ext.when
+ 
+     script:
+     def args = task.ext.args ?: ''
+-    prefix = task.ext.prefix ?: "${meta.id}"
++    def VERSION = '447' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
+     """
++     # Make a bigWig from the first wig
+     wigToBigWig \\
+         $args \\
+-        $wig \\
++        ${wig[0]} \\
+         $sizes \\
+-        ${prefix}.bw
++        ${wig[0]}.bw
++
++    # Make a bigWig from the second wig
++    wigToBigWig \\
++        $args \\
++        ${wig[1]} \\
++        $sizes \\
++        ${wig[1]}.bw
++
++    cat <<-END_VERSIONS > versions.yml
++    "${task.process}":
++        ucsc: $VERSION
++    END_VERSIONS
+     """
+ 
+     stub:
+-    prefix = task.ext.prefix ?: "${meta.id}"
++    def prefix = task.ext.prefix ?: "${meta.id}"
++    def VERSION = '447' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
+     """
+-    touch ${prefix}.bw
++    touch ${wig[0]}.bw
++    touch ${wig[1]}.bw
++
++    cat <<-END_VERSIONS > versions.yml
++    "${task.process}":
++        ucsc: $VERSION
++    END_VERSIONS
+     """
+ }
+
+Changes in 'ucsc/wigtobigwig/environment.yml':
+--- modules/nf-core/ucsc/wigtobigwig/environment.yml
++++ modules/nf-core/ucsc/wigtobigwig/environment.yml
+@@ -4,4 +4,4 @@
+   - conda-forge
+   - bioconda
+ dependencies:
+-  - bioconda::ucsc-wigtobigwig=482
++  - bioconda::ucsc-wigtobigwig=447
+
+Changes in 'ucsc/wigtobigwig/meta.yml':
+--- modules/nf-core/ucsc/wigtobigwig/meta.yml
++++ modules/nf-core/ucsc/wigtobigwig/meta.yml
+@@ -10,8 +10,7 @@
+         Convert ascii format wig file (in fixedStep, variableStep
+         or bedGraph format) to binary big wig format
+       homepage: http://www.genome.ucsc.edu/goldenPath/help/bigWig.html
+-      licence:
+-        - "varies; see http://genome.ucsc.edu/license"
++      licence: ["varies; see http://genome.ucsc.edu/license"]
+       identifier: ""
+ input:
+   - - meta:
+@@ -35,32 +34,18 @@
+           description: bigwig file
+           pattern: "*.{bw}"
+           ontologies: []
+-      - ${prefix}.bw:
++      - "*.bw":
+           type: file
+           description: bigwig file
+           pattern: "*.{bw}"
+           ontologies: []
+-  versions_ucsc:
+-    - - ${task.process}:
+-          type: string
+-          description: The name of the process
+-      - ucsc:
+-          type: string
+-          description: The name of the tool
+-      - "482":
+-          type: string
+-          description: The expression to obtain the version of the tool
+-topics:
+   versions:
+-    - - ${task.process}:
+-          type: string
+-          description: The name of the process
+-      - ucsc:
+-          type: string
+-          description: The name of the tool
+-      - "482":
+-          type: string
+-          description: The expression to obtain the version of the tool
++    - versions.yml:
++        type: file
++        description: File containing software versions
++        pattern: "versions.yml"
++        ontologies:
++          - edam: http://edamontology.org/format_3750 # YAML
+ authors:
+   - "@jianhong"
+   - "@projectoriented"
+
+'modules/nf-core/ucsc/wigtobigwig/tests/main.nf.test' is unchanged
+Changes in 'ucsc/wigtobigwig/tests/main.nf.test.snap':
+--- modules/nf-core/ucsc/wigtobigwig/tests/main.nf.test.snap
++++ modules/nf-core/ucsc/wigtobigwig/tests/main.nf.test.snap
+@@ -12,11 +12,7 @@
+                     ]
+                 ],
+                 "1": [
+-                    [
+-                        "UCSC_WIGTOBIGWIG",
+-                        "ucsc",
+-                        "482"
+-                    ]
++                    "versions.yml:md5,e99b51033a14e1602fe195965a109feb"
+                 ],
+                 "bw": [
+                     [
+@@ -27,20 +23,16 @@
+                         "test.bw:md5,b64af7003665dc51fae958216b06ed95"
+                     ]
+                 ],
+-                "versions_ucsc": [
+-                    [
+-                        "UCSC_WIGTOBIGWIG",
+-                        "ucsc",
+-                        "482"
+-                    ]
++                "versions": [
++                    "versions.yml:md5,e99b51033a14e1602fe195965a109feb"
+                 ]
+             }
+         ],
+-        "timestamp": "2026-02-16T09:50:37.235738",
+         "meta": {
+-            "nf-test": "0.9.4",
+-            "nextflow": "25.10.4"
+-        }
++            "nf-test": "0.8.4",
++            "nextflow": "24.04.4"
++        },
++        "timestamp": "2024-08-27T11:54:03.735102"
+     },
+     "test-ucsc-wigtobigwig-stub": {
+         "content": [
+@@ -55,11 +47,7 @@
+                     ]
+                 ],
+                 "1": [
+-                    [
+-                        "UCSC_WIGTOBIGWIG",
+-                        "ucsc",
+-                        "482"
+-                    ]
++                    "versions.yml:md5,e99b51033a14e1602fe195965a109feb"
+                 ],
+                 "bw": [
+                     [
+@@ -70,19 +58,15 @@
+                         "test.bw:md5,d41d8cd98f00b204e9800998ecf8427e"
+                     ]
+                 ],
+-                "versions_ucsc": [
+-                    [
+-                        "UCSC_WIGTOBIGWIG",
+-                        "ucsc",
+-                        "482"
+-                    ]
++                "versions": [
++                    "versions.yml:md5,e99b51033a14e1602fe195965a109feb"
+                 ]
+             }
+         ],
+-        "timestamp": "2026-02-16T09:50:41.464164",
+         "meta": {
+-            "nf-test": "0.9.4",
+-            "nextflow": "25.10.4"
+-        }
++            "nf-test": "0.8.4",
++            "nextflow": "24.04.4"
++        },
++        "timestamp": "2024-08-27T11:54:07.924401"
+     }
+ }
+************************************************************

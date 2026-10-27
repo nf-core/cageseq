@@ -1,0 +1,61 @@
+nextflow_process {
+
+    name "Test Process CAGER_READIN"
+    script "../main.nf"
+    process "CAGER_READIN"
+
+    tag "modules"
+    tag "cager_readin"
+
+    test("hsapiens - bigwig - BSgenome package - single_end") {
+
+        when {
+            process {
+                """
+                def bw_str1 = file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bigwig/test_S2.RPKM.bw', checkIfExists: true)
+                input[0] = []
+                input[1] = "BSgenome.Hsapiens.UCSC.hg38"
+                input[2] = "[cage1, false, \${bw_str1.name}, ,cage1]"
+                input[3] = "bigwig"
+                input[4] = [bw_str1]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.rds.size() == 1 },
+                { assert file(process.out.rds[0]).name.endsWith('.rds') },
+                { assert snapshot(process.out.versions).match() }
+            )
+        }
+
+    }
+
+    test("hsapiens - bigwig - BSgenome package - single_end - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = []
+                input[1] = "BSgenome.Hsapiens.UCSC.hg38"
+                input[2] = "[cage1, false, cage1.str1.bw, ,cage1]"
+                input[3] = "bigwig"
+                input[4] = []
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+}

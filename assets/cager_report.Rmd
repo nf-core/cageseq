@@ -1,0 +1,234 @@
+---
+date: "Date: `r Sys.Date()`"
+output:
+    html_document:
+        toc: true
+        toc_depth: 3
+        toc_float: true
+        theme: cerulean
+geometry: margin = 2cm
+---
+
+# Results of CAGEr analysis
+
+## Raw reads
+These QC plots show the status before normalization or filtering.
+
+### Tag region annotation
+Annotation of raw tags per samples.
+Note: tags are not filtered or normalized yet.
+It is expected to see more intergenic reads here than after filtering and clustering which removes much of the noise.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+options(warn=-1)
+sampleNs <- unname(CAGEr::sampleLabels(ce))
+tagannot_plot <- readRDS("tag_region_annotation_plot.rds")
+tagannot_plot + ggplot2::xlim(rev(levels(factor(sampleNs))))
+```
+
+### Correlation of samples at raw tag count level
+Correlation of samples by the raw tag counts above the user defined threshold (corrplot_tagCountThreshold).
+Note: these are not filtered or normalized yet. The plot is for diagnostic purposes, such as highlighting batch effects.
+Note #2: the main correlation is shown on the top-right ot bottom-left diagonal due to the behaviour of the underlying `gplots::heatmap.2` function.
+The corrplot_tagCountThreshold is shared across correlation plots.
+For a higher resolution plot, visit the `pdf` file saved in the results/cager/plots folder.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+print(paste0("The current corrplot_tagCountThreshold value is: ", corrplot_tagCountThreshold))
+
+corr_m <- readRDS("CTSS_correlations_matrix.rds")
+sample_size <- dim(corr_m)[1]
+heatmap_cex <- sample_size^(-0.2)
+hm_plot <- readRDS("CTSS_correlations_plot.rds")
+eval(hm_plot$call)
+```
+
+## Normalization
+Next, the tag counts are normalized.
+
+### Power-law distributions
+Number of CAGE tags versus number of TSS supported by at least as many tags should follow the power-law distribution.
+The power-law distribution is fitted in the range between the two dotted lines.
+The positions of the dotted lines are modifiable by user with norm_range_min and norm_range_max parameters.
+The total number of tags (t_norm) defaults to 1000000 which corresponds to TPM, but in cases of very deep sequencing this should be adjusted.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+print(paste0("The current norm_range_min value is: ", norm_range_min))
+print(paste0("The current norm_range_max value is: ", norm_range_max))
+print(paste0("The current normalization method (norm_method) is: ", norm_method))
+print(paste0("The current t_norm value is: ", t_norm))
+print(paste0("The user provided alpha value is: ", alpha, ". If this value if None, the calculated value shown on the plot is used for normalization. Note: this value cannot be less than 1.05, if the user provides a lower value the code automatically assumes 1.05."))
+
+revc_plot <- readRDS("reverse_cumulative_plot.rds")
+revc_plot
+```
+
+### Correlations of samples at normalized tag count level
+Correlation of samples by the normalized tag counts above the user defined threshold (corrplot_tagCountThreshold).
+Normalization should have removed batch effects to some extent.
+Note: the main correlation is shown on the top-right ot bottom-left diagonal due to the behaviour of the underlying `gplots::heatmap.2` function.
+The corrplot_tagCountThreshold is shared across correlation plots.
+For a higher resolution plot, visit the `pdf` file saved in the results/cager/plots folder.
+
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+print(paste0("The current corrplot_tagCountThreshold value is: ", corrplot_tagCountThreshold))
+
+corr_m <- readRDS("norm_CTSS_correlations_matrix.rds")
+sample_size <- dim(corr_m)[1]
+heatmap_cex <- sample_size^(-0.2)
+hm_plot <- readRDS("norm_CTSS_correlations_plot.rds")
+eval(hm_plot$call)
+```
+
+### PCA plot of normalized tag counts of samples
+PCA was run on all samples, using the top 500 (if less than 500 is available, all are used) most variable normalized tag counts.
+The variance explained by each PC is shown in the brackets.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+pca_plot <- readRDS("CTSS_pca_plot.rds")
+pca_plot
+```
+
+## Tag clustering
+After normalization, the tag clusters are identified with the following parameters.
+Before clustering, low expressed CTSS are filtered by the user defined thresholds: sample_num_thr and ctss_thr.
+By default, these values are 1 sample and 1 TPM meaning that the high-fidelity TSSs are supported by at least 1 normalized tag counts in any of the samples.
+
+The clustering is done using the distclu method, which is a distance based method.
+The max distance is a user defined parameter called distclu_maxDist for this approach.
+
+With the keepSingletonsAbove parameter, the user can decide the tpm threshold above which even a single CTSS is kept.
+
+The iq_low and iq_high parameters are used to define the lower and upper quantile boundaries of the interquartile range within which the majority of the signal lies.
+
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+print(paste0("The current sample_num_thr value is: ", sample_num_thr))
+print(paste0("The current ctss_thr value is: ", ctss_thr))
+print(paste0("The current distclu_maxDist value is: ", distclu_maxDist))
+print(paste0("The current keepSingletonsAbove value is: ", keepSingletonsAbove))
+
+print(paste0("The current iq_low value is: ", iq_low))
+print(paste0("The current iq_high value is: ", iq_high))
+```
+
+### Tag cluster interquartile width
+Interquartile width distribution in each sample, for tag clusters passing the iqw_tpm_threshold set by the user.
+A sequencing library of sufficient depth shows two types of tag clusters: narrow and wide.
+In low depth cases, the wider type might be lacking which flags low quality data.
+
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+print(paste0("The current iqw_tpm_threshold value is: ", iqw_tpm_threshold))
+
+iqw_plot <- readRDS("interquartile_width_tagclusters_plot.rds")
+iqw_plot
+```
+
+### Number of tag clusters per sample
+This plot shows the number of tag clusters identified in each sample.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+tag_clusters_count_plot <- readRDS("tag_clusters_counts_plot.rds")
+tag_clusters_count_plot
+```
+
+### Tag cluster annotation
+ChIPseeker annotation of genomic regions of tag clusters.
+Note: the region labels are extracted from a TxDb generated from GTF file provided by the user.
+You may find this file in results/txdb folder.
+Two parameters should be defined for the annotation: tssregion_up and tssregion_down.
+These correspond to the upstream and downstream distance to consider into TSS region for ChIPseeker annotation.
+tssregion_up should be negative, tssregion_down should be positive.
+Note: these parameters are shared with enhancer annotation.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+print(paste0("The current tssregion_up value is: ", tssregion_up))
+print(paste0("The current tssregion_down value is: ", tssregion_down))
+
+sampleNs <- unname(CAGEr::sampleLabels(ce))
+chta_plot <- readRDS("chipseeker_tagCluster_annotation_plot.rds")
+chta_plot + ggplot2::xlim(rev(levels(factor(sampleNs))))
+```
+
+### Dinucleotide frequencies in tagclusters weighted by expression (tpm)
+Expression-level-aware dinucleotide frequencies at dominant TSSs of tag clusters.
+Dinulceotides are sorted by frequencies at the first sample in alphabetical order.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+dinucl_plot <- readRDS("dinucleotide_frequencies_plot.rds")
+dinucl_plot + ggplot2::theme(
+    text=ggplot2::element_text(size=5),
+    axis.text.x = ggplot2::element_text(angle = 90, size=5),
+    axis.text.y = ggplot2::element_text(size=5))
+```
+
+### TSS region logos
+Not inlcuded in this report, but saved separately in the results/cager/plots folder are the TSS region logos of the tag clusters of each sample that are annotated as promoters.
+The number of bases to inlcude upstream of the TSS is provided by the user with the tsslogo_upstream parameter.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+print(paste0("The current tsslogo_upstream value is: ", tsslogo_upstream))
+```
+
+## Consensus clustering
+To compare the activity of tag clusters between samples, consensus clusters are defined.
+Consensus clusters are clusters aggregated from tag clusters of different samples which are in close vicinity and pass a tpm threshold.
+The maximum distance between the interquartile ranges of tag clusters and TPM thresholds can be set by the user with the consensus_dist and consensus_thr parameters.
+
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+print(paste0("The current consensus_dist value is: ", consensus_dist))
+print(paste0("The current consensus_thr value is: ", consensus_thr))
+```
+
+### Number of non-zero consensus clusters
+This plot shows the number of non zero consensus clusters per sample, as well as the total number of consensus clusters (union).
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+cc_plot <- readRDS("consensus_counts_plot.rds")
+cc_plot
+```
+
+### Consensus cluster PCA
+PCA calculated on the TPM values of the top 500 most variable consensus clusters across samples.
+The variance explained by each PC is shown in the brackets.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+ccp_plot <- readRDS("consensus_clusters_pca_plot.rds")
+ccp_plot
+```
+
+## Enhancer calling
+The sites with balanced bidirectional transcription are identified as enhancer regions.
+The balance threshold is a user defined parameter (cfBalanceThreshold).
+The normalized TPM values of the CTSS are used as input to enhancer calling.
+The threshold for TPM values is set by the user with the unexpressed parameter.
+Enhancers are called by pooling all CTSS values, but only those enhancers are kept that has support in more than a user defined number of samples (minSamples).
+To ensure that promoter regions does not get confused with enhancer regions, any enhancer region overlapping consensus clusters is removed.
+
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+print(paste0("The current cfBalanceThreshold value is: ", cfBalanceThreshold))
+print(paste0("The current unexpressed value is: ", unexpressed))
+print(paste0("The current minSamples value is: ", minSamples))
+```
+
+### Number of active enhancers per sample
+This plot shows the number of active enhancers per sample, as well as the total number of identified enhancers (union).
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+enh_count_plot <- readRDS("enhancer_count_per_sample_plot.rds")
+enh_count_plot
+```
+
+### Annotation of enhancers
+Two parameters should be defined for the annotation: tssregion_up and tssregion_down.
+These correspond to the upstream and downstream distance to consider into TSS region for ChIPseeker annotation.
+tssregion_up should be negative, tssregion_down should be positive.
+Note: these parameters are shared with tag cluster annotation.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+print(paste0("The current tssregion_up value is: ", tssregion_up))
+print(paste0("The current tssregion_down value is: ", tssregion_down))
+
+enh_annot_plot <- readRDS("chipseeker_enhancer_annotation_plot.rds")
+enh_annot_plot
+```
+
+### Enhancer PCA
+PCA calculated on the TPM values of the top 500 (if less than 500 is available, all are used) most variable enhancers across samples.
+The variance explained by each PC is shown in the brackets.
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+enh_p_plot <- readRDS("enhancer_expression_pca_plot.rds")
+enh_p_plot
+```
+
+### Session info
+```{r eval=TRUE, include=TRUE, echo=FALSE}
+sessionInfo()
+```

@@ -1,0 +1,61 @@
+# pipeline parameters
+fullpipeline: false
+maponly: true
+cageronly: false
+gtf: "cageflow_test_data/danRer11_genome/danRer11.ensGene.gtf"
+
+# preprocessing parameters
+samplesheet:
+infolder: "/mnt/biggley/home/slava/projects/leancage_dev/cageflow_test_data/fastq/pe"
+sample_name_fields: 2
+genome_name: "danRer11"
+fasta: "cageflow_test_data/danRer11_genome/danRer11.fa"
+index: "danio_bowtie2_index/bowtie2"
+seq_platform: "illumina"
+seq_center: false
+# whether to take the uniquely mapped only
+unique_only: true
+# whether to remove reads that do not start with G
+remove_non_g: true
+# whether to trim G or not
+nogtrim: true
+# mapper to use
+bowtie2: true
+# dedup
+dedup: false
+
+# CAGEr parameters
+cager_sample_file: ../nepal_sample_list_test.csv
+# datatype: "bam" or "bigwig". if bowtie2 is used, it will be set to bam
+datatype:
+# BSgenome
+forgeseed:
+sourcedir:
+bsgenome: "BSgenome.Drerio.UCSC.danRer11"
+# parameter for correlation calculation
+corrplot_tagCountThreshold: 1
+# parameters for normalization
+norm_range_min: 5
+norm_range_max: 10000
+norm_method: "powerLaw"
+alpha:
+T_norm: 1000000
+# parameters for tag clustering
+sample_num_thr: 1
+ctss_thr: 1
+distclu_maxDist: 20
+keepSingletonsAbove: 5
+iq_low: 0.1
+iq_high: 0.9
+# plotting for tagclusters QC
+iqw_tpm_threshold: 3
+tssregion_up: -3000
+tssregion_down: 3000
+tsslogo_upstream: 35
+# parameters for consensus clusters
+consensus_thr: 2
+consensus_dist: 100
+# parameters for enhancer calling
+cfBalanceThreshold: 0.95
+unexpressed: 0
+minSamples: 0

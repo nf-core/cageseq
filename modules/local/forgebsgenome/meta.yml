@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "forgebsgenome"
+description: Forge a BSgenome data package from a seed file and a directory of sequences.
+keywords:
+  - BSgenome
+  - genome
+  - bioconductor
+tools:
+  - "BSgenome":
+      description: "Software infrastructure for efficient representation of full genomes and their SNPs"
+      homepage: "https://bioconductor.org/packages/release/bioc/html/BSgenome.html"
+      documentation: "https://bioconductor.org/packages/release/bioc/vignettes/BSgenomeForge/inst/doc/QuickBSgenomeForge.html"
+      tool_dev_url: "https://github.com/Bioconductor/BSgenome"
+      doi: "10.18129/B9.bioc.BSgenome"
+      licence: ["Artistic-2.0"]
+      identifier: bioconductor-bsgenome
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy map containing metadata, e.g. [ id:'genome' ]
+    - forge_seed:
+        type: file
+        description: BSgenome seed file describing the genome package to forge.
+        pattern: "*.txt"
+  - seqs_srcdir:
+      type: directory
+      description: Directory containing the chromosome sequence FASTA files.
+
+output:
+  - tarball:
+      - meta:
+          type: map
+          description: Groovy map containing metadata.
+      - "*.tar.gz":
+          type: file
+          description: The forged BSgenome R package as a source tarball.
+          pattern: "*.tar.gz"
+  - check_results:
+      - meta:
+          type: map
+          description: Groovy map containing metadata.
+      - "*.Rcheck":
+          type: directory
+          description: R CMD check output directory.
+          pattern: "*.Rcheck"
+  - versions:
+      - versions.yml:
+          type: file
+          description: YAML file containing versions of tools used in the module
+
+authors:
+  - "@sidorov-si"
+maintainers:
+  - "@sidorov-si"

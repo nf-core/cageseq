@@ -1,0 +1,5 @@
+id,single_end,path,new_name
+S10,false,[cageflow_test_data/bigwig/pe/S10.Signal.Unique.str1.out.wig.bw cageflow_test_data/bigwig/pe/S10.Signal.Unique.str2.out.wig.bw],S1011
+S11,false,[cageflow_test_data/bigwig/pe/S11.Signal.Unique.str1.out.wig.bw cageflow_test_data/bigwig/pe/S11.Signal.Unique.str2.out.wig.bw],S1011
+S14,false,[cageflow_test_data/bigwig/pe/S14.Signal.Unique.str1.out.wig.bw cageflow_test_data/bigwig/pe/S14.Signal.Unique.str2.out.wig.bw],S14
+S15,false,[cageflow_test_data/bigwig/pe/S15.Signal.Unique.str1.out.wig.bw cageflow_test_data/bigwig/pe/S15.Signal.Unique.str2.out.wig.bw],

@@ -1,0 +1,62 @@
+# pipeline parameters
+fullpipeline: true
+maponly: false
+cageronly: false
+gtf: "nfcore_testdata/results/seq_dir/sacCer3chrIII.gtf"
+
+# preprocessing parameters
+input: "/mnt/biggley/home/slava/projects/leancage_dev/nfcore_testdata/results/se_chriii_samplesheet.csv"
+infolder:
+outdir: "results_chriii"
+sample_name_fields: 1
+genome_name: "sacCer3chrIII"
+genome: "nfcore_testdata/results/seq_dir/sacCer3chrIII.fa"
+index:
+seq_platform: "illumina"
+seq_center: false
+# whether to take the uniquely mapped only
+unique_only: true
+# whether to remove reads that do not start with G
+remove_non_g: false
+# whether to trim G or not
+nogtrim: false
+# mapper to use
+bowtie2: false
+# dedup
+dedup: false
+
+# CAGEr parameters
+cager_sample_file: ../chriii_sample_list_test.csv
+# datatype: "bam" or "bigwig". if bowtie2 is used, it will be set to bam
+datatype: "bigwig"
+# BSgenome
+forgeseed:
+sourcedir:
+bsgenome: "/mnt/biggley/home/slava/projects/leancage_dev/nfcore_testdata/results/BSgenome.sacCer3ChrIII.Sidorov.sacCer3ChrIII_1.0.tar.gz"
+# parameter for correlation calculation
+corrplot_tagCountThreshold: 1
+# parameters for normalization
+norm_range_min: 5
+norm_range_max: 10000
+norm_method: "powerLaw"
+alpha:
+t_norm: 10000
+# parameters for tag clustering
+sample_num_thr: 1
+ctss_thr: 1
+distclu_maxDist: 20
+keepSingletonsAbove: 2
+iq_low: 0.1
+iq_high: 0.9
+# plotting for tagclusters QC
+iqw_tpm_threshold: 3
+tssregion_up: -3000
+tssregion_down: 3000
+tsslogo_upstream: 20
+# parameters for consensus clusters
+consensus_thr: 2
+consensus_dist: 20
+# parameters for enhancer calling
+cfBalanceThreshold: 0.95
+unexpressed: 0
+minSamples: 0

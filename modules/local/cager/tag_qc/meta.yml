@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "cager_tag_qc"
+description: Annotate CTSS against a TxDb and perform initial quality control on a CAGEr object.
+keywords:
+  - CAGE
+  - annotation
+  - QC
+tools:
+  - "CAGEr":
+      description: "Analysis of CAGE (Cap Analysis of Gene Expression) sequencing data for precise mapping of transcription start sites and promoterome mining"
+      homepage: "https://www.bioconductor.org/packages/release/bioc/html/CAGEr.html"
+      documentation: "https://www.bioconductor.org/packages/release/bioc/vignettes/CAGEr/inst/doc/CAGEexp.html"
+      tool_dev_url: "https://github.com/charles-plessy/CAGEr"
+      doi: "10.18129/B9.bioc.CAGEr"
+      licence: ["GPL-3"]
+      identifier: cager
+  - "GenomicFeatures":
+      description: "Query the gene models of a given organism/assembly"
+      homepage: "https://bioconductor.org/packages/devel/bioc/html/GenomicFeatures.html"
+      documentation: "https://bioconductor.org/packages/devel/bioc/vignettes/GenomicFeatures/inst/doc/GenomicFeatures.html"
+      tool_dev_url: "https://github.com/Bioconductor/GenomicFeatures"
+      doi: "10.1371/journal.pcbi.1003118"
+      licence: ["Artistic-2.0"]
+      identifier: genomicfeatures
+  - "gplots":
+      description: "Various R Programming Tools for Plotting Data"
+      homepage: "https://cran.r-project.org/web/packages/gplots/index.html"
+      documentation: "https://cran.r-project.org/web/packages/gplots/refman/gplots.html"
+      tool_dev_url: "https://github.com/talgalili/gplots"
+      doi: "10.32614/CRAN.package.gplots"
+      licence: ["GPL-2"]
+      identifier: gplots
+  - "ggplot2":
+      description: "Create Elegant Data Visualisations Using the Grammar of Graphics"
+      homepage: "https://cran.r-project.org/web/packages/ggplot2/index.html"
+      documentation: "https://ggplot2.tidyverse.org/"
+      tool_dev_url: "https://github.com/tidyverse/ggplot2/"
+      doi: "10.32614/CRAN.package.gplots"
+      licence: ["MIT + file"]
+      identifier: ggplot2
+  - "ggseqlogo":
+      description: "A 'ggplot2' Extension for Drawing Publication-Ready Sequence Logos"
+      homepage: "https://cran.r-project.org/web/packages/ggseqlogo/index.html"
+      documentation: "https://cran.r-project.org/web/packages/ggseqlogo/refman/ggseqlogo.html"
+      tool_dev_url: "https://github.com/omarwagih/ggseqlogo"
+      doi: "10.32614/CRAN.package.ggseqlogo"
+      licence: ["LGPL-2 | LGPL-2.1 | LGPL-3"]
+      identifier: ggseqlogo
+input:
+  - cager_obj:
+      type: file
+      description: |
+        Path to a CAGEr object file containing initial CAGE data.
+        The CAGEr object should be saved in RDS format.
+      pattern: "*{.rds}"
+  - txdb:
+      type: file
+      description: |
+        A TxDb object in SQLite format
+  - bsgenome_file:
+      type: file
+      description: The forged BSgenome package in tar.gz format.
+      pattern: "BSgenome.*.tar.gz"
+  - bsgenome_name:
+      type: val
+      description: Name of an existing BSgenome package to use.
+output:
+  cager_rds:
+    - "intermediate_cagerobj/annotated_cagexp.rds":
+        type: file
+        description: |
+          Path to a CAGEr object file containing annotated CAGE data.
+  correlation_rds:
+    - "plots/*correlations_matrix.rds":
+        type: file
+        description: |
+          Path to a R object containing sample tag correlation matrix.
+  plots:
+    - "plots/*.pdf":
+        type: file
+        description: |
+          Path to a directory containing various plots generated during the annotation and QC process.
+    - "plots/*.plot.rds":
+        type: file
+        description: |
+          Path to a directory containing R objects of the plots generated during the annotation and QC process.
+  versions:
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+        ontologies:
+          - edam: http://edamontology.org/format_3750 # YAML
+authors:
+  - "@ferenckata"
+maintainers:
+  - "@ferenckata"

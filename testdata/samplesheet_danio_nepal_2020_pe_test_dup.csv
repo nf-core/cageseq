@@ -1,0 +1,9 @@
+sample,fastq_1,fastq_2,single_end
+S10,cageflow_test_data/fastq/pe/S10_L001_R1.fastq.gz,cageflow_test_data/fastq/pe/S10_L001_R2.fastq.gz,False
+S10,cageflow_test_data/fastq/pe/S10_L002_R1.fastq.gz,cageflow_test_data/fastq/pe/S10_L002_R2.fastq.gz,False
+S11,cageflow_test_data/fastq/pe/S11_L001_R1.fastq.gz,cageflow_test_data/fastq/pe/S11_L001_R2.fastq.gz,False
+S11,cageflow_test_data/fastq/pe/S11_L002_R1.fastq.gz,cageflow_test_data/fastq/pe/S11_L002_R2.fastq.gz,False
+S14,cageflow_test_data/fastq/pe/S14_L001_R1.fastq.gz,cageflow_test_data/fastq/pe/S14_L001_R2.fastq.gz,False
+S14,cageflow_test_data/fastq/pe/S14_L002_R1.fastq.gz,cageflow_test_data/fastq/pe/S14_L002_R2.fastq.gz,False
+S15,cageflow_test_data/fastq/pe/S15_L001_R1.fastq.gz,cageflow_test_data/fastq/pe/S15_L001_R2.fastq.gz,False
+S15,cageflow_test_data/fastq/pe/S15_L002_R1.fastq.gz,cageflow_test_data/fastq/pe/S15_L002_R2.fastq.gz,False
