@@ -72,7 +72,7 @@ workflow PIPELINE_INITIALISATION {
     https://doi.org/10.1038/s41587-020-0439-x
 
 * Software dependencies
-    https://github.com/nf-core/cageseq/blob/master/CITATIONS.md
+    https://github.com/nf-core/cageseq/blob/main/CITATIONS.md
 """
     if (monochrome_logs) {
         before_text = before_text.replaceAll(/\033\[[0-9;]*m/, '')
@@ -90,6 +90,7 @@ workflow PIPELINE_INITIALISATION {
         before_text,
         after_text,
         command,
+        null,
         null
     )
 
