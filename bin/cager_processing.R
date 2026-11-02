@@ -105,6 +105,11 @@ option_list = list(
         default = "true",
         help = "Whether ctss_thr is in normalized tpm ('true', default) or in raw tag counts ('false'). Passed to the thresholdIsTpm argument of CAGEr::filterLowExpCTSS()"),
     make_option(
+        c("-S", "--sort_samples"),
+        type = "character",
+        default = "false",
+        help = "If 'true', samples are shown in natural order in the plots; otherwise in the order of the sample list (Default = false)"),
+    make_option(
         c("-f", "--cons_full_span"),
         type = "character",
         default = "false",
@@ -157,6 +162,7 @@ consensus_thr       <- opt$consensus_thr
 consensus_dist      <- opt$consensus_dist
 cons_full_span      <- tolower(as.character(opt$cons_full_span)) %in% c("true", "t", "yes", "1")
 threshold_is_tpm    <- tolower(as.character(opt$threshold_is_tpm)) %in% c("true", "t", "yes", "1")
+sort_samples        <- tolower(as.character(opt$sort_samples)) %in% c("true", "t", "yes", "1")
 tx_annotation       <- opt$annotation
 project_dir         <- opt$project_dir
 bsgenome            <- opt$bsgenome
@@ -208,7 +214,8 @@ ce <- cager_clustering(
     iqw_tpm_threshold=iqw_tpm_threshold,
     num_core=num_core,
     iqlow=iqlow,
-    iqhigh=iqhigh)
+    iqhigh=iqhigh,
+    sort_samples=sort_samples)
 
 # Consensus clustering of clustered CTSS
 

@@ -90,7 +90,12 @@ option_list = list(
         c("-T", "--threshold_is_tpm"),
         type = "character",
         default = "true",
-        help = "Whether ctss_thr is in normalized tpm ('true', default) or in raw tag counts ('false'), as in the pre-clustering filter")
+        help = "Whether ctss_thr is in normalized tpm ('true', default) or in raw tag counts ('false'), as in the pre-clustering filter"),
+    make_option(
+        c("-O", "--sort_samples"),
+        type = "character",
+        default = "false",
+        help = "If 'true', samples are shown in natural order in the plots; otherwise in the order of the sample list (Default = false)")
 )
 
 message("; Reading arguments from command line.")
@@ -112,6 +117,7 @@ corrplot_tagCountThreshold <- opt$corrplot_tagCountThreshold
 ctss_thr        <- opt$ctss_thr
 sample_num_thr  <- opt$sample_num_thr
 threshold_is_tpm <- tolower(as.character(opt$threshold_is_tpm)) %in% c("true", "t", "yes", "1")
+sort_samples    <- tolower(as.character(opt$sort_samples)) %in% c("true", "t", "yes", "1")
 
 # installing BSgenome
 source(file.path(project_dir, "bin/install_bsgenome.R"))
@@ -270,7 +276,8 @@ tryCatch({
         ce, reference_name, qLow = iqlow, qUp = iqhigh)
     dinuclfreq_plot <- plot_dinucleotide_frequency(
         weigthed_dinuc_vals_df,
-        title = NULL)
+        title = NULL,
+        sort_samples = sort_samples)
     save_plot(
         "dinucleotide_frequencies_plot.pdf",
         dinuclfreq_plot
@@ -295,7 +302,8 @@ tryCatch({
         threshold_is_tpm = threshold_is_tpm)
     dinuclfreq_all_plot <- plot_dinucleotide_frequency(
         weigthed_dinuc_vals_all_df,
-        title = NULL)
+        title = NULL,
+        sort_samples = sort_samples)
     save_plot(
         "dinucleotide_frequencies_all_tss_plot.pdf",
         dinuclfreq_all_plot
@@ -330,7 +338,8 @@ sample_cons_ctss_count[["Union"]] <- dim(consclustTpm)[1]
 consensus_ctss_plot <- plot_number_of_tag_clusters(
     sample_tag_count=sample_cons_ctss_count,
     yaxistitle="Number of non-zero consensus clusters",
-    mytitle="Non-zero consensus clusters per sample and their union")
+    mytitle="Non-zero consensus clusters per sample and their union",
+    sort_samples=sort_samples)
 save_plot(
     "consensus_counts_plot.pdf",
     consensus_ctss_plot)

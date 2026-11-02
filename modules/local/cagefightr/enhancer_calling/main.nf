@@ -27,6 +27,7 @@ process CAGEFIGHTR_ENHANCER_CALLING {
         --minSamples ${params.minSamples} \
         --tssregion_up ${params.tssregion_up} \
         --tssregion_down ${params.tssregion_down} \
+        --sort_samples ${params.sort_samples} \
         --project_dir ${projectDir}
 
     cat <<-END_VERSIONS > versions.yml

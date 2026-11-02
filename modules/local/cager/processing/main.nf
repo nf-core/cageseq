@@ -44,6 +44,7 @@ process CAGER_PROCESSING {
         --consensus_thr ${params.consensus_thr} \
         --consensus_dist ${params.consensus_dist} \
         --cons_full_span ${params.cons_full_span} \
+        --sort_samples ${params.sort_samples} \
         --annotation ${txdb} \
         --project_dir ${projectDir} \
         --bsgenome \${bsgenome} \

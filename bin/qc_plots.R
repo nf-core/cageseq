@@ -12,21 +12,9 @@ for (lib in required.libraries) {
     suppressPackageStartupMessages(library(lib, character.only=TRUE, quietly = T))
 }
 
-# Natural (numeric-aware) ordering of sample names, e.g. S1, S2, ..., S9, S10,
-# S11 rather than the lexicographic S1, S10, S11, S2, ... Implemented in base R
-# (no extra dependency) by zero-padding every run of digits to a common width
-# so that ordinary lexicographic ordering of the padded key is the natural one.
-natural_sort <- function(x) {
-    x <- as.character(x)
-    digit_runs <- regmatches(x, gregexpr("[0-9]+", x))
-    all_digits <- unlist(digit_runs)
-    pad_width <- if (length(all_digits)) max(nchar(all_digits)) else 0L
-    key <- x
-    regmatches(key, gregexpr("[0-9]+", key)) <- lapply(
-        digit_runs,
-        function(d) formatC(as.integer(d), width = pad_width, flag = "0"))
-    x[order(key)]
-}
+# natural_sort() and order_samples() (sample order in the plots) live in
+# bin/sample_order.R; project_dir is set by every script before sourcing this file.
+source(file.path(project_dir, "bin/sample_order.R"))
 
 plot_settings <- function(.data, y_value, color_by_value, y_label, title, y_value_max) {
     .data %>% ggplot(aes(
@@ -53,15 +41,16 @@ plot_number_of_tag_clusters <- function(
     sample_tag_count,
     yaxistitle,
     mytitle,
-    myfilename) {
+    myfilename,
+    sort_samples = FALSE) {
     sample_tag_count_table <- tibble::enframe(
         sample_tag_count,
         name = "Sample",
         value = "count") %>%
         tidyr::unnest(cols=count)
-    # Order the samples naturally on the x axis (S1, S2, ..., S10, ...) and
-    # always put the "Union" summary column last, whatever the sample names are.
-    sample_levels <- natural_sort(unique(sample_tag_count_table$Sample))
+    # Order the samples on the x axis (user's order, or natural order when
+    # sort_samples is TRUE) and always put the "Union" summary column last.
+    sample_levels <- order_samples(unique(sample_tag_count_table$Sample), sort_samples)
     sample_levels <- c(
         setdiff(sample_levels, "Union"),
         intersect(sample_levels, "Union"))

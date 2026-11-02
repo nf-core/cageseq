@@ -27,6 +27,7 @@ process CAGER_READIN {
         --data_type "${data_type}" \
         --bsgenome \${bsgenome} \
         --sample_table_list "${sample_table}" \
+        --sort_samples ${params.sort_samples} \
         --project_dir ${projectDir} \
         --num_core ${task.cpus}
 

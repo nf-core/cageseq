@@ -41,7 +41,8 @@ process CAGER_TAGCLUSTER_QC {
         --corrplot_tagCountThreshold ${params.corrplot_tagCountThreshold} \
         --ctss_thr ${params.ctss_thr} \
         --threshold_is_tpm ${params.threshold_is_tpm} \
-        --sample_num_thr ${params.sample_num_thr}
+        --sample_num_thr ${params.sample_num_thr} \
+        --sort_samples ${params.sort_samples}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

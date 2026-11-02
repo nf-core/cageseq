@@ -42,6 +42,8 @@ sample_num_thr: 1
 ctss_thr: 1
 # whether ctss_thr is in TPM (true) or in raw tag counts (false)
 threshold_is_tpm: true
+# whether to sort samples naturally in the report plots (true) or keep the sample sheet / sample list order (false)
+sort_samples: false
 distclu_maxDist: 20
 keepSingletonsAbove: 5
 iq_low: 0.1

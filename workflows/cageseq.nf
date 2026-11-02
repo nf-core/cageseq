@@ -15,6 +15,7 @@ include { RELATIVISATION } from '../modules/local/relativisation/main.nf'
 
 // pipeline subworkflows and modules
 include { PARAMETER_CHECKS } from '../subworkflows/local/parameter_checks/main.nf'
+include { amendSampleNames; fixSampleName } from '../subworkflows/local/sample_names/main.nf'
 include { PREPROCESSING } from '../subworkflows/local/preprocessing/main.nf'
 include { PREPARE_MAPPING_METADATA } from '../subworkflows/local/prepare_mapping_metadata/main.nf'
 include { PREPARE_CAGER_METADATA } from '../subworkflows/local/prepare_cager_metadata/main.nf'
@@ -58,7 +59,23 @@ workflow CAGESEQ {
             exit 1, 'Sample list file is mandatory if mapping is not done within the pipeline.'
         }
 
-        ch_cager_sample_file = Channel.fromPath(params.cager_sample_file)
+        // Amend the sample names of the user's list ('id' and 'new_name' columns)
+        // where needed, warning once per amended name, and hand the amended list
+        // to the CAGEr part. Done synchronously, before any task starts.
+        def list_file = file(params.cager_sample_file, checkIfExists: true)
+        def list_header = list_file.readLines().find { line -> line.trim() }.split(',').collect { col -> col.trim() }
+        def list_rows = list_file.splitCsv(header: true, sep: ',')
+        def list_name_map = amendSampleNames(
+            (list_rows.collect { row -> row.id?.trim() } + list_rows.collect { row -> row.new_name?.trim() }).findAll { n -> n },
+            "CAGEr sample list '${params.cager_sample_file}' (columns 'id' and 'new_name')")
+        def amended_lines = list_rows.collect { row ->
+            list_header.collect { col ->
+                def value = row[col]
+                (col in ['id', 'new_name'] && value?.trim()) ? list_name_map.get(value.trim(), value.trim()) : value
+            }.join(',')
+        }
+        ch_cager_sample_file = Channel.of(([list_header.join(',')] + amended_lines).join('\n'))
+            .collectFile(name: "cager_sample_list_amended.csv", newLine: true, sort: false)
         mapped_files_ch = MAPPED_INPUTS(ch_cager_sample_file).collect()
         merged_sample_file = RELATIVISATION(ch_cager_sample_file)
 
@@ -153,20 +170,44 @@ workflow CAGESEQ {
         // path2) instead of a single bracketed "[str1 str2]" field.
         def header = params.bowtie2 ? "id,single_end,path,new_name" : "id,single_end,path1,path2,new_name"
 
-        ch_collected = ch_sample_files
-        .reduce( header ) { acc, table_line ->
-            acc + '\n' + table_line.readLines()[0]}
-
-        // sorting samples alphabetically. storeDir writes the merged sheet to
-        // results/cager_sample_list/cager_sample_list.csv (in both maponly and
-        // full-run mode, whenever mapping produces the bigWigs), before the CAGEr
-        // part starts, mirroring the cageronly-mode RELATIVISATION output, while
-        // the same channel is still passed directly into CAGER below.
-        merged_sample_file = ch_collected.collectFile(
-            name: "cager_sample_list.csv",
-            storeDir: "${params.outdir}/cager_sample_list",
-            newLine: true,
-            sort: { file -> file.text })
+        // Order of the samples in the merged sample list, and hence in the CAGEr
+        // object and in every report plot that does not cluster samples: the order
+        // of the user's sample sheet (or the natural order of the names derived from
+        // the FASTQ files of --infolder), unless --sort_samples is set, in which case
+        // the natural order (S1, S2, ..., S10). storeDir writes the merged sheet to
+        // <outdir>/cager_sample_list/cager_sample_list.csv (in both maponly and
+        // full-run mode) before the CAGEr part starts, mirroring the cageronly-mode
+        // RELATIVISATION output, while the same channel is passed into CAGER below.
+        def naturalKey = { String s -> s.replaceAll(/[0-9]+/) { String d -> d.padLeft(12, '0') } }
+        if (params.input) {
+            ordered_ids = Channel.value(
+                file(params.input, checkIfExists: true)
+                    .splitCsv(header: true, sep: ',')
+                    .collect { row -> fixSampleName(row.sample)[0] }
+                    .unique())
+        } else {
+            ordered_ids = PARAMETER_CHECKS.out.ch_fastq
+                .map { meta, fastq -> meta.id }
+                .toSortedList { a, b -> naturalKey(a) <=> naturalKey(b) }
+        }
+        merged_sample_file = ch_sample_files
+            .map { table_line -> table_line.text.trim() }
+            .toList()
+            .map { lines -> [lines] }
+            .combine(ordered_ids.map { ids -> [ids] })
+            .map { lines, ids ->
+                def sorted_lines = lines.toSorted { a, b ->
+                    def id_a = a.split(',')[0]
+                    def id_b = b.split(',')[0]
+                    params.sort_samples ? naturalKey(id_a) <=> naturalKey(id_b) : ids.indexOf(id_a) <=> ids.indexOf(id_b)
+                }
+                ([header] + sorted_lines).join('\n')
+            }
+            .collectFile(
+                name: "cager_sample_list.csv",
+                storeDir: "${params.outdir}/cager_sample_list",
+                newLine: true,
+                sort: false)
 
     }
 

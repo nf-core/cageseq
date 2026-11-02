@@ -4,6 +4,7 @@
 
 include { samplesheetToList         } from 'plugin/nf-schema'
 include { INPUT_FROM_FOLDER         } from '../input_from_folder/main.nf'
+include { amendSampleNames         } from '../sample_names/main.nf'
 
 workflow PARAMETER_CHECKS {
 
@@ -14,6 +15,14 @@ workflow PARAMETER_CHECKS {
     main:
 
         if (params.input) {
+            // Amend the user's sample names where needed (spaces/hyphens -> underscores,
+            // 'Sample' prefix for a leading digit), warning once per amended name. Done
+            // synchronously, before any task starts.
+            def sheet_rows = file(params.input, checkIfExists: true).splitCsv(header: true, sep: ',')
+            def name_map = amendSampleNames(
+                sheet_rows.collect { row -> row.sample },
+                "sample sheet '${params.input}' (column 'sample')")
+
             //
             // Create channel from samplesheet file provided through params.input
             //
@@ -22,7 +31,7 @@ workflow PARAMETER_CHECKS {
 
             ch_fastq = input_handler
                 .splitCsv ( header:true, sep:',' )
-                .map { create_fastq_channel(it) }
+                .map { row -> create_fastq_channel(row, name_map) }
                 .groupTuple(by: [0])
                 .map{ meta, fastq -> [ meta, fastq.flatten() ] }
 
@@ -83,10 +92,10 @@ workflow PARAMETER_CHECKS {
 }
 
 // Format: [ meta, [ fastq_1, fastq_2 ] ]
-def create_fastq_channel(LinkedHashMap row) {
-    // create meta map
+def create_fastq_channel(LinkedHashMap row, Map name_map) {
+    // create meta map (the sample name as amended by amendSampleNames)
     def meta = [:]
-    meta.id         = row.sample
+    meta.id         = name_map.get(row.sample, row.sample)
     meta.single_end = row.single_end.toBoolean()
 
     // add path(s) of the fastq file(s) to the meta map

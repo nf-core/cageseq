@@ -2,6 +2,8 @@
 // Create channel from folder
 //
 
+include { fixSampleName } from '../sample_names/main.nf'
+
 workflow INPUT_FROM_FOLDER {
 
     take:
@@ -38,7 +40,15 @@ workflow INPUT_FROM_FOLDER {
                     sample_name = old_meta.split('_')[0..-num_fields_to_cut].join('_')
                     lane_n_fastq = tuple((fastq.name =~ /L00\d/)[0], fastq)
                 }
-                meta.id = sample_name.replaceAll('-','_')
+                // Names derived from file names are corrected rather than rejected:
+                // hyphens -> underscores, 'Sample' prefix for a leading digit.
+                def (fixed_name, changes) = fixSampleName(sample_name)
+                if (changes) {
+                    log.warn "Sample name '${sample_name}', derived from the FASTQ file name(s) in --infolder, " +
+                        "was changed to '${fixed_name}': ${changes.join('; ')}. " +
+                        "Sample names must not contain hyphens and must not start with a digit."
+                }
+                meta.id = fixed_name
                 meta.single_end = singleEnd
                 [meta, lane_n_fastq] }
         .groupTuple()

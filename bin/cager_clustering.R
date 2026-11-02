@@ -32,7 +32,8 @@ cager_clustering <- function(
         num_core,
         iqlow,
         iqhigh,
-        threshold_is_tpm = TRUE){
+        threshold_is_tpm = TRUE,
+        sort_samples = FALSE){
 
     multicore <- TRUE
     if(num_core < 2){
@@ -75,13 +76,14 @@ cager_clustering <- function(
         qLow = iqlow,
         qUp = iqhigh,
         xlim = iqw_plot_lim) # plot_lim
-    # CAGEr facets the plot by sampleName in sampleLabels() order. Reorder the
-    # factor levels by the natural ordering of the sample names so the
-    # per-sample facets are always shown in the same order across the report.
+    # CAGEr facets the plot by sampleName in sampleLabels() order (the user's
+    # order). Keep that order, or the natural order when sort_samples is TRUE,
+    # so the per-sample facets match the other plots of the report.
     if ("sampleName" %in% colnames(iqw_plot$data)) {
         iqw_plot$data$sampleName <- factor(
             iqw_plot$data$sampleName,
-            levels = natural_sort(unique(as.character(iqw_plot$data$sampleName))))
+            levels = order_samples(
+                unique(as.character(iqw_plot$data$sampleName)), sort_samples))
     }
     save_plot(
         "interquantile_width_tagclusters_plot.pdf",
@@ -101,7 +103,8 @@ cager_clustering <- function(
     tag_clusters_count_plot <- plot_number_of_tag_clusters(
         sample_tag_count=sample_tag_cluster_count,
         yaxistitle="Number of tag clusters",
-        mytitle="Number of tag clusters per sample")
+        mytitle="Number of tag clusters per sample",
+        sort_samples=sort_samples)
     save_plot(
         "tag_clusters_counts_plot.pdf",
         tag_clusters_count_plot)

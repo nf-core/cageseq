@@ -44,6 +44,7 @@ process CAGER_REPORT {
     cfBalanceThreshold <- '${params.cfBalanceThreshold}'
     unexpressed <- '${params.unexpressed}'
     minSamples <- '${params.minSamples}'
+    sort_samples <- '${params.sort_samples}'
     ce <- readRDS('${cageexp_object}')
 
     rmarkdown::render('${rmarkd_template}')

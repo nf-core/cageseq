@@ -38,6 +38,11 @@ option_list = list(
         default = NULL,
         help = "Name of the BSgenome version to be used (Mandatory)"),
     make_option(
+        c("-o", "--sort_samples"),
+        type = "character",
+        default = "false",
+        help = "If 'true', samples are put in natural order (S1, S2, ..., S10); otherwise they keep the order of the sample list (Default = false)"),
+    make_option(
         c("-p", "--project_dir"),
         type = "character",
         default = NULL,
@@ -56,6 +61,7 @@ opt = optparse::parse_args(opt_parser)
 # set variable names
 data_type           <- opt$data_type
 sample_table_list   <- opt$sample_table_list
+sort_samples        <- tolower(as.character(opt$sort_samples)) %in% c("true", "t", "yes", "1")
 bsgenome            <- opt$bsgenome
 project_dir         <- opt$project_dir
 num_core            <- opt$num_core
@@ -66,6 +72,8 @@ num_core            <- opt$num_core
 source(file.path(project_dir, "bin/install_bsgenome.R"))
 # reading in bam / bigwig data
 source(file.path(project_dir, "bin/parse_input.R"))
+# sample ordering helpers
+source(file.path(project_dir, "bin/sample_order.R"))
 
 # Create folders for organized analysis
 dir.create(file.path("plots"))
@@ -120,15 +128,20 @@ if (length(sample_idx_to_remove) > 0) {
 #' @return A CAGEr::CAGEexp object with merged/renamed samples.
 #' @importFrom CAGEr sampleLabels mergeSamples
 #' @export
-merge_labels <- function(sample_names, new_names, ce) {
-    # merge / rename samples according to user's instructioins (new_names)
-    # make it a function to call for both bams and bigwigs
+merge_labels <- function(sample_names, new_names, ce, sort_samples = FALSE) {
+    # merge / rename samples according to user's instructions (new_names)
+    # make it a function to call for both bams and bigwigs.
+    # The merged labels keep the order of first appearance in the user's sample
+    # list, unless sort_samples is TRUE, in which case they are put in natural
+    # order; this order becomes the sample order of the CAGEexp object.
+    merged_sample_labels = unique(new_names)
+    if (sort_samples) {
+        merged_sample_labels = natural_sort(merged_sample_labels)
+    }
     name_df = data.frame(
         sample_name = sample_names,
         new_name = new_names)
-    name_df = name_df[order(name_df$new_name), ]
-    name_df$merge_idx = match(name_df$new_name, unique(name_df$new_name))
-    merged_sample_labels = unique(name_df$new_name)
+    name_df$merge_idx = match(name_df$new_name, merged_sample_labels)
     name_df = name_df[match(CAGEr::sampleLabels(ce), name_df$sample_name), ]
     ce <- CAGEr::mergeSamples(
         ce,
@@ -173,13 +186,15 @@ ce <- CAGEr::getCTSS(
     useMulticore = multicore,
     nrCores = num_core)
 
-# Merge if necessary
-if (any(sample_names != new_names)) {
-    print("Merging samples according to new names")
-    ce <- merge_labels(sample_names, new_names, ce)
+# Merge if necessary (also used to put the samples in natural order when
+# sort_samples is TRUE, through an identity merge)
+if (sort_samples || any(sample_names != new_names)) {
+    print("Merging / ordering samples according to new names")
+    ce <- merge_labels(sample_names, new_names, ce, sort_samples = sort_samples)
 } else {
     print("No merging performed.")
 }
+print(paste0("Sample order in the CAGEexp object: ", paste(CAGEr::sampleLabels(ce), collapse = ", ")))
 
 # save the initial CAGEexp object
 saveRDS(ce, "intermediate_cagerobj/initial_cagexp.rds")

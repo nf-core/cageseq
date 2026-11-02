@@ -298,6 +298,11 @@
                     "hidden": true,
                     "description": "R Markdown template of the CAGEr report. Defaults to assets/cager_report.Rmd in the pipeline directory; only override it to render a customised report."
                 },
+                "sort_samples": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If false (default), the samples keep the order of the user's sample sheet (fullpipeline/maponly) or sample list (cageronly) in the CAGEr object and in all report plots that do not cluster samples. If true, they are sorted in natural order (S1, S2, ..., S10) instead."
+                },
                 "corrplot_tagCountThreshold": {
                     "type": "integer",
                     "default": 1,

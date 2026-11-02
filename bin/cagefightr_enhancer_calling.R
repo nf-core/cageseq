@@ -50,6 +50,11 @@ option_list = list(
         default = 1,
         help = "minimum number of samples (inclusive) that must support an enhancer, i.e. show bidirectionality (Default=1)"),
     make_option(
+        c("-S", "--sort_samples"),
+        type = "character",
+        default = "false",
+        help = "If 'true', samples are shown in natural order in the plots; otherwise in the order of the sample list (Default = false)"),
+    make_option(
         c("-u", "--tssregion_up"),
         type = "integer",
         default = -3000,
@@ -76,6 +81,7 @@ tx_annotation       <- opt$annotation
 cfBalanceThreshold  <- opt$cfBalanceThreshold
 unexpressed         <- opt$unexpressed
 minSamples        <- opt$minSamples
+sort_samples      <- tolower(as.character(opt$sort_samples)) %in% c("true", "t", "yes", "1")
 tssregion_up    <- opt$tssregion_up
 tssregion_down  <- opt$tssregion_down
 project_dir         <- opt$project_dir
@@ -209,7 +215,8 @@ enhancer_status <- tryCatch({
             sample_tag_count=sample_enhancer_count,
             yaxistitle="Number of enhancers per sample",
             mytitle="Number of enhancers per sample",
-            myfilename="enhancer_count_per_sample")
+            myfilename="enhancer_count_per_sample",
+            sort_samples=sort_samples)
         save_plot(
             "enhancer_count_per_sample_plot.pdf",
             enhancer_count_plot)

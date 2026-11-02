@@ -116,6 +116,7 @@ The parameters specific to CAGEr and CAGEfightR analysis, can be left empty when
 - `t_norm` total number of CAGE tags in the reference power-law distribution. Setting `T = 10^6` results in normalized values that correspond to tags per million. Considered for `powerLaw` normalization only.
 - `sample_num_thr` and `ctss_thr` are parameters for filtering low expressed CTSS before clustering. `ctss_thr` specifies the lower threshold above which CTSS are considered, and `sample_num_thr` specifies the number of samples where this threshold should be passed.
 - `threshold_is_tpm` defines whether `ctss_thr` is expressed in normalized TPM (`true`, the default) or in raw tag counts (`false`). It is passed to the `thresholdIsTpm` argument of `CAGEr::filterLowExpCTSS()`, and the all-TSS dinucleotide plot uses the same choice.
+- `sort_samples` (default `false`) controls the order of the samples in the CAGEr object and in all report plots that do not cluster samples: the order of the sample sheet (`fullpipeline`/`maponly`) or of the sample list (`cageronly`) when `false`, or the natural order of the sample names (S1, S2, ..., S10) when `true`. With `infolder` input the names derived from the FASTQ files are used in natural order when `false`.
 - `distclu_maxDist` specifies the maximum distance for distance-based clustering (distclu).
 - `keepSingletonsAbove` defines the tpm threshold above which even a single CTSS is kept during clustering.
 - The `iq_low` and `iq_high` parameters are used to define the lower and upper quantile boundaries of the interquantile range within which the majority of the signal lies.
@@ -192,7 +193,7 @@ TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
 
 | Column    | Description                                                                                                                                                                            |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
+| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Sample names must not contain spaces or hyphens (`-`) and must not start with a digit. Names that break these rules are amended automatically and a warning is printed for each: spaces and hyphens are converted to underscores (`_`) and `Sample` is put in front of a name that starts with a digit (for example `23-KO` becomes `Sample23_KO`). The same applies to the `id` and `new_name` columns of the `cager_sample_file` used in the `cageronly` mode. |
 | `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
 | `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
 
@@ -204,7 +205,7 @@ From the existence of `R2` (or `2`) values in the expected position, the softwar
 By default, it takes the first value before the underscore which should be the _sample name_.
 However, it can be overwritten in case the _sample name_ itself contains underscore values.
 The additional parameter `sample_name_fields` should be set to how many underscore separated parts the _sample name_ has.
-_Note, that if the sample name had any dash (`-`) it is converted to underscore (`_`) to ensure compatibility with subsequent processes.\_
+_Note that sample names derived from file names are amended automatically to satisfy the sample-name rules, exactly like user-provided names: spaces and dashes (`-`) are converted to underscores (`_`), and `Sample` is put in front of a name that starts with a digit (for example `23_KO` becomes `Sample23_KO`). A warning is printed for every amended name and the pipeline continues._
 
 #### CAGEr subpipeline
 

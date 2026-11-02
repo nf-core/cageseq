@@ -38,9 +38,25 @@ natural_sort <- function(x) {
 thr_in_tpm <- tolower(threshold_is_tpm) == "true"
 thr_quantity <- if (thr_in_tpm) "normalized expression" else "raw tag count"
 thr_unit <- if (thr_in_tpm) "TPM" else "tags"
+
+# Sample order in the plots that do not cluster samples: the order of the
+# CAGEexp object (the user's sample sheet / sample list order), or the natural
+# order when the sort_samples parameter is true.
+sort_samples_on <- tolower(sort_samples) == "true"
+order_samples <- function(x) {
+    x <- as.character(x)
+    if (sort_samples_on) natural_sort(x) else x
+}
 ```
 
 # Results of CAGEr analysis
+
+In all plots that do not cluster the samples, the samples are shown in the order of the user's sample sheet (full pipeline) or sample list (CAGEr-only mode), or in the natural order of their names (S1, S2, ..., S10) if the `sort_samples` parameter is *true*.
+
+```{r sample-order, eval=TRUE, include=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+print(paste0("The current sort_samples value is: ", sort_samples))
+print(paste0("Sample order in this report: ", paste(order_samples(unname(CAGEr::sampleLabels(ce))), collapse = ", ")))
+```
 
 ## Raw reads
 These QC plots show the status of the data before normalization or filtering.
@@ -54,7 +70,7 @@ It is expected to see more intergenic tags here than after filtering and cluster
 options(warn=-1)
 sampleNs <- unname(CAGEr::sampleLabels(ce))
 tagannot_plot <- readRDS("tag_region_annotation_plot.rds")
-tagannot_plot + ggplot2::xlim(rev(natural_sort(unique(sampleNs))))
+tagannot_plot + ggplot2::xlim(rev(order_samples(unique(sampleNs))))
 ```
 
 ### Correlation of samples at the raw tag count level
@@ -209,7 +225,7 @@ print(paste0("The current tssregion_down value is: ", tssregion_down))
 
 sampleNs <- unname(CAGEr::sampleLabels(ce))
 chta_plot <- readRDS("chipseeker_tagCluster_annotation_plot.rds")
-chta_plot + ggplot2::xlim(rev(natural_sort(unique(sampleNs))))
+chta_plot + ggplot2::xlim(rev(order_samples(unique(sampleNs))))
 ```
 
 ### Dinucleotide frequencies in tag clusters, weighted by expression (TPM)
@@ -265,7 +281,7 @@ style_dinuc(dinucl_all_plot)
 ### TSS region logos
 
 ```{r logo_setup, eval=TRUE, include=FALSE, echo=FALSE}
-logo_samples <- natural_sort(unname(CAGEr::sampleLabels(ce)))
+logo_samples <- order_samples(unname(CAGEr::sampleLabels(ce)))
 n_logo_samples <- length(logo_samples)
 # Show the logos in the report only when there are at most 60 samples.
 # Otherwise there would be too many to display, and the user is pointed to the

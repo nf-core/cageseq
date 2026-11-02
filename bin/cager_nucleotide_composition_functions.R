@@ -110,7 +110,8 @@ extract_dinucleotide_information_all_ctss <- function(
 
 plot_dinucleotide_frequency_heatmap <- function(
         weigthed_dinuc_vals_df,
-        title = NULL) {
+        title = NULL,
+        sort_samples = FALSE) {
 
     # Order dinucleotides by the median (across samples) of their proportions.
     # The x axis is not flipped here, so the first factor level sits at the
@@ -125,12 +126,12 @@ plot_dinucleotide_frequency_heatmap <- function(
         weigthed_dinuc_vals_df$dinucleotide,
         levels = dinuc_order$dinucleotide)
 
-    # Order samples by the natural ordering of their names on the y axis. The
-    # first factor level is drawn at the bottom, so reversing puts the first
-    # sample at the top.
+    # Order samples on the y axis (user's order, or natural order when
+    # sort_samples is TRUE). The first factor level is drawn at the bottom, so
+    # reversing puts the first sample at the top.
     weigthed_dinuc_vals_df$samples <- factor(
         weigthed_dinuc_vals_df$samples,
-        levels = rev(natural_sort(unique(weigthed_dinuc_vals_df$samples))))
+        levels = rev(order_samples(unique(weigthed_dinuc_vals_df$samples), sort_samples)))
 
     p <- ggplot(
         data = weigthed_dinuc_vals_df,
@@ -153,7 +154,8 @@ plot_dinucleotide_frequency_heatmap <- function(
 plot_dinucleotide_frequency_histogram <- function(
     weigthed_dinuc_vals_df,
     col,
-    title = "Dominant TSS dinucleotide (-/+ 1bp) proportion weighted by the sum of dominant TSS score per sample") {
+    title = "Dominant TSS dinucleotide (-/+ 1bp) proportion weighted by the sum of dominant TSS score per sample",
+    sort_samples = FALSE) {
 
     # Order dinucleotides by the median (across samples) of their proportions.
     # coord_flip() puts the first factor level at the bottom, so
@@ -168,13 +170,13 @@ plot_dinucleotide_frequency_histogram <- function(
         weigthed_dinuc_vals_df$dinucleotide,
         levels = dinuc_order$dinucleotide)
 
-    # Order samples by the natural ordering of their names. With coord_flip()
-    # the dodged bars read top-to-bottom in the reverse of the factor levels,
-    # so reversing puts the first sample at the top. The legend is reversed
-    # below so that it lists the samples in the same order as the bars.
+    # Order samples (user's order, or natural order when sort_samples is TRUE).
+    # With coord_flip() the dodged bars read top-to-bottom in the reverse of the
+    # factor levels, so reversing puts the first sample at the top. The legend is
+    # reversed below so that it lists the samples in the same order as the bars.
     weigthed_dinuc_vals_df$samples <- factor(
         weigthed_dinuc_vals_df$samples,
-        levels = rev(natural_sort(unique(weigthed_dinuc_vals_df$samples))))
+        levels = rev(order_samples(unique(weigthed_dinuc_vals_df$samples), sort_samples)))
 
     p <- ggplot(
         data = weigthed_dinuc_vals_df,
@@ -207,9 +209,10 @@ plot_dinucleotide_frequency_histogram <- function(
 
 plot_dinucleotide_frequency <- function(
         weigthed_dinuc_vals_df,
-        title = "Dominant TSS dinucleotide (-/+ 1bp) proportion weighted by the sum of dominant TSS score per sample") {
+        title = "Dominant TSS dinucleotide (-/+ 1bp) proportion weighted by the sum of dominant TSS score per sample",
+        sort_samples = FALSE) {
 
-    column_names <- natural_sort(unique(weigthed_dinuc_vals_df$samples))
+    column_names <- order_samples(unique(weigthed_dinuc_vals_df$samples), sort_samples)
     col = viridis::magma(
         length(column_names),
         alpha = 0.8)[length(column_names):1]
@@ -221,13 +224,15 @@ plot_dinucleotide_frequency <- function(
     if (length(column_names) > 10){
         p <- plot_dinucleotide_frequency_heatmap(
             weigthed_dinuc_vals_df=weigthed_dinuc_vals_df,
-            title=title
+            title=title,
+            sort_samples=sort_samples
         )
     } else {
         p <- plot_dinucleotide_frequency_histogram(
             weigthed_dinuc_vals_df=weigthed_dinuc_vals_df,
             col=col,
-            title=title)
+            title=title,
+            sort_samples=sort_samples)
     }
     return(p)
 }
