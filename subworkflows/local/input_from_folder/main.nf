@@ -10,6 +10,13 @@ workflow INPUT_FROM_FOLDER {
     infolder
 
     main:
+    // Samples read from a folder are always put in natural order (S1, S2, ..., S10),
+    // so --sort_samples has no effect here: say so once and carry on.
+    if (params.sort_samples) {
+        log.warn "Samples read from an input folder (--infolder) are sorted naturally by default " +
+            "(S1, S2, ..., S10), so the --sort_samples option is ignored."
+    }
+
     any_R2_file = file("$infolder/**_R2*fastq.gz")
     singleEnd = true
     if (any_R2_file.size() > 0){

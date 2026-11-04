@@ -112,6 +112,13 @@ saveRDS(ce, "intermediate_cagerobj/annotated_cagexp.rds")
 print("Plotting annotations...")
 
 annotations <- CAGEr::plotAnnot(ce, "counts")
+# plotAnnot() orders the samples by name. Put them in the sampleLabels() order
+# instead (the user's order, or the natural order when sort_samples is TRUE).
+# coord_flip() draws the first factor level at the bottom, so reversing puts the
+# first sample at the top, as in the other horizontal bar plots.
+annotations$data$group <- factor(
+    annotations$data$group,
+    levels = rev(unname(CAGEr::sampleLabels(ce))))
 save_plot(
     "tag_region_annotation_plot.pdf",
     annotations
