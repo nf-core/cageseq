@@ -13,7 +13,7 @@ workflow SAMTOOLS_PROCESSING {
 
     main:
 
-        ch_index_format = Channel.value("bai")
+        ch_index_format = channel.value("bai")
 
         // ch_fasta is a single-element queue channel; convert it to a value
         // channel with .first() so the same reference is broadcast to every

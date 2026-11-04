@@ -18,10 +18,9 @@ workflow STAR {
 
     main:
 
-        ch_genome_name = Channel.of(params.genome_name)
+        ch_genome_name = channel.of(params.genome_name)
 
-        sample_meta = ch_reads_to_align.map{ meta, fastq ->
-            meta = meta
+        sample_meta = ch_reads_to_align.map{ meta, _fastq ->
             [meta]}
 
         if (!params.index) {
@@ -29,7 +28,7 @@ workflow STAR {
                 ch_fasta,
                 ch_genome_name.combine(ch_gtf)
             )
-            ch_index = sample_meta.combine(STAR_GENOMEGENERATE.out.index.map { it[1] })
+            ch_index = sample_meta.combine(STAR_GENOMEGENERATE.out.index.map { it -> it[1] })
         }
 
         STAR_ALIGN (
@@ -43,10 +42,9 @@ workflow STAR {
 
         ch_aligned = STAR_ALIGN.out.bam_sorted_aligned
 
-        ch_multiqc_files = ch_multiqc_files.mix(STAR_ALIGN.out.log_final.collect{it[1]})
+        ch_multiqc_files = ch_multiqc_files.mix(STAR_ALIGN.out.log_final.collect{ it -> it[1] })
 
-        ch_chrom_sizes_for_wig = ch_chrom_sizes.map{meta, sizes ->
-            sizes = sizes
+        ch_chrom_sizes_for_wig = ch_chrom_sizes.map{ _meta, sizes ->
             sizes}
 
         wigs = STAR_ALIGN.out.wig

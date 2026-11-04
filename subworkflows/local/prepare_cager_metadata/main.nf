@@ -38,7 +38,7 @@ workflow PREPARE_CAGER_METADATA {
             ch_bsgenome_name = ''
         }
 
-        ch_txdb = GTF2TXDB(ch_gtf)
+        GTF2TXDB(ch_gtf)
         ch_txdb_file = GTF2TXDB.out.txdb
 
     emit:

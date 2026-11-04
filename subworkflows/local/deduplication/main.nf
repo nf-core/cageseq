@@ -21,7 +21,7 @@ workflow DEDUPLICATION {
         // No on-the-fly indexing inside the sort steps: the name sort
         // (SORT_FOR_FIXMATE, '-n') cannot be index-written, and coordinate
         // indexing is handled by the dedicated INDEX_* processes below.
-        ch_no_index = Channel.value([])
+        ch_no_index = channel.value([])
 
         // ch_fasta is a single-element queue channel; convert it to a value
         // channel with .first() so the same reference is broadcast to every

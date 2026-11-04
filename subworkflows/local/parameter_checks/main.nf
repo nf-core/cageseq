@@ -27,7 +27,7 @@ workflow PARAMETER_CHECKS {
             // Create channel from samplesheet file provided through params.input
             //
 
-            input_handler = Channel.fromPath(params.input, checkIfExists: true)
+            input_handler = channel.fromPath(params.input, checkIfExists: true)
 
             ch_fastq = input_handler
                 .splitCsv ( header:true, sep:',' )
@@ -43,28 +43,27 @@ workflow PARAMETER_CHECKS {
             exit 1, 'Provide input by using the --input or the --infolder options.'
         }
 
-        sample_meta = ch_fastq.map{ meta, fastq ->
-            meta = meta
+        sample_meta = ch_fastq.map{ meta, _fastq ->
             [meta]}
 
-        ch_genome_name = Channel.of(params.genome_name)
+        ch_genome_name = channel.of(params.genome_name)
 
         // if index is specified, it is used as input
         if (!params.fasta && !params.index) {
             exit 1, 'Reference genome FASTA file (--fasta) or genome index (--index) should be specified.'
         } else if (params.index) {
-            ch_pre_idx = Channel.fromPath(params.index, checkIfExists: true)
+            ch_pre_idx = channel.fromPath(params.index, checkIfExists: true)
             ch_index = sample_meta.combine(ch_pre_idx)
             if (params.fasta) {
-                ch_pre_fa = Channel.fromPath(params.fasta, checkIfExists: true)
+                ch_pre_fa = channel.fromPath(params.fasta, checkIfExists: true)
                 ch_fasta = ch_genome_name.combine(ch_pre_fa)
             } else {
-                ch_fasta = Channel.empty()
+                ch_fasta = channel.empty()
             }
         } else {
-            ch_pre_fa = Channel.fromPath(params.fasta, checkIfExists: true)
+            ch_pre_fa = channel.fromPath(params.fasta, checkIfExists: true)
             ch_fasta = ch_genome_name.combine(ch_pre_fa)
-            ch_index = Channel.empty()
+            ch_index = channel.empty()
         }
 
         if (params.dedup && !params.bowtie2) {

@@ -36,7 +36,7 @@ workflow CAGESEQ {
     main:
 
     if (params.gtf) {
-            ch_gtf = Channel.fromPath(params.gtf, checkIfExists: true)
+            ch_gtf = channel.fromPath(params.gtf, checkIfExists: true)
         } else {
             exit 1, "The --gtf argument is mandatory."
     }
@@ -72,19 +72,19 @@ workflow CAGESEQ {
                 (col in ['id', 'new_name'] && value?.trim()) ? list_name_map.get(value.trim(), value.trim()) : value
             }.join(',')
         }
-        ch_cager_sample_file = Channel.of(([list_header.join(',')] + amended_lines).join('\n'))
+        ch_cager_sample_file = channel.of(([list_header.join(',')] + amended_lines).join('\n'))
             .collectFile(name: "cager_sample_list_amended.csv", newLine: true, sort: false)
         mapped_files_ch = MAPPED_INPUTS(ch_cager_sample_file).collect()
         merged_sample_file = RELATIVISATION(ch_cager_sample_file)
 
     }
 
-    ch_multiqc_files = Channel.empty()
+    ch_multiqc_files = channel.empty()
 
     if (params.maponly || params.fullpipeline) {
 
-        ch_fasta = Channel.empty()
-        ch_index = Channel.empty()
+        ch_fasta = channel.empty()
+        ch_index = channel.empty()
 
         PARAMETER_CHECKS(ch_fasta, ch_index)
 
@@ -128,7 +128,7 @@ workflow CAGESEQ {
         // used so the same reference is broadcast to every BAM.
         ch_fasta_for_samtools = params.fasta
             ? ch_fasta.first()
-            : Channel.value([[id: 'no_fasta'], []])
+            : channel.value([[id: 'no_fasta'], []])
 
         if (params.dedup) {
             DEDUPLICATION(ch_aligned, ch_fasta_for_samtools, ch_for_cager)
@@ -145,16 +145,16 @@ workflow CAGESEQ {
         BAM_STATS_SAMTOOLS(ch_bam_bai, ch_fasta_for_samtools)
 
         // Feed samtools stats/flagstat/idxstats into the MultiQC report
-        ch_multiqc_files = ch_multiqc_files.mix(BAM_STATS_SAMTOOLS.out.stats.collect{it[1]})
-        ch_multiqc_files = ch_multiqc_files.mix(BAM_STATS_SAMTOOLS.out.flagstat.collect{it[1]})
-        ch_multiqc_files = ch_multiqc_files.mix(BAM_STATS_SAMTOOLS.out.idxstats.collect{it[1]})
+        ch_multiqc_files = ch_multiqc_files.mix(BAM_STATS_SAMTOOLS.out.stats.collect{ it -> it[1] })
+        ch_multiqc_files = ch_multiqc_files.mix(BAM_STATS_SAMTOOLS.out.flagstat.collect{ it -> it[1] })
+        ch_multiqc_files = ch_multiqc_files.mix(BAM_STATS_SAMTOOLS.out.idxstats.collect{ it -> it[1] })
 
         if (params.bowtie2) {
-            mapped_files_ch = ch_for_cager.map{ meta, paths ->
+            mapped_files_ch = ch_for_cager.map{ _meta, paths ->
                 [paths]}
                 .collect()
         } else {
-            mapped_files_ch = ch_for_cager.map{ meta, paths ->
+            mapped_files_ch = ch_for_cager.map{ _meta, paths ->
                 def file1 = paths[0]
                 def file2 = paths[1]
                 [file1, file2]}
@@ -177,14 +177,14 @@ workflow CAGESEQ {
         // full-run mode) before the CAGEr part starts, mirroring the cageronly-mode
         // RELATIVISATION output, while the same channel is passed into CAGER below.
         if (params.input) {
-            ordered_ids = Channel.value(
+            ordered_ids = channel.value(
                 file(params.input, checkIfExists: true)
                     .splitCsv(header: true, sep: ',')
                     .collect { row -> fixSampleName(row.sample)[0] }
                     .unique())
         } else {
             ordered_ids = PARAMETER_CHECKS.out.ch_fastq
-                .map { meta, fastq -> meta.id }
+                .map { meta, _fastq -> meta.id }
                 .toSortedList { a, b -> naturalKey(a) <=> naturalKey(b) }
         }
         merged_sample_file = ch_sample_files
@@ -260,24 +260,24 @@ workflow CAGESEQ {
     //
     // MODULE: MultiQC
     //
-    ch_multiqc_config        = Channel.fromPath(
+    ch_multiqc_config        = channel.fromPath(
         "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config = params.multiqc_config ?
-        Channel.fromPath(params.multiqc_config, checkIfExists: true) :
-        Channel.empty()
+        channel.fromPath(params.multiqc_config, checkIfExists: true) :
+        channel.empty()
     ch_multiqc_logo          = params.multiqc_logo ?
-        Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        Channel.empty()
+        channel.fromPath(params.multiqc_logo, checkIfExists: true) :
+        channel.empty()
 
     summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
-    ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
+    ch_workflow_summary = channel.value(paramsSummaryMultiqc(summary_params))
     ch_multiqc_files = ch_multiqc_files.mix(
         ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
         file(params.multiqc_methods_description, checkIfExists: true) :
         file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description                = Channel.value(
+    ch_methods_description                = channel.value(
         methodsDescriptionText(ch_multiqc_custom_methods_description))
 
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)

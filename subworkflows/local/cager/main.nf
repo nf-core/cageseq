@@ -23,14 +23,14 @@ workflow CAGER {
 
         // CAGEr analysis steps
         if (params.bowtie2) {
-            ch_data_type = Channel.of("bam")
+            ch_data_type = channel.of("bam")
         } else {
-            ch_data_type = Channel.of(params.datatype)
+            ch_data_type = channel.of(params.datatype)
         }
 
         sample_table = ch_sample_file
             .splitCsv( header:true , sep:',')
-            .map { create_mapping_channel(it) }
+            .map { row -> create_mapping_channel(row) }
             .collect()
 
         CAGER_READIN (
@@ -71,7 +71,7 @@ workflow CAGER {
         // enhancer calling plots
         enhancer_plots = CAGEFIGHTR_ENHANCER_CALLING.out.plots
 
-        ch_template = Channel.fromPath(params.markdown_path)
+        ch_template = channel.fromPath(params.markdown_path)
 
         ch_html = CAGER_REPORT(
             ch_template,

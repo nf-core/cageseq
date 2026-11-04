@@ -34,7 +34,6 @@ process SAMTOOLS_VIEW_MAPQ {
     """
 
     stub:
-    def args = task.ext.args ?: ''
     def prefix = "${meta.id}_mapq"
     def file_type = "bam"
     """

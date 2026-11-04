@@ -14,10 +14,9 @@ workflow PREPARE_MAPPING_METADATA {
         // prepare chromosome sizes
         if (params.fasta) {
 
-            chrom_size_fa = ch_fasta.map{ meta, fasta ->
+            chrom_size_fa = ch_fasta.map{ _meta, fasta ->
                 def new_meta = [:]
                 new_meta.id = "sizes"
-                fasta = fasta
                 [new_meta, fasta]
             }.unique()
             SAMTOOLS_FAIDX(
@@ -27,7 +26,7 @@ workflow PREPARE_MAPPING_METADATA {
             ch_chrom_sizes = SAMTOOLS_FAIDX.out.sizes
 
         } else { // a genome index was provided instead
-            ch_chrom_sizes = Channel.of([
+            ch_chrom_sizes = channel.of([
                 [id:"sizes"],
                 [file( params.index + '/chrNameLength.txt' )]
             ])
