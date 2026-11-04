@@ -90,9 +90,9 @@ workflow CAGER {
 }
 
 def create_mapping_channel(LinkedHashMap row) {
-    id = row.id
-    single_end = row.single_end
-    new_name = row.new_name
+    def id = row.id
+    def single_end = row.single_end
+    def new_name = row.new_name
     // bigWig samples carry two paths in separate path1/path2 columns; BAM
     // samples carry a single "path" column.
     if (row.containsKey('path2')) {

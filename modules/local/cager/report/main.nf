@@ -17,6 +17,7 @@ process CAGER_REPORT {
     output:
     path "*.html"
 
+    script:
     """
     #!/usr/bin/env Rscript
     library(rmarkdown)

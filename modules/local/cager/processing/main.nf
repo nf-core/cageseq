@@ -18,6 +18,7 @@ process CAGER_PROCESSING {
     tuple path("tracks/*.bw"), path("tracks/*.bed"), path("tables/*.csv"), emit: tracks
     path "versions.yml", emit: versions
 
+    script:
     """
     if [ -z ${bsgenome_name} ]
     then

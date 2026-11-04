@@ -19,6 +19,7 @@ process CAGER_TAGCLUSTER_QC {
     path "plots/*_error.txt", emit: error_logs, optional: true
     path "versions.yml", emit: versions
 
+    script:
     """
     echo "QC on tag and consensus clusters"
     if [ -z ${bsgenome_name} ]

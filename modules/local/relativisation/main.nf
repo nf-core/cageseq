@@ -12,6 +12,7 @@ process RELATIVISATION {
     output:
     path "cager_sample_list.csv"
 
+    script:
     """
     make_paths_relative.py -f "${sample_file}"
     mv sample_list_relativepath.csv cager_sample_list.csv

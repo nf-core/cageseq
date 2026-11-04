@@ -52,15 +52,13 @@ workflow STAR {
         wigs = STAR_ALIGN.out.wig
 
         if (params.unique_only){
-            wigs_for_conversion = wigs.map{ meta, wigs ->
-                meta = meta
-                wigs_to_use = [wigs[0], wigs[1]]
+            wigs_for_conversion = wigs.map{ meta, wig_files ->
+                def wigs_to_use = [wig_files[0], wig_files[1]]
                 [meta, wigs_to_use]
             }
         } else {
-            wigs_for_conversion = wigs.map{ meta, wigs ->
-                meta = meta
-                wigs_to_use = [wigs[2], wigs[3]]
+            wigs_for_conversion = wigs.map{ meta, wig_files ->
+                def wigs_to_use = [wig_files[2], wig_files[3]]
                 [meta, wigs_to_use]
             }
         }

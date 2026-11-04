@@ -15,6 +15,7 @@ process CAGER_READIN {
     path "intermediate_cagerobj/initial_cagexp.rds",        emit: rds
     path "versions.yml", emit: versions
 
+    script:
     """
     if [ -z ${bsgenome_name} ]
     then

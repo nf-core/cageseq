@@ -28,8 +28,6 @@ include { MULTIQC } from '../modules/nf-core/multiqc/main.nf'
 include { WRITE_SAMPLE_LIST } from '../modules/local/write_sample_list/main.nf'
 include { CAGER } from '../subworkflows/local/cager/main.nf'
 
-def multiqc_report = []
-
 workflow CAGESEQ {
 
     take:
@@ -157,8 +155,8 @@ workflow CAGESEQ {
                 .collect()
         } else {
             mapped_files_ch = ch_for_cager.map{ meta, paths ->
-                file1 = paths[0]
-                file2 = paths[1]
+                def file1 = paths[0]
+                def file2 = paths[1]
                 [file1, file2]}
                 .collect()
         }
@@ -178,7 +176,6 @@ workflow CAGESEQ {
         // <outdir>/cager_sample_list/cager_sample_list.csv (in both maponly and
         // full-run mode) before the CAGEr part starts, mirroring the cageronly-mode
         // RELATIVISATION output, while the same channel is passed into CAGER below.
-        def naturalKey = { String s -> s.replaceAll(/[0-9]+/) { String d -> d.padLeft(12, '0') } }
         if (params.input) {
             ordered_ids = Channel.value(
                 file(params.input, checkIfExists: true)
@@ -304,6 +301,12 @@ workflow CAGESEQ {
     report   = MULTIQC.out.report // channel: /path/to/multiqc_report.html
     versions = ch_versions        // channel: [ path(versions.yml) ]
 
+}
+
+// Natural sort key: every run of digits is padded with zeros to 12 characters, so
+// that S2 sorts before S10. Used for --sort_samples and for the --infolder order.
+def naturalKey(String s) {
+    return s.replaceAll(/[0-9]+/) { String d -> d.padLeft(12, '0') }
 }
 
 /*

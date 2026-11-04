@@ -9,6 +9,7 @@ process GTF2TXDB {
     path "*.sqlite",     emit: txdb
     path "versions.yml", emit: versions, topic: versions
 
+    script:
     """
     gtf_to_txdb.R -g ${gtf}
 

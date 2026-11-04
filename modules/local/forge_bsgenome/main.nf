@@ -10,6 +10,7 @@ process FORGE_BSGENOME {
     path "BSgenome.*.tar.gz", emit: bsgenome
     path "versions.yml", emit: versions, topic: versions
 
+    script:
     """
     forge_bsgenome.R ${forge_seed} ${seqs_srcdir}
     pkgname=`<${forge_seed} head -1 | cut -d" " -f2`

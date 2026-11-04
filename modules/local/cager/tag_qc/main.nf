@@ -18,6 +18,7 @@ process CAGER_TAG_QC {
     tuple path("plots/*plot.pdf"), path("plots/*plot.rds"), emit: plots
     path "versions.yml", emit: versions
 
+    script:
     """
     echo "Initial QC on CAGEr tags"
     if [ -z ${bsgenome_name} ]

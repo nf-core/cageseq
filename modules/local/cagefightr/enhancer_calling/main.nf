@@ -16,6 +16,7 @@ process CAGEFIGHTR_ENHANCER_CALLING {
     tuple path("tables/*.tsv"), path("tracks/*.bed"), emit: enhancer_table
     path "plots/*_error.txt", emit: error_logs, optional: true
     path "versions.yml", emit: versions
+    script:
     """
 
     echo "Calling enhancers with CAGEfightR."
