@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Second release of nf-core/cageseq, created with the [nf-core](https://nf-co.re/) template.
 
+### `Changed`
+
+- The pipeline code complies with the strict Nextflow syntax (`nextflow lint` under
+  Nextflow 26.10.5 reports no errors), so it runs on Nextflow 26.04 and later, whose
+  parser rejects the old syntax. The changes do not alter what the pipeline produces:
+  `script:` labels in local modules, `env('PWD')` for the implicit `PWD` variable,
+  `def` for closure-local variables, `naturalKey` as a standalone function, `channel`
+  instead of `Channel`, explicit closure parameters.
+- The minimum Nextflow version is 25.10.4, the lowest version the pipeline was tested on.
+
 ## v1.0dev - [date]
 
 Initial release of nf-core/cageseq, created with the [nf-core](https://nf-co.re/) template.
