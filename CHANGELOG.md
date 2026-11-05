@@ -18,6 +18,9 @@ Second release of nf-core/cageseq, created with the [nf-core](https://nf-co.re/)
 - The minimum Nextflow version is 25.10.4, the lowest version the pipeline was tested on.
 - MultiQC plot export has a time limit of 300 s (`export_plots_timeout`). The default of 30 s lost
   plot files without failing the run in a scenario with 42 samples.
+- The `singularity` profile sets `singularity.runOptions` and `singularity.envWhitelist`, which were
+  never applied without the `singularity.` prefix: a task's `/tmp` is now `APPTAINER_TMPDIR` when that is
+  set. The unapplied `cacheDir` option is removed, so `NXF_SINGULARITY_CACHEDIR` still decides the image cache.
 
 ## v1.0dev - [date]
 
