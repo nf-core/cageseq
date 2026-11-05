@@ -16,6 +16,8 @@ Second release of nf-core/cageseq, created with the [nf-core](https://nf-co.re/)
   `def` for closure-local variables, `naturalKey` as a standalone function, `channel`
   instead of `Channel`, explicit closure parameters.
 - The minimum Nextflow version is 25.10.4, the lowest version the pipeline was tested on.
+- MultiQC plot export has a time limit of 300 s (`export_plots_timeout`). The default of 30 s lost
+  plot files without failing the run in a scenario with 42 samples.
 
 ## v1.0dev - [date]
 
