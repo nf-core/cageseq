@@ -58,4 +58,25 @@ process CAGER_PROCESSING {
         R_CAGEr: \$(Rscript -e 'packageVersion("CAGEr")' | awk '{print \$2}' | tr -d "‘’")
     END_VERSIONS
     """
+
+    stub:
+    """
+    mkdir -p intermediate_cagerobj plots tracks tables
+    touch intermediate_cagerobj/normalized_clustered_cagexp.rds
+    for p in interquantile_width_tagclusters_plot reverse_cumulative_normalized_plot reverse_cumulative_plot tag_clusters_counts_plot; do
+        touch plots/\$p.pdf plots/\$p.rds
+    done
+    touch plots/sample_tag_cluster_count.txt
+    touch tables/consensus_cluster_per_sample_ctss.csv
+    touch tracks/consensusClusters.bed
+    touch tracks/stub_tagClusters.bed
+    touch tracks/stub_raw_plus.bw tracks/stub_raw_minus.bw tracks/stub_normalized_plus.bw tracks/stub_normalized_minus.bw
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        Bash: \$(echo "\$BASH_VERSION")
+        R: \$(R --version | head -1 | awk '{print \$3}')
+        R_CAGEr: \$(Rscript -e 'packageVersion("CAGEr")' | awk '{print \$2}' | tr -d "‘’")
+    END_VERSIONS
+    """
 }

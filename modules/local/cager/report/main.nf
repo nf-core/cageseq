@@ -50,4 +50,9 @@ process CAGER_REPORT {
 
     rmarkdown::render('${rmarkd_template}')
     """
+
+    stub:
+    """
+    touch ${rmarkd_template.baseName}.html
+    """
 }

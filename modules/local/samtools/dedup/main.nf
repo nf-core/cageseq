@@ -32,7 +32,8 @@ process SAMTOOLS_DEDUP {
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}_dedup.bam
+    touch ${prefix}.bam
+    touch ${prefix}_dedup_stats.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

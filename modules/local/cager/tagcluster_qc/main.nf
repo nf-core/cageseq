@@ -53,4 +53,22 @@ process CAGER_TAGCLUSTER_QC {
         R_ChIPseeker: \$(Rscript -e 'packageVersion("ChIPseeker")' | tail -1 | awk '{print \$2}' | tr -d "‘’")
     END_VERSIONS
     """
+
+    stub:
+    """
+    mkdir -p plots tables
+    for p in chipseeker_tagCluster_annotation_plot consensus_clusters_pca_plot consensus_counts_plot CTSS_pca_plot dinucleotide_frequencies_all_tss_plot dinucleotide_frequencies_plot norm_CTSS_correlations_plot stub_tagcluster_dominantTSSlogos_plot; do
+        touch plots/\$p.pdf plots/\$p.rds
+    done
+    touch plots/norm_CTSS_correlations_matrix.rds
+    touch tables/consensus_clusters_tpm.csv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        Bash: \$(echo "\$BASH_VERSION")
+        R: \$(R --version | head -1 | awk '{print \$3}')
+        R_CAGEr: \$(Rscript -e 'packageVersion("CAGEr")' | awk '{print \$2}' | tr -d "‘’")
+        R_ChIPseeker: \$(Rscript -e 'packageVersion("ChIPseeker")' | tail -1 | awk '{print \$2}' | tr -d "‘’")
+    END_VERSIONS
+    """
 }

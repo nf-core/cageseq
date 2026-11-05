@@ -40,4 +40,18 @@ process CAGER_READIN {
         R_BSgenome: \$(Rscript -e 'packageVersion("BSgenome")' | awk '{print \$2}' | tr -d "‘’")
     END_VERSIONS
     """
+
+    stub:
+    """
+    mkdir -p intermediate_cagerobj
+    touch intermediate_cagerobj/initial_cagexp.rds
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        Bash: \$(echo "\$BASH_VERSION")
+        R: \$(R --version | head -1 | awk '{print \$3}')
+        R_CAGEr: \$(Rscript -e 'packageVersion("CAGEr")' | awk '{print \$2}' | tr -d "‘’")
+        R_BSgenome: \$(Rscript -e 'packageVersion("BSgenome")' | awk '{print \$2}' | tr -d "‘’")
+    END_VERSIONS
+    """
 }

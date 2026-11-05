@@ -42,4 +42,20 @@ process CAGER_TAG_QC {
         R_CAGEr: \$(Rscript -e 'packageVersion("CAGEr")' | awk '{print \$2}' | tr -d "‘’")
     END_VERSIONS
     """
+
+    stub:
+    """
+    mkdir -p intermediate_cagerobj plots
+    touch intermediate_cagerobj/annotated_cagexp.rds
+    touch plots/CTSS_correlations_matrix.rds
+    touch plots/CTSS_correlations_plot.pdf plots/CTSS_correlations_plot.rds
+    touch plots/tag_region_annotation_plot.pdf plots/tag_region_annotation_plot.rds
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        Bash: \$(echo "\$BASH_VERSION")
+        R: \$(R --version | head -1 | awk '{print \$3}')
+        R_CAGEr: \$(Rscript -e 'packageVersion("CAGEr")' | awk '{print \$2}' | tr -d "‘’")
+    END_VERSIONS
+    """
 }
