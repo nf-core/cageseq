@@ -21,11 +21,15 @@ Second release of nf-core/cageseq, created with the [nf-core](https://nf-co.re/)
 - The `singularity` profile sets `singularity.runOptions` and `singularity.envWhitelist`, which were
   never applied without the `singularity.` prefix: a task's `/tmp` is now `APPTAINER_TMPDIR` when that is
   set. The unapplied `cacheDir` option is removed, so `NXF_SINGULARITY_CACHEDIR` still decides the image cache.
-- Stub mode (`-stub-run`) works for every process except the STAR branch: the `SAMTOOLS_DEDUP` stub
+- Stub mode (`-stub-run`) works for every process: the `SAMTOOLS_DEDUP` stub
   creates the files its script creates (`<prefix>.bam` and `<prefix>_dedup_stats.txt`), and the six
   CAGEr modules (`CAGER_READIN`, `CAGER_TAG_QC`, `CAGER_PROCESSING`, `CAGER_TAGCLUSTER_QC`,
   `CAGEFIGHTR_ENHANCER_CALLING`, `CAGER_REPORT`) have stub blocks. Stub blocks only; no script,
   input, output or config line changed.
+- The vendored `star/align` module is patched (`modules/nf-core/star/align/star-align.diff`): its stub
+  creates the four wig files that STAR writes with `--outWigType wiggle read1_5p`, which the STAR
+  subworkflow indexes. With one wig file, every STAR run in stub mode stopped at `CAGER_READIN`. Stub
+  block only; real runs do not change.
 
 ## v1.0dev - [date]
 

@@ -93,7 +93,10 @@ process STAR_ALIGN {
     touch ${prefix}.ReadsPerGene.out.tab
     touch ${prefix}.Chimeric.out.junction
     touch ${prefix}.out.sam
+    touch ${prefix}.Signal.Unique.str1.out.wig
+    touch ${prefix}.Signal.Unique.str2.out.wig
     touch ${prefix}.Signal.UniqueMultiple.str1.out.wig
+    touch ${prefix}.Signal.UniqueMultiple.str2.out.wig
     touch ${prefix}.Signal.UniqueMultiple.str1.out.bg
     """
 }
