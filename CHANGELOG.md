@@ -30,6 +30,12 @@ Second release of nf-core/cageseq, created with the [nf-core](https://nf-co.re/)
   creates the four wig files that STAR writes with `--outWigType wiggle read1_5p`, which the STAR
   subworkflow indexes. With one wig file, every STAR run in stub mode stopped at `CAGER_READIN`. Stub
   block only; real runs do not change.
+- `CAGER_READIN` reads the copies of the bigWig or BAM files staged into its task directory, as it already
+  did in cageronly mode, instead of the published files by absolute path. It no longer depends on what
+  is bound into the container or on publishing having finished. The `inputFiles` slot of the CAGEr
+  objects of a full run now holds file names, not absolute published paths.
+- The published `cager_sample_list.csv` is written with `launchDir.resolve(params.outdir)`, so its paths are
+  right with an absolute `--outdir`, which previously made `CAGER_READIN` fail.
 
 ## v1.0dev - [date]
 

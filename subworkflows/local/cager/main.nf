@@ -95,8 +95,13 @@ def create_mapping_channel(LinkedHashMap row) {
     def new_name = row.new_name
     // bigWig samples carry two paths in separate path1/path2 columns; BAM
     // samples carry a single "path" column.
+    // Only the file names are handed on, so that cager_readin.R opens the copies
+    // Nextflow stages into the task directory (path ch_collected). Those exist and
+    // are complete when the task starts. The published files of the sample list may
+    // still be being written, and they are visible in the container only if the
+    // launch directory happens to be bound.
     if (row.containsKey('path2')) {
-        return [id, single_end, row.path1, row.path2, new_name]
+        return [id, single_end, file(row.path1).name, file(row.path2).name, new_name]
     }
-    return [id, single_end, row.path, new_name]
+    return [id, single_end, file(row.path).name, new_name]
 }

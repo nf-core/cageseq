@@ -248,6 +248,10 @@ work                # Directory containing the nextflow working files
 # Other nextflow hidden files, eg. history of pipeline runs and old logs.
 ```
 
+`--outdir` may be a relative path, resolved against the directory the pipeline is launched from, or an absolute one.
+
+`CAGER_READIN` reads the bigWig or BAM files staged into its task directory, in every run mode. The files listed in the sample sheet or the CAGEr sample list are staged by Nextflow, and in the fullpipeline and maponly modes so are the mapping outputs, so the task starts only when all of them are complete and does not need the output directory to be visible inside the container. The paths in the published `<OUTDIR>/cager_sample_list/cager_sample_list.csv` are a record of where the files were published, and the file can be passed to a later run with `--cager_sample_file`. For the same reason the `inputFiles` of the CAGEr objects hold file names only.
+
 ## Additional information
 
 You can change the maximum number of instances of the same process that can run in parallel (by default, the maximum number of instances of the same process equals 2).
