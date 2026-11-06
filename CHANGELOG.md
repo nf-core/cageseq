@@ -36,6 +36,8 @@ Second release of nf-core/cageseq, created with the [nf-core](https://nf-co.re/)
   objects of a full run now holds file names, not absolute published paths.
 - The published `cager_sample_list.csv` is written with `launchDir.resolve(params.outdir)`, so its paths are
   right with an absolute `--outdir`, which previously made `CAGER_READIN` fail.
+- `move` is no longer an allowed value of `--publish_dir_mode`. Outputs that later processes use must stay in
+  the work directory, and Nextflow documents `move` only for terminal processes.
 
 ## v1.0dev - [date]
 
