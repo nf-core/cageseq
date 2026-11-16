@@ -32,6 +32,9 @@ workflow PIPELINE_INITIALISATION {
     monochrome_logs   // boolean: Do not use coloured log outputs
     nextflow_cli_args //   array: List of positional nextflow CLI args
     outdir            //  string: The output directory where the results will be saved
+    help              // boolean: Display help message and exit
+    help_full         // boolean: Show the full help message
+    show_hidden       // boolean: Show hidden parameters in the help message
 
     main:
 
@@ -58,6 +61,13 @@ workflow PIPELINE_INITIALISATION {
     UTILS_NFSCHEMA_PLUGIN (
         workflow,
         validate_params,
+        null,
+        help,
+        help_full,
+        show_hidden,
+        "",
+        "",
+        "nextflow run nf-core/cageseq -profile <docker/singularity/.../institute> --input samplesheet.csv --outdir <OUTDIR>",
         null
     )
 

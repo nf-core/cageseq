@@ -16,6 +16,12 @@ Second release of nf-core/cageseq, created with the [nf-core](https://nf-co.re/)
   `def` for closure-local variables, `naturalKey` as a standalone function, `channel`
   instead of `Channel`, explicit closure parameters.
 - The minimum Nextflow version is 25.10.4, the lowest version the pipeline was tested on.
+- The `nf-schema` plugin is 2.7.3 instead of 2.4.2, and the `utils_nfschema_plugin` subworkflow is
+  the nf-core/modules version of commit `a7b27fd`. Plugin 2.4.2 declares no config scope, so Nextflow
+  26 logged `Unrecognized config option 'validation...'` six times in every run and `--help` failed.
+  The help is now produced by the subworkflow from the parameters `help`, `help_full` and
+  `show_hidden`, as in the nf-core template; the `validation.help` config block is removed. 2.7.3 is
+  the newest plugin release that supports Nextflow 25.10.
 - MultiQC plot export has a time limit of 300 s (`export_plots_timeout`). The default of 30 s lost
   plot files without failing the run in a scenario with 42 samples.
 - The `singularity` profile sets `singularity.runOptions` and `singularity.envWhitelist`, which were
